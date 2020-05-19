@@ -1,0 +1,86 @@
+"use strict"
+const fs = require('fs');
+const path = require('path');
+const { checkTypes } = require('./utils');
+const { AudioTrack, VGMLoader } = require('./audio');
+
+async function main() {
+	if (process.argv.length < 3) {
+		console.log(`Usage: node ${process.argv[1]} resources.json`);
+		process.exit(1);
+	}
+
+	const path = process.argv[2];
+
+	const resources = await new ResourcesLoader(path).parse();
+	await resources.write();
+
+	for (const track of resources.tracks) {
+		const unusedChannels = track.toFMCommands().getUnusedChannels();
+		if (unusedChannels.length > 0) {
+			console.log(`Warning: Track ${track.name} has unused channels: ${unusedChannels.join(", ")}`);
+		}
+	}
+}
+
+class Resources {
+	constructor(tickFrequency, opnbFrequency, opmFrequency) {
+		checkTypes(arguments, "number", "number", "number");
+		this.tracks = [];
+		this.tickFrequency = tickFrequency;
+		this.opnbFrequency = opnbFrequency;
+		this.opmFrequency = opmFrequency;
+	}
+
+	addAudioTrack(track) {
+		checkTypes(arguments, AudioTrack);
+		this.tracks.push(track);
+	}
+
+	async write() {
+		return Promise.all([
+			Promise.all(this.tracks.map(async track => track.toVGMOPNB(this.opnbFrequency))),
+			Promise.all(this.tracks.map(async track => track.toVGMOPM(this.opmFrequency))),
+			Promise.all(this.tracks.map(async track => track.toGNG(this.tickFrequency, this.opnbFrequency, this.opmFrequency)))
+		]);
+	}
+}
+
+class ResourcesLoader {
+	constructor(path) {
+		checkTypes(arguments, "string");
+		this.path = path;
+	}
+
+	async parse() {
+		const json = JSON.parse(await fs.promises.readFile(this.path));
+
+		const resources = new Resources(json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+
+		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
+			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
+			const track = await new VGMLoader(jsonTrack.name, trackPath).loadTrack();
+			const waitThreshold = "waitThreshold" in jsonTrack ? jsonTrack.waitThreshold : json.waitThreshold || 0;
+			const channelMapping = "channelMapping" in jsonTrack ? jsonTrack.channelMapping : json.channelMapping || [0, 1, 2, 3, 4, 5, 6, 7];
+			return (track
+				.moveWaitAfterLoop()
+				.removeWaitsUnder(waitThreshold)
+				.toFMCommands()
+				.mapChannels(channelMapping)
+				.frequencyBeforeKeyOn()
+				.trimLeadingSilence()
+				// .quantise(60)
+			);
+		}));
+
+		for (const track of await tracks)
+			resources.addAudioTrack(track);
+
+		return resources;
+	}
+}
+
+exports.Resources = Resources;
+exports.ResourcesLoader = ResourcesLoader;
+
+main().catch(reason => { throw reason; });

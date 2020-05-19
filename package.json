@@ -1,0 +1,14 @@
+{
+  "name": "gngplay",
+  "version": "0.0.0",
+  "description": "Ghosts ’n Goblins music converter & player",
+  "author": "Laurens Holst",
+  "license": "BSD-2-Clause",
+  "repository": {
+    "type": "hg",
+    "url": "https://hg.sr.ht/~grauw/gngplay"
+  },
+  "type": "commonjs",
+  "dependencies": {},
+  "private": true
+}
