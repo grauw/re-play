@@ -169,6 +169,19 @@ class AudioTrack {
 		return track;
 	}
 
+	attenuateVolume(dB) {
+		checkTypes(arguments, "number");
+		const track = new AudioTrack(this.name);
+		for (const command of this.commands) {
+			if (command instanceof AudioCommandFMInstrument) {
+				track.addCommand(command.attenuateVolume(dB));
+			} else {
+				track.addCommand(command);
+			}
+		}
+		return track;
+	}
+
 	frequencyBeforeKeyOn() {
 		const track = new AudioTrack(this.name);
 		let lastCommand = null;
@@ -456,6 +469,27 @@ class AudioCommandFMInstrument extends AudioCommandFMChannel {
 			throw new Error("Incorrect number of parameters.");
 		super(channel);
 		this.parameters = parameters;
+	}
+
+	attenuateVolume(dB) {
+		checkTypes(arguments, "number");
+		const instrument = new AudioCommandFMInstrument(this.channel, this.parameters.slice(0));
+		switch (instrument.parameters[24] & 7) {
+			case 7:
+				instrument._attenuateOperator(0, dB);
+			case 6:
+			case 5:
+				instrument._attenuateOperator(1, dB);
+			case 4:
+				instrument._attenuateOperator(2, dB);
+			default:
+				instrument._attenuateOperator(3, dB);
+		}
+		return instrument;
+	}
+
+	_attenuateOperator(operator, dB) {
+		this.parameters[4 + operator] = Math.min(Math.max(Math.round(this.parameters[4 + operator] - dB * 8 / 6), 0), 127);
 	}
 }
 
