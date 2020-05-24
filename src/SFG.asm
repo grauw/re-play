@@ -94,6 +94,23 @@ SFG_Frequency:
 ; hl = sound data
 SFG_Instrument:
 	and 7
+	ex de,hl
+	ld c,a
+	ld b,0
+	ld hl,Player_instruments
+	add hl,bc
+	add hl,bc
+	ld (hl),e
+	inc hl
+	ld (hl),d
+	ex de,hl
+	call SFG_Instrument_Set
+	jr SFG_Process_Loop
+
+; a = channel
+; hl = sound data
+; hl <- next sound data
+SFG_Instrument_Set:
 	add a,40H
 	ld b,24
 SFG_Instrument_Loop:
@@ -107,8 +124,7 @@ SFG_Instrument_Loop:
 	ld d,a
 	ld e,(hl)
 	inc hl
-	call SFG_WriteRegister
-	jr SFG_Process_Loop
+	jp SFG_WriteRegister
 
 SFG_Mute:
 	ld h,SFG_BASE >> 8
@@ -130,6 +146,36 @@ SFG_Mute_KeyOffLoop:
 	call SFG_WriteRegister
 	inc e
 	djnz SFG_Mute_KeyOffLoop
+	ex af,af'
+	ld h,SFG_BASE >> 8
+	call ENASLT
+	ei
+	ret
+
+SFG_Restore:
+	ld h,SFG_BASE >> 8
+	call Memory_GetSlot
+	ex af,af'
+	ld a,(SFG_slot)
+	ld h,SFG_BASE >> 8
+	call ENASLT
+	ei
+	ld a,0
+	ld hl,Player_instruments
+SFG_Restore_Loop:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	push af
+	push hl
+	ex de,hl
+	call SFG_Instrument_Set
+	pop hl
+	pop af
+	inc a
+	cp 8
+	jr c,SFG_Restore_Loop
 	ex af,af'
 	ld h,SFG_BASE >> 8
 	call ENASLT

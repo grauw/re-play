@@ -105,6 +105,24 @@ Makoto_Frequency2:
 
 ; hl = sound data
 Makoto_Instrument:
+	and 7
+	ex de,hl
+	ld c,a
+	ld b,0
+	ld hl,Player_instruments
+	add hl,bc
+	add hl,bc
+	ld (hl),e
+	inc hl
+	ld (hl),d
+	ex de,hl
+	call Makoto_Instrument_Set
+	jr Makoto_Process_Loop
+
+; a = channel
+; hl = sound data
+; hl <- next sound data
+Makoto_Instrument_Set:
 	bit 2,a
 	jr nz,Makoto_Instrument2
 Makoto_Instrument1:
@@ -122,8 +140,7 @@ Makoto_Instrument1_Loop:
 	ld d,a
 	ld e,(hl)
 	inc hl
-	call Makoto_WriteRegister1
-	jp Makoto_Process_Loop
+	jp Makoto_WriteRegister1
 Makoto_Instrument2:
 	and 3
 	add a,30H
@@ -139,8 +156,7 @@ Makoto_Instrument2_Loop:
 	ld d,a
 	ld e,(hl)
 	inc hl
-	call Makoto_WriteRegister2
-	jp Makoto_Process_Loop
+	jp Makoto_WriteRegister2
 
 Makoto_Mute:
 	ld b,10H
@@ -156,6 +172,25 @@ Makoto_Mute_KeyOffLoop:
 	call Makoto_WriteRegister1
 	inc e
 	djnz Makoto_Mute_KeyOffLoop
+	ret
+
+Makoto_Restore:
+	ld a,0
+	ld hl,Player_instruments
+Makoto_Restore_Loop:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	push af
+	push hl
+	ex de,hl
+	call Makoto_Instrument_Set
+	pop hl
+	pop af
+	inc a
+	cp 8
+	jr c,Makoto_Restore_Loop
 	ret
 
 ; d = register

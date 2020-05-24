@@ -126,6 +126,24 @@ Neotron_Frequency2:
 
 ; hl = sound data
 Neotron_Instrument:
+	and 7
+	ex de,hl
+	ld c,a
+	ld b,0
+	ld hl,Player_instruments
+	add hl,bc
+	add hl,bc
+	ld (hl),e
+	inc hl
+	ld (hl),d
+	ex de,hl
+	call Neotron_Instrument_Set
+	jr Neotron_Process_Loop
+
+; a = channel
+; hl = sound data
+; hl <- next sound data
+Neotron_Instrument_Set:
 	bit 2,a
 	jr nz,Neotron_Instrument2
 	and 3
@@ -142,8 +160,7 @@ Neotron_Instrument1_Loop:
 	ld d,a
 	ld e,(hl)
 	inc hl
-	call Neotron_WriteRegister1
-	jp Neotron_Process_Loop
+	jp Neotron_WriteRegister1
 Neotron_Instrument2:
 	and 3
 	add a,30H
@@ -159,8 +176,7 @@ Neotron_Instrument2_Loop:
 	ld d,a
 	ld e,(hl)
 	inc hl
-	call Neotron_WriteRegister2
-	jp Neotron_Process_Loop
+	jp Neotron_WriteRegister2
 
 Neotron_Mute:
 	ld h,Neotron_BASE >> 8
@@ -183,6 +199,36 @@ Neotron_Mute_KeyOffLoop:
 	call Neotron_WriteRegister1
 	inc e
 	djnz Neotron_Mute_KeyOffLoop
+	ex af,af'
+	ld h,Neotron_BASE >> 8
+	call ENASLT
+	ei
+	ret
+
+Neotron_Restore:
+	ld h,Neotron_BASE >> 8
+	call Memory_GetSlot
+	ex af,af'
+	ld a,(Neotron_slot)
+	ld h,Neotron_BASE >> 8
+	call ENASLT
+	ei
+	ld a,0
+	ld hl,Player_instruments
+Neotron_Restore_Loop:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	push af
+	push hl
+	ex de,hl
+	call Neotron_Instrument_Set
+	pop hl
+	pop af
+	inc a
+	cp 8
+	jr c,Neotron_Restore_Loop
 	ex af,af'
 	ld h,Neotron_BASE >> 8
 	call ENASLT

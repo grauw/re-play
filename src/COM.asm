@@ -72,7 +72,18 @@ Main_Tick_Loop:
 	pop bc
 	and a
 	jr z,Main_Loop
-	call Player_Stop
+	push bc
 	ld c,_INNOE
 	call BDOS
+	pop bc
+	or 20H  ; lower-case
+	cp "p"
+	jr nz,Main_End
+Main_Pause:
+	push bc
+	call Player_TogglePause
+	pop bc
+	jr Main_Loop
+Main_End:
+	call Player_Stop
 	ret
