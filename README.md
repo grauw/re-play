@@ -44,6 +44,7 @@ The converter has the following functions:
   * Timing quantisation
   * Trimming of leading silence
   * Moving frequency events before key on
+  * Volume adjustment
 
 It also outputs VGM files for the YM2151 OPM and YM2610 OPN for easy testing
 with VGMPlay and debugging with vgm2txt.
