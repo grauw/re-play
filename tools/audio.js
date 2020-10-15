@@ -89,10 +89,10 @@ class AudioTrack {
 		for (const command of this.commands) {
 			if (command instanceof AudioCommandWait) {
 				time += command.time * newTickFrequency;
-				if (time >= command.base) {
-					const newTime = Math.floor(time / command.base) * command.base;
-					track.addCommand(new AudioCommandWait(newTime / newTickFrequency, command.base));
-					time -= newTime;
+				if (time >= command.tickFrequency) {
+					const ticks = Math.floor(time / command.tickFrequency);
+					track.addCommand(new AudioCommandWait(ticks, newTickFrequency));
+					time -= ticks * command.tickFrequency;
 				}
 			} else {
 				track.addCommand(command);
