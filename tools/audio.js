@@ -1,5 +1,5 @@
 import fs from "fs";
-import { checkTypes } from "./utils.js";
+import { checkTypes, MemoConstructor } from "./utils.js";
 
 export class Track {
 	constructor(name) {
@@ -63,14 +63,14 @@ export class Track {
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
 				if (command.time >= threshold) {
-					track.addCommand(new CommandWait(command.time + accumulator, 44100));
+					track.addCommand(CommandWait.of(command.time + accumulator, 44100));
 					accumulator = 0;
 				} else {
 					accumulator += command.time;
 				}
 			} else if (command instanceof CommandLoop || command instanceof CommandEnd) {
 				if (accumulator > 0) {
-					track.addCommand(new CommandWait(accumulator, 44100));
+					track.addCommand(CommandWait.of(accumulator, 44100));
 					accumulator = 0;
 				}
 				track.addCommand(command);
@@ -90,7 +90,7 @@ export class Track {
 				time += command.time * newTickFrequency;
 				if (time >= command.tickFrequency) {
 					const ticks = Math.floor(time / command.tickFrequency);
-					track.addCommand(new CommandWait(ticks, newTickFrequency));
+					track.addCommand(CommandWait.of(ticks, newTickFrequency));
 					time -= ticks * command.tickFrequency;
 				}
 			} else {
@@ -121,13 +121,13 @@ export class Track {
 				const addressLSB = command.address & 0xFF;
 				const channel = (command.address >> 8) << 2 | command.address & 3;
 				if (command.address == 0x28) {
-					track.addCommand(new CommandFMKey(command.value & 7, command.value >> 4));
+					track.addCommand(CommandFMKey.of(command.value & 7, command.value >> 4));
 				} else if (addressLSB >= 0xA0 && addressLSB < 0xA4) {
 					const value = registers[command.address + 4] << 8 | registers[command.address];
 					track.addCommand(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), command.clockFrequency / clockDivider));
 				} else if (addressLSB >= 0x30 && addressLSB < 0x90 || addressLSB >= 0xB0 && addressLSB < 0xB4) {
 					const offset = (channel >> 2) << 8 | channel & 3;
-					track.addCommand(new CommandFMInstrument(channel,
+					track.addCommand(CommandFMInstrument.of(channel,
 						registers[0x30 + offset], registers[0x34 + offset], registers[0x38 + offset], registers[0x3C + offset],
 						registers[0x40 + offset], registers[0x44 + offset], registers[0x48 + offset], registers[0x4C + offset],
 						registers[0x50 + offset], registers[0x54 + offset], registers[0x58 + offset], registers[0x5C + offset],
@@ -155,11 +155,11 @@ export class Track {
 				if (newChannel < 0) {
 					// skip
 				} else if (command instanceof CommandFMKey) {
-					track.addCommand(new CommandFMKey(mapping[command.channel], command.slots));
+					track.addCommand(CommandFMKey.of(mapping[command.channel], command.slots));
 				} else if (command instanceof CommandFMFrequency) {
-					track.addCommand(new CommandFMFrequency(mapping[command.channel], command.frequency));
+					track.addCommand(CommandFMFrequency.of(mapping[command.channel], command.frequency));
 				} else if (command instanceof CommandFMInstrument) {
-					track.addCommand(new CommandFMInstrument(mapping[command.channel], ...command.parameters));
+					track.addCommand(CommandFMInstrument.of(mapping[command.channel], ...command.parameters));
 				}
 			} else {
 				track.addCommand(command);
@@ -407,7 +407,13 @@ export class CommandOPNB extends Command {
 		this.value = value;
 		this.clockFrequency = clockFrequency;
 	}
+
+	static of(address, value, clockFrequency) {
+		return commandOPNBMemo.get(address, value, clockFrequency);
+	}
 }
+
+const commandOPNBMemo = new MemoConstructor(CommandOPNB);
 
 export class CommandFMChannel extends Command {
 	constructor(channel) {
@@ -425,13 +431,23 @@ export class CommandFMKey extends CommandFMChannel {
 		super(channel);
 		this.slots = slots;
 	}
+
+	static of(channel, slots) {
+		return commandFMKeyMemo.get(channel, slots);
+	}
 }
+
+const commandFMKeyMemo = new MemoConstructor(CommandFMKey);
 
 export class CommandFMFrequency extends CommandFMChannel {
 	constructor(channel, frequency) {
 		checkTypes(arguments, "number", "number");
 		super(channel);
 		this.frequency = frequency;
+	}
+
+	static of(channel, frequency) {
+		return commandFMFrequencyMemo.get(channel, frequency);
 	}
 
 	getFNumBlock(opnFrequency) {
@@ -457,9 +473,11 @@ export class CommandFMFrequency extends CommandFMChannel {
 		checkTypes(arguments, "number", "number", "number");
 		if (fNum < 0 || fNum > 0x3FFFF)
 			throw new Error("FNum out of range.");
-		return new CommandFMFrequency(channel, fNum * (opnFrequency / (24 << 21)));
+		return CommandFMFrequency.of(channel, fNum * (opnFrequency / (24 << 21)));
 	}
 }
+
+const commandFMFrequencyMemo = new MemoConstructor(CommandFMFrequency);
 
 export class CommandFMInstrument extends CommandFMChannel {
 	constructor(channel, ...parameters) {
@@ -470,27 +488,30 @@ export class CommandFMInstrument extends CommandFMChannel {
 		this.parameters = parameters;
 	}
 
-	attenuateVolume(dB) {
-		checkTypes(arguments, "number");
-		const instrument = new CommandFMInstrument(this.channel, ...this.parameters);
-		switch (instrument.parameters[24] & 7) {
-			case 7:
-				instrument._attenuateOperator(0, dB);
-			case 6:
-			case 5:
-				instrument._attenuateOperator(1, dB);
-			case 4:
-				instrument._attenuateOperator(2, dB);
-			default:
-				instrument._attenuateOperator(3, dB);
-		}
-		return instrument;
+	static of(channel, ...parameters) {
+		return commandFMInstrumentMemo.get(channel, ...parameters);
 	}
 
-	_attenuateOperator(operator, dB) {
-		this.parameters[4 + operator] = Math.min(Math.max(Math.round(this.parameters[4 + operator] - dB * 8 / 6), 0), 127);
+	attenuateVolume(dB) {
+		checkTypes(arguments, "number");
+		const attenuate = (level, dB) => Math.min(Math.max(Math.round(level - dB * 8 / 6), 0), 127);
+		const parameters = this.parameters.slice(0);
+		switch (parameters[24] & 7) {
+			case 7:
+				parameters[4] = attenuate(parameters[4], dB);
+			case 6:
+			case 5:
+				parameters[5] = attenuate(parameters[5], dB);
+			case 4:
+				parameters[6] = attenuate(parameters[6], dB);
+			default:
+				parameters[7] = attenuate(parameters[7], dB);
+		}
+		return CommandFMInstrument.of(this.channel, ...parameters);
 	}
 }
+
+const commandFMInstrumentMemo = new MemoConstructor(CommandFMInstrument);
 
 export class CommandWait extends Command {
 	constructor(time, tickFrequency) {
@@ -498,6 +519,10 @@ export class CommandWait extends Command {
 		super();
 		this.time = time;
 		this.tickFrequency = tickFrequency;
+	}
+
+	static of(time, tickFrequency) {
+		return commandWaitMemo.get(time, tickFrequency);
 	}
 
 	getTime(tickFrequency = this.tickFrequency) {
@@ -509,21 +534,35 @@ export class CommandWait extends Command {
 		checkTypes(arguments, CommandWait);
 		if (other.tickFrequency != this.tickFrequency)
 			throw new Error("Base timing frequency mismatch.");
-		return new CommandWait(this.time + other.time, this.tickFrequency);
+		return CommandWait.of(this.time + other.time, this.tickFrequency);
 	}
 }
+
+const commandWaitMemo = new MemoConstructor(CommandWait);
 
 export class CommandLoop extends Command {
 	constructor() {
 		super();
 	}
+
+	static of() {
+		return commandLoopMemo;
+	}
 }
+
+const commandLoopMemo = new CommandLoop();
 
 export class CommandEnd extends Command {
 	constructor() {
 		super();
 	}
+
+	static of() {
+		return commandEndMemo;
+	}
 }
+
+const commandEndMemo = new CommandEnd();
 
 export class VGMLoader {
 	constructor(name, path) {
@@ -548,32 +587,32 @@ export class VGMLoader {
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop)
-				track.addCommand(new CommandLoop());
+				track.addCommand(CommandLoop.of());
 			const type = getByte(address++);
 			if (type == 0x55) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				track.addCommand(new CommandOPNB(register, value, opnFrequency * 2));
+				track.addCommand(CommandOPNB.of(register, value, opnFrequency * 2));
 			} else if (type == 0xA5) {
 				const register = getByte(address++);
 				const value = getByte(address++);
 				if (register == 0x28) {
-					track.addCommand(new CommandOPNB(register, value | 4, opnFrequency * 2));
+					track.addCommand(CommandOPNB.of(register, value | 4, opnFrequency * 2));
 				} else if (register >= 0x30) {
-					track.addCommand(new CommandOPNB(register | 0x100, value, opnFrequency * 2));
+					track.addCommand(CommandOPNB.of(register | 0x100, value, opnFrequency * 2));
 				}
 			} else if (type == 0x61) {
-				track.addCommand(new CommandWait(getWord(address), tickFrequency));
+				track.addCommand(CommandWait.of(getWord(address), tickFrequency));
 				address += 2;
 			} else if (type == 0x62) {
-				track.addCommand(new CommandWait(735, tickFrequency));
+				track.addCommand(CommandWait.of(735, tickFrequency));
 			} else if (type == 0x63) {
-				track.addCommand(new CommandWait(882, tickFrequency));
+				track.addCommand(CommandWait.of(882, tickFrequency));
 			} else if (type == 0x66) {
-				track.addCommand(new CommandEnd());
+				track.addCommand(CommandEnd.of());
 				break;
 			} else if (type >= 0x70 && type < 0x80) {
-				track.addCommand(new CommandWait((type & 15) + 1, tickFrequency));
+				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));
 			} else {
 				throw new Error(`Unsupported command ${type.toString(16)} at address ${(address - 1).toString(16)}`);
 			}
