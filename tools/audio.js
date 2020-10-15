@@ -501,9 +501,9 @@ class AudioCommandWait extends AudioCommand {
 		this.tickFrequency = tickFrequency;
 	}
 
-	getTime(tickFrequency) {
+	getTime(tickFrequency = this.tickFrequency) {
 		checkTypes(arguments, "number");
-		return this.time * tickFrequency / this.tickFrequency;
+		return tickFrequency == this.tickFrequency ? this.time : this.time * tickFrequency / this.tickFrequency;
 	}
 
 	add(other) {
