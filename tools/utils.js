@@ -1,6 +1,4 @@
-"use strict"
-
-function toAsmHex(value) {
+export function toAsmHex(value) {
 	const hex = value.toString(16).toUpperCase();
 	return hex.charCodeAt(0) > 64 ? `0${hex}H` : `${hex}H`;
 }
@@ -17,7 +15,7 @@ function toAsmHex(value) {
  * @param {Array} args An array-like list of arguments.
  * @param {string|Function|Array} types... The types to check against.
  */
-function checkTypes(args) {
+export function checkTypes(args) {
 	for (let i = 1; i < arguments.length; i++) {
 		let type = arguments[i], arg = args[i - 1];
 		if (!(type instanceof Array && (type = type[0]) && arg == null) &&
@@ -30,6 +28,3 @@ function checkTypes(args) {
 		}
 	}
 }
-
-exports.checkTypes = checkTypes;
-exports.toAsmHex = toAsmHex;

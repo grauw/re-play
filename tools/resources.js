@@ -1,8 +1,7 @@
-"use strict"
-const fs = require('fs');
-const path = require('path');
-const { checkTypes } = require('./utils');
-const { AudioTrack, VGMLoader } = require('./audio');
+import fs from "fs";
+import path from "path";
+import { checkTypes } from "./utils.js";
+import { AudioTrack, VGMLoader } from "./audio.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -23,7 +22,7 @@ async function main() {
 	}
 }
 
-class Resources {
+export class Resources {
 	constructor(tickFrequency, opnbFrequency, opmFrequency) {
 		checkTypes(arguments, "number", "number", "number");
 		this.tracks = [];
@@ -46,7 +45,7 @@ class Resources {
 	}
 }
 
-class ResourcesLoader {
+export class ResourcesLoader {
 	constructor(path) {
 		checkTypes(arguments, "string");
 		this.path = path;
@@ -81,8 +80,5 @@ class ResourcesLoader {
 		return resources;
 	}
 }
-
-exports.Resources = Resources;
-exports.ResourcesLoader = ResourcesLoader;
 
 main().catch(reason => { throw reason; });

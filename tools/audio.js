@@ -1,8 +1,7 @@
-"use strict"
-const fs = require('fs');
-const { checkTypes } = require('./utils');
+import fs from "fs";
+import { checkTypes } from "./utils.js";
 
-class AudioTrack {
+export class AudioTrack {
 	constructor(name) {
 		checkTypes(arguments, "string");
 		this.name = name;
@@ -389,12 +388,12 @@ class AudioTrack {
 	}
 }
 
-class AudioCommand {
+export class AudioCommand {
 	constructor() {
 	}
 }
 
-class AudioCommandOPNB extends AudioCommand {
+export class AudioCommandOPNB extends AudioCommand {
 	constructor(address, value, clockFrequency) {
 		checkTypes(arguments, "number", "number", "number");
 		if (address >= 0xC0 && address < 0x100 || address >= 0x1C0)
@@ -410,7 +409,7 @@ class AudioCommandOPNB extends AudioCommand {
 	}
 }
 
-class AudioCommandFMChannel extends AudioCommand {
+export class AudioCommandFMChannel extends AudioCommand {
 	constructor(channel) {
 		checkTypes(arguments, "number");
 		if (channel < 0 || channel >= 8)
@@ -420,7 +419,7 @@ class AudioCommandFMChannel extends AudioCommand {
 	}
 }
 
-class AudioCommandFMKey extends AudioCommandFMChannel {
+export class AudioCommandFMKey extends AudioCommandFMChannel {
 	constructor(channel, slots) {
 		checkTypes(arguments, "number", "number");
 		super(channel);
@@ -428,7 +427,7 @@ class AudioCommandFMKey extends AudioCommandFMChannel {
 	}
 }
 
-class AudioCommandFMFrequency extends AudioCommandFMChannel {
+export class AudioCommandFMFrequency extends AudioCommandFMChannel {
 	constructor(channel, frequency) {
 		checkTypes(arguments, "number", "number");
 		super(channel);
@@ -462,7 +461,7 @@ class AudioCommandFMFrequency extends AudioCommandFMChannel {
 	}
 }
 
-class AudioCommandFMInstrument extends AudioCommandFMChannel {
+export class AudioCommandFMInstrument extends AudioCommandFMChannel {
 	constructor(channel, ...parameters) {
 		checkTypes(arguments, "number");
 		if (parameters.length != 25)
@@ -493,7 +492,7 @@ class AudioCommandFMInstrument extends AudioCommandFMChannel {
 	}
 }
 
-class AudioCommandWait extends AudioCommand {
+export class AudioCommandWait extends AudioCommand {
 	constructor(time, tickFrequency) {
 		checkTypes(arguments, "number", "number");
 		super();
@@ -514,19 +513,19 @@ class AudioCommandWait extends AudioCommand {
 	}
 }
 
-class AudioCommandLoop extends AudioCommand {
+export class AudioCommandLoop extends AudioCommand {
 	constructor() {
 		super();
 	}
 }
 
-class AudioCommandEnd extends AudioCommand {
+export class AudioCommandEnd extends AudioCommand {
 	constructor() {
 		super();
 	}
 }
 
-class VGMLoader {
+export class VGMLoader {
 	constructor(name, path) {
 		checkTypes(arguments, "string", "string");
 		this.name = name;
@@ -582,6 +581,3 @@ class VGMLoader {
 		return track;
 	}
 }
-
-exports.AudioTrack = AudioTrack;
-exports.VGMLoader = VGMLoader;

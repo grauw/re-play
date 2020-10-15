@@ -8,7 +8,7 @@
     "type": "hg",
     "url": "https://hg.sr.ht/~grauw/gngplay"
   },
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {},
   "private": true
 }
