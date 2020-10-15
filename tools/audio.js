@@ -202,7 +202,7 @@ class AudioTrack {
 	async toGNG(tickFrequency, opnFrequency, opmFrequency) {
 		checkTypes(arguments, "number", "number");
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
-		let samples = 0;
+		let ticks = 0;
 		let loop = -1;
 		const data = [];
 		for (const command of this.commands) {
@@ -215,11 +215,11 @@ class AudioTrack {
 			} else if (command instanceof AudioCommandFMInstrument) {
 				data.push(0x88 + command.channel, ...command.parameters);
 			} else if (command instanceof AudioCommandWait) {
-				samples += Math.round(command.getTime(44100));
-				while (samples >= 44100 / tickFrequency) {
-					const waitTicks = Math.min(Math.floor(samples * tickFrequency / 44100), 0x6F);
+				ticks += command.getTime(tickFrequency);
+				while (ticks >= 1) {
+					const waitTicks = Math.min(Math.floor(ticks), 0x6F);
 					data.push(0x90 + waitTicks);
-					samples -= waitTicks * 44100 / tickFrequency;
+					ticks -= waitTicks;
 				}
 			} else if (command instanceof AudioCommandLoop) {
 				loop = data.length;
