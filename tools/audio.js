@@ -128,7 +128,7 @@ class AudioTrack {
 					track.addCommand(AudioCommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), command.clockFrequency / clockDivider));
 				} else if (addressLSB >= 0x30 && addressLSB < 0x90 || addressLSB >= 0xB0 && addressLSB < 0xB4) {
 					const offset = (channel >> 2) << 8 | channel & 3;
-					track.addCommand(new AudioCommandFMInstrument(channel, [
+					track.addCommand(new AudioCommandFMInstrument(channel,
 						registers[0x30 + offset], registers[0x34 + offset], registers[0x38 + offset], registers[0x3C + offset],
 						registers[0x40 + offset], registers[0x44 + offset], registers[0x48 + offset], registers[0x4C + offset],
 						registers[0x50 + offset], registers[0x54 + offset], registers[0x58 + offset], registers[0x5C + offset],
@@ -136,7 +136,7 @@ class AudioTrack {
 						registers[0x70 + offset], registers[0x74 + offset], registers[0x78 + offset], registers[0x7C + offset],
 						registers[0x80 + offset], registers[0x84 + offset], registers[0x88 + offset], registers[0x8C + offset],
 						registers[0xB0 + offset] | 0xC0
-					]));
+					));
 				} else if (command.address >= 0x2D && command.address < 0x30) {
 					clockDivider = [6, 3, 2][command.address - 0x2D];
 				}
@@ -160,7 +160,7 @@ class AudioTrack {
 				} else if (command instanceof AudioCommandFMFrequency) {
 					track.addCommand(new AudioCommandFMFrequency(mapping[command.channel], command.frequency));
 				} else if (command instanceof AudioCommandFMInstrument) {
-					track.addCommand(new AudioCommandFMInstrument(mapping[command.channel], command.parameters));
+					track.addCommand(new AudioCommandFMInstrument(mapping[command.channel], ...command.parameters));
 				}
 			} else {
 				track.addCommand(command);
@@ -463,8 +463,8 @@ class AudioCommandFMFrequency extends AudioCommandFMChannel {
 }
 
 class AudioCommandFMInstrument extends AudioCommandFMChannel {
-	constructor(channel, parameters) {
-		checkTypes(arguments, "number", Array);
+	constructor(channel, ...parameters) {
+		checkTypes(arguments, "number");
 		if (parameters.length != 25)
 			throw new Error("Incorrect number of parameters.");
 		super(channel);
@@ -473,7 +473,7 @@ class AudioCommandFMInstrument extends AudioCommandFMChannel {
 
 	attenuateVolume(dB) {
 		checkTypes(arguments, "number");
-		const instrument = new AudioCommandFMInstrument(this.channel, this.parameters.slice(0));
+		const instrument = new AudioCommandFMInstrument(this.channel, ...this.parameters);
 		switch (instrument.parameters[24] & 7) {
 			case 7:
 				instrument._attenuateOperator(0, dB);
