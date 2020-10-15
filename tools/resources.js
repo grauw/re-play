@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { checkTypes } from "./utils.js";
-import { AudioTrack, VGMLoader } from "./audio.js";
+import { Track, VGMLoader } from "./audio.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -31,8 +31,8 @@ export class Resources {
 		this.opmFrequency = opmFrequency;
 	}
 
-	addAudioTrack(track) {
-		checkTypes(arguments, AudioTrack);
+	addTrack(track) {
+		checkTypes(arguments, Track);
 		this.tracks.push(track);
 	}
 
@@ -75,7 +75,7 @@ export class ResourcesLoader {
 		}));
 
 		for (const track of await tracks)
-			resources.addAudioTrack(track);
+			resources.addTrack(track);
 
 		return resources;
 	}

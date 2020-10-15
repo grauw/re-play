@@ -1,7 +1,7 @@
 import fs from "fs";
 import { checkTypes } from "./utils.js";
 
-export class AudioTrack {
+export class Track {
 	constructor(name) {
 		checkTypes(arguments, "string");
 		this.name = name;
@@ -10,17 +10,17 @@ export class AudioTrack {
 	}
 
 	addCommand(command) {
-		checkTypes(arguments, AudioCommand);
-		if (command instanceof AudioCommandWait && this.commands.length > 0) {
-			if (this.commands[this.commands.length - 1] instanceof AudioCommandWait) {
+		checkTypes(arguments, Command);
+		if (command instanceof CommandWait && this.commands.length > 0) {
+			if (this.commands[this.commands.length - 1] instanceof CommandWait) {
 				this.commands.push(command.add(this.commands.pop()));
 				return;
 			}
-		} else if (command instanceof AudioCommandLoop) {
+		} else if (command instanceof CommandLoop) {
 			this.loop = this.commands.length;
-		} else if (command instanceof AudioCommandFMInstrument) {
+		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
-			while (this.commands.length > 0 && this.commands[this.commands.length - 1] instanceof AudioCommandFMInstrument) {
+			while (this.commands.length > 0 && this.commands[this.commands.length - 1] instanceof CommandFMInstrument) {
 				const lastCommand = this.commands.pop();
 				if (lastCommand.channel == command.channel) {
 					break;
@@ -42,8 +42,8 @@ export class AudioTrack {
 	}
 
 	moveWaitAfterLoop() {
-		if (this.loop >= 0 && this.commands[this.loop + 1] instanceof AudioCommandWait) {
-			const track = new AudioTrack(this.name);
+		if (this.loop >= 0 && this.commands[this.loop + 1] instanceof CommandWait) {
+			const track = new Track(this.name);
 			track.addCommands(this.commands.slice(0, this.loop));
 			track.addCommand(this.commands[this.loop + 1]);
 			track.addCommand(this.commands[this.loop]);
@@ -58,19 +58,19 @@ export class AudioTrack {
 
 	removeWaitsUnder(threshold) {
 		checkTypes(arguments, "number");
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		let accumulator = 0;
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandWait) {
+			if (command instanceof CommandWait) {
 				if (command.time >= threshold) {
-					track.addCommand(new AudioCommandWait(command.time + accumulator, 44100));
+					track.addCommand(new CommandWait(command.time + accumulator, 44100));
 					accumulator = 0;
 				} else {
 					accumulator += command.time;
 				}
-			} else if (command instanceof AudioCommandLoop || command instanceof AudioCommandEnd) {
+			} else if (command instanceof CommandLoop || command instanceof CommandEnd) {
 				if (accumulator > 0) {
-					track.addCommand(new AudioCommandWait(accumulator, 44100));
+					track.addCommand(new CommandWait(accumulator, 44100));
 					accumulator = 0;
 				}
 				track.addCommand(command);
@@ -83,14 +83,14 @@ export class AudioTrack {
 
 	quantise(newTickFrequency) {
 		checkTypes(arguments, "number");
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		let time = 0;
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandWait) {
+			if (command instanceof CommandWait) {
 				time += command.time * newTickFrequency;
 				if (time >= command.tickFrequency) {
 					const ticks = Math.floor(time / command.tickFrequency);
-					track.addCommand(new AudioCommandWait(ticks, newTickFrequency));
+					track.addCommand(new CommandWait(ticks, newTickFrequency));
 					time -= ticks * command.tickFrequency;
 				}
 			} else {
@@ -101,9 +101,9 @@ export class AudioTrack {
 	}
 
 	trimLeadingSilence() {
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		for (let index = 0; index < this.commands.length; ++index) {
-			if (!(this.commands[index] instanceof AudioCommandWait)) {
+			if (!(this.commands[index] instanceof CommandWait)) {
 				track.addCommands(this.commands.slice(index, this.commands.length));
 				break;
 			}
@@ -112,22 +112,22 @@ export class AudioTrack {
 	}
 
 	toFMCommands() {
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		const registers = new Array(512).fill(0);
 		let clockDivider = 6;
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandOPNB) {
+			if (command instanceof CommandOPNB) {
 				registers[command.address] = command.value;
 				const addressLSB = command.address & 0xFF;
 				const channel = (command.address >> 8) << 2 | command.address & 3;
 				if (command.address == 0x28) {
-					track.addCommand(new AudioCommandFMKey(command.value & 7, command.value >> 4));
+					track.addCommand(new CommandFMKey(command.value & 7, command.value >> 4));
 				} else if (addressLSB >= 0xA0 && addressLSB < 0xA4) {
 					const value = registers[command.address + 4] << 8 | registers[command.address];
-					track.addCommand(AudioCommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), command.clockFrequency / clockDivider));
+					track.addCommand(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), command.clockFrequency / clockDivider));
 				} else if (addressLSB >= 0x30 && addressLSB < 0x90 || addressLSB >= 0xB0 && addressLSB < 0xB4) {
 					const offset = (channel >> 2) << 8 | channel & 3;
-					track.addCommand(new AudioCommandFMInstrument(channel,
+					track.addCommand(new CommandFMInstrument(channel,
 						registers[0x30 + offset], registers[0x34 + offset], registers[0x38 + offset], registers[0x3C + offset],
 						registers[0x40 + offset], registers[0x44 + offset], registers[0x48 + offset], registers[0x4C + offset],
 						registers[0x50 + offset], registers[0x54 + offset], registers[0x58 + offset], registers[0x5C + offset],
@@ -148,18 +148,18 @@ export class AudioTrack {
 
 	mapChannels(mapping) {
 		checkTypes(arguments, Array);
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandFMChannel) {
+			if (command instanceof CommandFMChannel) {
 				const newChannel = mapping[command.channel];
 				if (newChannel < 0) {
 					// skip
-				} else if (command instanceof AudioCommandFMKey) {
-					track.addCommand(new AudioCommandFMKey(mapping[command.channel], command.slots));
-				} else if (command instanceof AudioCommandFMFrequency) {
-					track.addCommand(new AudioCommandFMFrequency(mapping[command.channel], command.frequency));
-				} else if (command instanceof AudioCommandFMInstrument) {
-					track.addCommand(new AudioCommandFMInstrument(mapping[command.channel], ...command.parameters));
+				} else if (command instanceof CommandFMKey) {
+					track.addCommand(new CommandFMKey(mapping[command.channel], command.slots));
+				} else if (command instanceof CommandFMFrequency) {
+					track.addCommand(new CommandFMFrequency(mapping[command.channel], command.frequency));
+				} else if (command instanceof CommandFMInstrument) {
+					track.addCommand(new CommandFMInstrument(mapping[command.channel], ...command.parameters));
 				}
 			} else {
 				track.addCommand(command);
@@ -170,9 +170,9 @@ export class AudioTrack {
 
 	attenuateVolume(dB) {
 		checkTypes(arguments, "number");
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandFMInstrument) {
+			if (command instanceof CommandFMInstrument) {
 				track.addCommand(command.attenuateVolume(dB));
 			} else {
 				track.addCommand(command);
@@ -182,10 +182,10 @@ export class AudioTrack {
 	}
 
 	frequencyBeforeKeyOn() {
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		let lastCommand = null;
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandFMFrequency && lastCommand instanceof AudioCommandFMKey &&
+			if (command instanceof CommandFMFrequency && lastCommand instanceof CommandFMKey &&
 				lastCommand.slots && command.channel == lastCommand.channel) {
 				track.commands.pop();
 				track.addCommand(command);
@@ -205,24 +205,24 @@ export class AudioTrack {
 		let loop = -1;
 		const data = [];
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandFMKey) {
+			if (command instanceof CommandFMKey) {
 				data.push(0x00 | command.slots << 3 | command.channel);
-			} else if (command instanceof AudioCommandFMFrequency) {
+			} else if (command instanceof CommandFMFrequency) {
 				const keyCodeFraction = command.getKeyCodeFraction(opmFrequency);
 				const fNumBlock = command.getFNumBlock(opnFrequency / 6);
 				data.push(0x80 + command.channel, ...word(keyCodeFraction), fNumBlock >> 8, fNumBlock & 0xFF);
-			} else if (command instanceof AudioCommandFMInstrument) {
+			} else if (command instanceof CommandFMInstrument) {
 				data.push(0x88 + command.channel, ...command.parameters);
-			} else if (command instanceof AudioCommandWait) {
+			} else if (command instanceof CommandWait) {
 				ticks += command.getTime(tickFrequency);
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0x6F);
 					data.push(0x90 + waitTicks);
 					ticks -= waitTicks;
 				}
-			} else if (command instanceof AudioCommandLoop) {
+			} else if (command instanceof CommandLoop) {
 				loop = data.length;
-			} else if (command instanceof AudioCommandEnd) {
+			} else if (command instanceof CommandEnd) {
 				if (loop >= 0) {
 					data.push(0x90, ...word(loop - data.length - 3));
 				} else {
@@ -241,19 +241,19 @@ export class AudioTrack {
 		let loopSamples = -1;
 		const commandData = [];
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandOPNB) {
+			if (command instanceof CommandOPNB) {
 				commandData.push(0x58 | command.address >> 8, command.address & 0xFF, command.value);
-			} else if (command instanceof AudioCommandFMKey) {
+			} else if (command instanceof CommandFMKey) {
 				commandData.push(0x58, 0x28, command.slots << 4 | command.channel);
-			} else if (command instanceof AudioCommandFMFrequency) {
+			} else if (command instanceof CommandFMFrequency) {
 				const fNumBlock = command.getFNumBlock(opnbFrequency / 6);
 				commandData.push(0x58 + (command.channel >> 2), 0xA4 + (command.channel & 3), fNumBlock >> 8);
 				commandData.push(0x58 + (command.channel >> 2), 0xA0 + (command.channel & 3), fNumBlock & 0xFF);
-			} else if (command instanceof AudioCommandFMInstrument) {
+			} else if (command instanceof CommandFMInstrument) {
 				for (let i = 0; i < 24; i++)
 					commandData.push(0x58 + (command.channel >> 2), 0x30 + i * 4 + (command.channel & 3), command.parameters[i]);
 				commandData.push(0x58 + (command.channel >> 2), 0xB0 + (command.channel & 3), command.parameters[24]);
-			} else if (command instanceof AudioCommandWait) {
+			} else if (command instanceof CommandWait) {
 				let ticks = Math.round(command.getTime(44100));
 				samples += ticks;
 				while (ticks > 0) {
@@ -261,10 +261,10 @@ export class AudioTrack {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof AudioCommandLoop) {
+			} else if (command instanceof CommandLoop) {
 				loopOffset = commandData.length;
 				loopSamples = samples;
-			} else if (command instanceof AudioCommandEnd) {
+			} else if (command instanceof CommandEnd) {
 				commandData.push(0x66);
 			}
 		}
@@ -316,19 +316,19 @@ export class AudioTrack {
 		let loopSamples = -1;
 		const commandData = [];
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandOPNB) {
+			if (command instanceof CommandOPNB) {
 				throw new Error("Use toFMCommands() first.");
-			} else if (command instanceof AudioCommandFMKey) {
+			} else if (command instanceof CommandFMKey) {
 				commandData.push(0x54, 0x08, command.slots << 3 | command.channel);
-			} else if (command instanceof AudioCommandFMFrequency) {
+			} else if (command instanceof CommandFMFrequency) {
 				const keyCodeFraction = command.getKeyCodeFraction(opmFrequency);
 				commandData.push(0x54, 0x30 + command.channel, keyCodeFraction & 0xFF);
 				commandData.push(0x54, 0x28 + command.channel, keyCodeFraction >> 8);
-			} else if (command instanceof AudioCommandFMInstrument) {
+			} else if (command instanceof CommandFMInstrument) {
 				for (let i = 0; i < 24; i++)
 					commandData.push(0x54, 0x40 + i * 8 + command.channel, command.parameters[i]);
 				commandData.push(0x54, 0x20 + command.channel, command.parameters[24]);
-			} else if (command instanceof AudioCommandWait) {
+			} else if (command instanceof CommandWait) {
 				let ticks = Math.round(command.getTime(44100));
 				samples += ticks;
 				while (ticks > 0) {
@@ -336,10 +336,10 @@ export class AudioTrack {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof AudioCommandLoop) {
+			} else if (command instanceof CommandLoop) {
 				loopOffset = commandData.length;
 				loopSamples = samples;
-			} else if (command instanceof AudioCommandEnd) {
+			} else if (command instanceof CommandEnd) {
 				commandData.push(0x66);
 			}
 		}
@@ -371,9 +371,9 @@ export class AudioTrack {
 		const usedChannels = new Array(8).fill(false);
 		const keyOnChannels = new Array(8).fill(false);
 		for (const command of this.commands) {
-			if (command instanceof AudioCommandFMChannel) {
+			if (command instanceof CommandFMChannel) {
 				usedChannels[command.channel] = true;
-				if (command instanceof AudioCommandFMKey && command.slots) {
+				if (command instanceof CommandFMKey && command.slots) {
 					keyOnChannels[command.channel] = true;
 				}
 			}
@@ -388,12 +388,12 @@ export class AudioTrack {
 	}
 }
 
-export class AudioCommand {
+export class Command {
 	constructor() {
 	}
 }
 
-export class AudioCommandOPNB extends AudioCommand {
+export class CommandOPNB extends Command {
 	constructor(address, value, clockFrequency) {
 		checkTypes(arguments, "number", "number", "number");
 		if (address >= 0xC0 && address < 0x100 || address >= 0x1C0)
@@ -409,7 +409,7 @@ export class AudioCommandOPNB extends AudioCommand {
 	}
 }
 
-export class AudioCommandFMChannel extends AudioCommand {
+export class CommandFMChannel extends Command {
 	constructor(channel) {
 		checkTypes(arguments, "number");
 		if (channel < 0 || channel >= 8)
@@ -419,7 +419,7 @@ export class AudioCommandFMChannel extends AudioCommand {
 	}
 }
 
-export class AudioCommandFMKey extends AudioCommandFMChannel {
+export class CommandFMKey extends CommandFMChannel {
 	constructor(channel, slots) {
 		checkTypes(arguments, "number", "number");
 		super(channel);
@@ -427,7 +427,7 @@ export class AudioCommandFMKey extends AudioCommandFMChannel {
 	}
 }
 
-export class AudioCommandFMFrequency extends AudioCommandFMChannel {
+export class CommandFMFrequency extends CommandFMChannel {
 	constructor(channel, frequency) {
 		checkTypes(arguments, "number", "number");
 		super(channel);
@@ -457,11 +457,11 @@ export class AudioCommandFMFrequency extends AudioCommandFMChannel {
 		checkTypes(arguments, "number", "number", "number");
 		if (fNum < 0 || fNum > 0x3FFFF)
 			throw new Error("FNum out of range.");
-		return new AudioCommandFMFrequency(channel, fNum * (opnFrequency / (24 << 21)));
+		return new CommandFMFrequency(channel, fNum * (opnFrequency / (24 << 21)));
 	}
 }
 
-export class AudioCommandFMInstrument extends AudioCommandFMChannel {
+export class CommandFMInstrument extends CommandFMChannel {
 	constructor(channel, ...parameters) {
 		checkTypes(arguments, "number");
 		if (parameters.length != 25)
@@ -472,7 +472,7 @@ export class AudioCommandFMInstrument extends AudioCommandFMChannel {
 
 	attenuateVolume(dB) {
 		checkTypes(arguments, "number");
-		const instrument = new AudioCommandFMInstrument(this.channel, ...this.parameters);
+		const instrument = new CommandFMInstrument(this.channel, ...this.parameters);
 		switch (instrument.parameters[24] & 7) {
 			case 7:
 				instrument._attenuateOperator(0, dB);
@@ -492,7 +492,7 @@ export class AudioCommandFMInstrument extends AudioCommandFMChannel {
 	}
 }
 
-export class AudioCommandWait extends AudioCommand {
+export class CommandWait extends Command {
 	constructor(time, tickFrequency) {
 		checkTypes(arguments, "number", "number");
 		super();
@@ -506,20 +506,20 @@ export class AudioCommandWait extends AudioCommand {
 	}
 
 	add(other) {
-		checkTypes(arguments, AudioCommandWait);
+		checkTypes(arguments, CommandWait);
 		if (other.tickFrequency != this.tickFrequency)
 			throw new Error("Base timing frequency mismatch.");
-		return new AudioCommandWait(this.time + other.time, this.tickFrequency);
+		return new CommandWait(this.time + other.time, this.tickFrequency);
 	}
 }
 
-export class AudioCommandLoop extends AudioCommand {
+export class CommandLoop extends Command {
 	constructor() {
 		super();
 	}
 }
 
-export class AudioCommandEnd extends AudioCommand {
+export class CommandEnd extends Command {
 	constructor() {
 		super();
 	}
@@ -544,36 +544,36 @@ export class VGMLoader {
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
 		const opnFrequency = version >= 0x150 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0;
 		const tickFrequency = 44100;
-		const track = new AudioTrack(this.name);
+		const track = new Track(this.name);
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop)
-				track.addCommand(new AudioCommandLoop());
+				track.addCommand(new CommandLoop());
 			const type = getByte(address++);
 			if (type == 0x55) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				track.addCommand(new AudioCommandOPNB(register, value, opnFrequency * 2));
+				track.addCommand(new CommandOPNB(register, value, opnFrequency * 2));
 			} else if (type == 0xA5) {
 				const register = getByte(address++);
 				const value = getByte(address++);
 				if (register == 0x28) {
-					track.addCommand(new AudioCommandOPNB(register, value | 4, opnFrequency * 2));
+					track.addCommand(new CommandOPNB(register, value | 4, opnFrequency * 2));
 				} else if (register >= 0x30) {
-					track.addCommand(new AudioCommandOPNB(register | 0x100, value, opnFrequency * 2));
+					track.addCommand(new CommandOPNB(register | 0x100, value, opnFrequency * 2));
 				}
 			} else if (type == 0x61) {
-				track.addCommand(new AudioCommandWait(getWord(address), tickFrequency));
+				track.addCommand(new CommandWait(getWord(address), tickFrequency));
 				address += 2;
 			} else if (type == 0x62) {
-				track.addCommand(new AudioCommandWait(735, tickFrequency));
+				track.addCommand(new CommandWait(735, tickFrequency));
 			} else if (type == 0x63) {
-				track.addCommand(new AudioCommandWait(882, tickFrequency));
+				track.addCommand(new CommandWait(882, tickFrequency));
 			} else if (type == 0x66) {
-				track.addCommand(new AudioCommandEnd());
+				track.addCommand(new CommandEnd());
 				break;
 			} else if (type >= 0x70 && type < 0x80) {
-				track.addCommand(new AudioCommandWait((type & 15) + 1, tickFrequency));
+				track.addCommand(new CommandWait((type & 15) + 1, tickFrequency));
 			} else {
 				throw new Error(`Unsupported command ${type.toString(16)} at address ${(address - 1).toString(16)}`);
 			}
