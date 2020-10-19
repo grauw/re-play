@@ -6,7 +6,12 @@ export class Track {
 		checkTypes(arguments, "string");
 		this.name = name;
 		this.commands = [];
-		this.loop = -1;
+		this.symbols = new Map();
+	}
+
+	getSymbol(name) {
+		checkTypes(arguments, "string");
+		return this.symbols.get(name);
 	}
 
 	addCommand(command) {
@@ -16,8 +21,11 @@ export class Track {
 				this.commands.push(command.add(this.commands.pop()));
 				return;
 			}
-		} else if (command instanceof CommandLoop) {
-			this.loop = this.commands.length;
+		} else if (command instanceof CommandLabel) {
+			if (this.symbols.has(command.name)) {
+				throw new Error(`Symbol already exists: ${command.name}`);
+			}
+			this.symbols.set(command.name, new Symbol(command.name, this.commands.length, command));
 		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
 			while (this.commands.length > 0 && this.commands[this.commands.length - 1] instanceof CommandFMInstrument) {
@@ -42,13 +50,14 @@ export class Track {
 	}
 
 	moveWaitAfterLoop() {
-		if (this.loop >= 0 && this.commands[this.loop + 1] instanceof CommandWait) {
+		const loop = this.getSymbol("loop");
+		if (loop && this.commands[loop.position + 1] instanceof CommandWait) {
 			const track = new Track(this.name);
-			track.addCommands(this.commands.slice(0, this.loop));
-			track.addCommand(this.commands[this.loop + 1]);
-			track.addCommand(this.commands[this.loop]);
-			track.addCommands(this.commands.slice(this.loop + 2, this.commands.length - 1));
-			track.addCommand(this.commands[this.loop + 1]);
+			track.addCommands(this.commands.slice(0, loop.position));
+			track.addCommand(this.commands[loop.position + 1]);
+			track.addCommand(this.commands[loop.position]);
+			track.addCommands(this.commands.slice(loop.position + 2, this.commands.length - 1));
+			track.addCommand(this.commands[loop.position + 1]);
 			track.addCommand(this.commands[this.commands.length - 1]);
 			return track;
 		} else {
@@ -68,7 +77,7 @@ export class Track {
 				} else {
 					accumulator += command.time;
 				}
-			} else if (command instanceof CommandLoop || command instanceof CommandEnd) {
+			} else if (command instanceof CommandLabel || command instanceof CommandJump) {
 				if (accumulator > 0) {
 					track.addCommand(CommandWait.of(accumulator, 44100));
 					accumulator = 0;
@@ -202,7 +211,8 @@ export class Track {
 		checkTypes(arguments, "number", "number");
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 		let ticks = 0;
-		let loop = -1;
+		const symbols = new Map();
+		const rewrites = [];
 		const data = [];
 		for (const command of this.commands) {
 			if (command instanceof CommandFMKey) {
@@ -220,17 +230,19 @@ export class Track {
 					data.push(0x90 + waitTicks);
 					ticks -= waitTicks;
 				}
-			} else if (command instanceof CommandLoop) {
-				loop = data.length;
-			} else if (command instanceof CommandEnd) {
-				if (loop >= 0) {
-					data.push(0x90, ...word(loop - data.length - 3));
-				} else {
-					data.push(0x90 + 1);  // wait 1
-					data.push(0x90, ...word(-4));  // loop to wait
-				}
+			} else if (command instanceof CommandLabel) {
+				symbols.set(command.name, data.length);
+			} else if (command instanceof CommandJump) {
+				rewrites.push({ target: command.target, position: data.length + 1 });
+				data.push(0x90, 0, 0);
 			}
 		}
+		for (const rewrite of rewrites) {
+			const offset = word(symbols.get(rewrite.target) - rewrite.position - 2);
+			data[rewrite.position] = offset[0];
+			data[rewrite.position + 1] = offset[1];
+		}
+
 		await fs.promises.writeFile(`bin/${this.name}.gng`, Buffer.from(data));
 	}
 
@@ -261,13 +273,12 @@ export class Track {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof CommandLoop) {
+			} else if (command instanceof CommandLabel && command.name == "loop") {
 				loopOffset = commandData.length;
 				loopSamples = samples;
-			} else if (command instanceof CommandEnd) {
-				commandData.push(0x66);
 			}
 		}
+		commandData.push(0x66);
 
 		const data = [];
 		const doubleWord = value => [value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF];
@@ -336,13 +347,12 @@ export class Track {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof CommandLoop) {
+			} else if (command instanceof CommandLabel && command.name == "loop") {
 				loopOffset = commandData.length;
 				loopSamples = samples;
-			} else if (command instanceof CommandEnd) {
-				commandData.push(0x66);
 			}
 		}
+		commandData.push(0x66);
 
 		const data = [];
 		const doubleWord = value => [value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF];
@@ -385,6 +395,15 @@ export class Track {
 			}
 		}
 		return unusedChannels;
+	}
+}
+
+export class Symbol {
+	constructor(name, position, command) {
+		checkTypes(arguments, "string", "number", Command);
+		this.name = name;
+		this.position = position;
+		this.command = command;
 	}
 }
 
@@ -540,29 +559,33 @@ export class CommandWait extends Command {
 
 const commandWaitMemo = new MemoConstructor(CommandWait);
 
-export class CommandLoop extends Command {
-	constructor() {
+export class CommandLabel extends Command {
+	constructor(name) {
+		checkTypes(arguments, "string");
 		super();
+		this.name = name;
 	}
 
-	static of() {
-		return commandLoopMemo;
+	static of(name) {
+		return commandLabelMemo.get(name);
 	}
 }
 
-const commandLoopMemo = new CommandLoop();
+const commandLabelMemo = new MemoConstructor(CommandLabel);
 
-export class CommandEnd extends Command {
-	constructor() {
+export class CommandJump extends Command {
+	constructor(target) {
+		checkTypes(arguments, "string");
 		super();
+		this.target = target;
 	}
 
-	static of() {
-		return commandEndMemo;
+	static of(target) {
+		return commandJumpMemo.get(target);
 	}
 }
 
-const commandEndMemo = new CommandEnd();
+const commandJumpMemo = new MemoConstructor(CommandJump);
 
 export class VGMLoader {
 	constructor(name, path) {
@@ -587,7 +610,7 @@ export class VGMLoader {
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop)
-				track.addCommand(CommandLoop.of());
+				track.addCommand(CommandLabel.of("loop"));
 			const type = getByte(address++);
 			if (type == 0x55) {
 				const register = getByte(address++);
@@ -609,7 +632,11 @@ export class VGMLoader {
 			} else if (type == 0x63) {
 				track.addCommand(CommandWait.of(882, tickFrequency));
 			} else if (type == 0x66) {
-				track.addCommand(CommandEnd.of());
+				if (!loop) {
+					track.addCommand(CommandLabel.of("loop"));
+					track.addCommand(CommandWait.of(tickFrequency, tickFrequency));
+				}
+				track.addCommand(CommandJump.of("loop"));
 				break;
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));
