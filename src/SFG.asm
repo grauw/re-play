@@ -48,6 +48,7 @@ SFG_Process:
 	ret
 
 ; hl = sound data
+; ix = stack pointer
 ; a <- wait amount
 SFG_Process_Loop:
 	ld a,(hl)
@@ -56,22 +57,52 @@ SFG_Process_Loop:
 	jr c,SFG_Key
 	cp 88H
 	jr c,SFG_Frequency
-	sub 90H
+	cp 90H
 	jr c,SFG_Instrument
-	ret nz
+	jr z,SFG_Jump
+	sub 92H
+	jr c,SFG_Call
+	jr z,SFG_Return
+	ret
+
+; hl = sound data
+SFG_Jump:
 	ld e,(hl)
 	inc hl
 	ld d,(hl)
 	inc hl
 	add hl,de
-	jr SFG_Process_Loop
+	jp SFG_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+SFG_Call:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	ld (ix + 0),l
+	ld (ix + 1),h
+	inc ix
+	inc ix
+	add hl,de
+	jp SFG_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+SFG_Return:
+	dec ix
+	dec ix
+	ld l,(ix + 0)
+	ld h,(ix + 1)
+	jp SFG_Process_Loop
 
 ; hl = sound data
 SFG_Key:
 	ld e,a
 	ld d,08H
 	call SFG_WriteRegister
-	jr SFG_Process_Loop
+	jp SFG_Process_Loop
 
 ; hl = sound data
 SFG_Frequency:
@@ -89,7 +120,7 @@ SFG_Frequency:
 	call SFG_WriteRegister
 	inc hl
 	inc hl
-	jr SFG_Process_Loop
+	jp SFG_Process_Loop
 
 ; hl = sound data
 SFG_Instrument:
@@ -105,7 +136,7 @@ SFG_Instrument:
 	ld (hl),d
 	ex de,hl
 	call SFG_Instrument_Set
-	jr SFG_Process_Loop
+	jp SFG_Process_Loop
 
 ; a = channel
 ; hl = sound data

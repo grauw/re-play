@@ -61,10 +61,13 @@ The data format consists of five types of events:
            Bit 0-2: channel, byte 1-2: OPM frequency, byte 3-4: OPN frequency.
   * 88-8F: Instrument settings.
            Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
-  * 90:    Loop offset.
-           Bytes 1-2: offset to loop point.
-  * 91-FF: Wait.
-           n - 90H: nr. of 60Hz ticks.
+  * 90:    Relative jump.
+           Bytes 1-2: offset to target.
+  * 91:    Relative call.
+           Bytes 1-2: offset to target.
+  * 92:    Return.
+  * 93-FF: Wait.
+           n - 92H: nr. of 60Hz ticks.
 
 
 Additional notes

@@ -59,6 +59,7 @@ Neotron_Process:
 	ret
 
 ; hl = sound data
+; ix = stack pointer
 ; a <- wait amount
 Neotron_Process_Loop:
 	ld a,(hl)
@@ -67,15 +68,45 @@ Neotron_Process_Loop:
 	jr c,Neotron_Key
 	cp 88H
 	jr c,Neotron_Frequency
-	sub 90H
+	cp 90H
 	jr c,Neotron_Instrument
-	ret nz
+	jr z,Neotron_Jump
+	sub 92H
+	jr c,Neotron_Call
+	jr z,Neotron_Return
+	ret
+
+; hl = sound data
+Neotron_Jump:
 	ld e,(hl)
 	inc hl
 	ld d,(hl)
 	inc hl
 	add hl,de
-	jr Neotron_Process_Loop
+	jp Neotron_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Neotron_Call:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	ld (ix + 0),l
+	ld (ix + 1),h
+	inc ix
+	inc ix
+	add hl,de
+	jp Neotron_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Neotron_Return:
+	dec ix
+	dec ix
+	ld l,(ix + 0)
+	ld h,(ix + 1)
+	jp Neotron_Process_Loop
 
 ; hl = sound data
 Neotron_Key:
@@ -85,7 +116,7 @@ Neotron_Key:
 	ld e,a
 	ld d,28H
 	call Neotron_WriteRegister1
-	jr Neotron_Process_Loop
+	jp Neotron_Process_Loop
 
 ; hl = sound data
 Neotron_Frequency:
@@ -106,7 +137,7 @@ Neotron_Frequency1:
 	ld e,(hl)
 	inc hl
 	call Neotron_WriteRegister1
-	jr Neotron_Process_Loop
+	jp Neotron_Process_Loop
 Neotron_Frequency2:
 	and 3
 	add a,0A0H
@@ -122,7 +153,7 @@ Neotron_Frequency2:
 	ld e,(hl)
 	inc hl
 	call Neotron_WriteRegister2
-	jr Neotron_Process_Loop
+	jp Neotron_Process_Loop
 
 ; hl = sound data
 Neotron_Instrument:
@@ -138,7 +169,7 @@ Neotron_Instrument:
 	ld (hl),d
 	ex de,hl
 	call Neotron_Instrument_Set
-	jr Neotron_Process_Loop
+	jp Neotron_Process_Loop
 
 ; a = channel
 ; hl = sound data

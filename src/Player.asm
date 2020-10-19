@@ -5,6 +5,8 @@
 	INCLUDE "Makoto.asm"
 	INCLUDE "Neotron.asm"
 
+Player_STACK_CAPACITY: equ 128
+
 ; f <- c: found
 Player_Detect:
 	call SFG_Detect
@@ -43,8 +45,16 @@ Player_SetProcessAndMute:
 
 ; hl = sound data
 Player_Play:
+	xor a
+	ld (Player_playing),a
 	ld (Player_position),hl
-	ld a,1
+	ld hl,Player_stack
+	ld (hl),Player_infiniteLoop
+	inc hl
+	ld (hl),Player_infiniteLoop >> 8
+	inc hl
+	ld (Player_stackPointer),hl
+	inc a
 	ld (Player_wait),a
 	ld (Player_playing),a
 	ret
@@ -74,10 +84,12 @@ Player_Tick:
 	ld hl,Player_wait
 	dec (hl)
 	ret nz
+	ld ix,(Player_stackPointer)
 	ld hl,(Player_position)
 	call Player_Process
 	ld (Player_wait),a
 	ld (Player_position),hl
+	ld (Player_stackPointer),ix
 	ret
 
 ; Data in RAM
@@ -87,6 +99,12 @@ Player_position:
 	dw 0
 Player_wait:
 	db 0
+Player_stackPointer:
+	dw Player_stack
+Player_stack:
+	ds Player_STACK_CAPACITY * 2
+Player_infiniteLoop:
+	db 0FFH, 90H, 0FCH, 0FFH
 Player_instruments:
 	ds 8 * 2
 Player_Process:

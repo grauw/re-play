@@ -226,8 +226,8 @@ export class Track {
 			} else if (command instanceof CommandWait) {
 				ticks += command.getTime(tickFrequency);
 				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0x6F);
-					data.push(0x90 + waitTicks);
+					const waitTicks = Math.min(Math.floor(ticks), 0x6D);
+					data.push(0x92 + waitTicks);
 					ticks -= waitTicks;
 				}
 			} else if (command instanceof CommandLabel) {
@@ -235,6 +235,11 @@ export class Track {
 			} else if (command instanceof CommandJump) {
 				rewrites.push({ target: command.target, position: data.length + 1 });
 				data.push(0x90, 0, 0);
+			} else if (command instanceof CommandCall) {
+				rewrites.push({ target: command.target, position: data.length + 1 });
+				data.push(0x91, 0, 0);
+			} else if (command instanceof CommandReturn) {
+				data.push(0x92);
 			}
 		}
 		for (const rewrite of rewrites) {
@@ -587,6 +592,28 @@ export class CommandJump extends Command {
 
 const commandJumpMemo = new MemoConstructor(CommandJump);
 
+export class CommandCall extends Command {
+	constructor(target) {
+		checkTypes(arguments, "string");
+		super();
+		this.target = target;
+	}
+
+	static of(target) {
+		return commandCallMemo.get(target);
+	}
+}
+
+const commandCallMemo = new MemoConstructor(CommandCall);
+
+export class CommandReturn extends Command {
+	static of() {
+		return commandReturnMemo;
+	}
+}
+
+const commandReturnMemo = new CommandReturn();
+
 export class VGMLoader {
 	constructor(name, path) {
 		checkTypes(arguments, "string", "string");
@@ -632,11 +659,11 @@ export class VGMLoader {
 			} else if (type == 0x63) {
 				track.addCommand(CommandWait.of(882, tickFrequency));
 			} else if (type == 0x66) {
-				if (!loop) {
-					track.addCommand(CommandLabel.of("loop"));
-					track.addCommand(CommandWait.of(tickFrequency, tickFrequency));
+				if (loop) {
+					track.addCommand(CommandJump.of("loop"));
+				} else {
+					track.addCommand(CommandReturn.of());
 				}
-				track.addCommand(CommandJump.of("loop"));
 				break;
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));

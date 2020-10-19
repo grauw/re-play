@@ -37,6 +37,7 @@ Makoto_Detect:
 	ret
 
 ; hl = sound data
+; ix = stack pointer
 ; a <- wait amount
 Makoto_Process:
 Makoto_Process_Loop:
@@ -46,15 +47,45 @@ Makoto_Process_Loop:
 	jr c,Makoto_Key
 	cp 88H
 	jr c,Makoto_Frequency
-	sub 90H
+	cp 90H
 	jr c,Makoto_Instrument
-	ret nz
+	jr z,Makoto_Jump
+	sub 92H
+	jr c,Makoto_Call
+	jr z,Makoto_Return
+	ret
+
+; hl = sound data
+Makoto_Jump:
 	ld e,(hl)
 	inc hl
 	ld d,(hl)
 	inc hl
 	add hl,de
-	jr Makoto_Process_Loop
+	jp Makoto_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Makoto_Call:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	ld (ix + 0),l
+	ld (ix + 1),h
+	inc ix
+	inc ix
+	add hl,de
+	jp Makoto_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Makoto_Return:
+	dec ix
+	dec ix
+	ld l,(ix + 0)
+	ld h,(ix + 1)
+	jp Makoto_Process_Loop
 
 ; hl = sound data
 Makoto_Key:
@@ -64,7 +95,7 @@ Makoto_Key:
 	ld e,a
 	ld d,28H
 	call Makoto_WriteRegister1
-	jr Makoto_Process_Loop
+	jp Makoto_Process_Loop
 
 ; hl = sound data
 Makoto_Frequency:
@@ -85,7 +116,7 @@ Makoto_Frequency1:
 	ld e,(hl)
 	inc hl
 	call Makoto_WriteRegister1
-	jr Makoto_Process_Loop
+	jp Makoto_Process_Loop
 Makoto_Frequency2:
 	and 3
 	add a,0A0H
@@ -101,7 +132,7 @@ Makoto_Frequency2:
 	ld e,(hl)
 	inc hl
 	call Makoto_WriteRegister2
-	jr Makoto_Process_Loop
+	jp Makoto_Process_Loop
 
 ; hl = sound data
 Makoto_Instrument:
@@ -117,7 +148,7 @@ Makoto_Instrument:
 	ld (hl),d
 	ex de,hl
 	call Makoto_Instrument_Set
-	jr Makoto_Process_Loop
+	jp Makoto_Process_Loop
 
 ; a = channel
 ; hl = sound data
