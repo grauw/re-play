@@ -21,6 +21,9 @@ export class Track {
 			if (this.symbols.has(command.name)) {
 				throw new Error(`Symbol already exists: ${command.name}`);
 			}
+			if (peek(this.commands) instanceof CommandJump && peek(this.commands).target == command.name) {
+				this.commands.pop();
+			}
 			this.symbols.set(command.name, new Symbol(command.name, this.commands.length, command));
 		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
@@ -34,6 +37,10 @@ export class Track {
 			}
 			while (tail.length > 0) {
 				this.commands.push(tail.pop());
+			}
+		} else if (command instanceof CommandReturn) {
+			if (peek(this.commands) instanceof CommandCall) {
+				command = CommandJump.of(this.commands.pop().target);
 			}
 		}
 		this.commands.push(command);
