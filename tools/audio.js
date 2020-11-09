@@ -1,4 +1,4 @@
-import { checkTypes, MemoConstructor } from "./utils.js";
+import { checkTypes, MemoConstructor, peek } from "./utils.js";
 
 export class Track {
 	constructor(name) {
@@ -15,11 +15,8 @@ export class Track {
 
 	addCommand(command) {
 		checkTypes(arguments, Command);
-		if (command instanceof CommandWait && this.commands.length > 0) {
-			if (this.commands[this.commands.length - 1] instanceof CommandWait) {
-				this.commands.push(command.add(this.commands.pop()));
-				return;
-			}
+		if (command instanceof CommandWait && peek(this.commands) instanceof CommandWait) {
+			command = command.add(this.commands.pop());
 		} else if (command instanceof CommandLabel) {
 			if (this.symbols.has(command.name)) {
 				throw new Error(`Symbol already exists: ${command.name}`);
@@ -27,7 +24,7 @@ export class Track {
 			this.symbols.set(command.name, new Symbol(command.name, this.commands.length, command));
 		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
-			while (this.commands.length > 0 && this.commands[this.commands.length - 1] instanceof CommandFMInstrument) {
+			while (peek(this.commands) instanceof CommandFMInstrument) {
 				const lastCommand = this.commands.pop();
 				if (lastCommand.channel == command.channel) {
 					break;

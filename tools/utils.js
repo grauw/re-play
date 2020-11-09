@@ -29,6 +29,10 @@ export function checkTypes(args) {
 	}
 }
 
+export function peek(array) {
+	return array.length > 0 ? array[array.length - 1] : undefined;
+}
+
 export class MemoConstructor {
 	constructor(type) {
 		checkTypes(arguments, Function);
