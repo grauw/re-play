@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { checkTypes } from "./utils.js";
-import { Track, VGMLoader } from "./audio.js";
+import { Track } from "./audio.js";
+import { VGMFile, GNGFile } from "./formats.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -38,9 +39,18 @@ export class Resources {
 
 	async write() {
 		return Promise.all([
-			Promise.all(this.tracks.map(async track => track.toVGMOPNB(this.opnbFrequency))),
-			Promise.all(this.tracks.map(async track => track.toVGMOPM(this.opmFrequency))),
-			Promise.all(this.tracks.map(async track => track.toGNG(this.tickFrequency, this.opnbFrequency, this.opmFrequency)))
+			Promise.all(this.tracks.map(async track => {
+				const file = new VGMFile(track.name, `bin/${track.name}-opnb.vgm`);
+				file.saveTrackOPNB(track, this.opnbFrequency);
+			})),
+			Promise.all(this.tracks.map(async track => {
+				const file = new VGMFile(track.name, `bin/${track.name}-opm.vgm`);
+				file.saveTrackOPM(track, this.opmFrequency);
+			})),
+			Promise.all(this.tracks.map(async track => {
+				const file = new GNGFile(track.name, `bin/${track.name}.gng`);
+				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
+			}))
 		]);
 	}
 }
@@ -58,7 +68,7 @@ export class ResourcesLoader {
 
 		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
-			const track = await new VGMLoader(jsonTrack.name, trackPath).loadTrack();
+			const track = await new VGMFile(jsonTrack.name, trackPath).loadTrack();
 			const waitThreshold = "waitThreshold" in jsonTrack ? jsonTrack.waitThreshold : json.waitThreshold || 0;
 			const channelMapping = "channelMapping" in jsonTrack ? jsonTrack.channelMapping : json.channelMapping || [0, 1, 2, 3, 4, 5, 6, 7];
 			const attenuation = "attenuation" in jsonTrack ? jsonTrack.attenuation : json.attenuation || 0;
