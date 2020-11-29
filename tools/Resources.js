@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { checkTypes } from "./utils.js";
-import { Track } from "./audio.js";
+import { Track } from "./Track.js";
 import { VGMFile, GNGFile } from "./formats.js";
 
 async function main() {

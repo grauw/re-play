@@ -1,7 +1,8 @@
 import fs from "fs";
 import { checkTypes } from "./utils.js";
-import { Track, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait,
-	CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./audio.js";
+import { Track } from "./Track.js";
+import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
+import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { ChipOPN } from "./ChipOPN.js";
 
 export class AudioFile {

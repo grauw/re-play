@@ -1,5 +1,5 @@
 import { checkTypes } from "./utils.js";
-import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./audio.js";
+import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class ChipOPN {
 	constructor(clockFrequency) {
