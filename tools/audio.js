@@ -123,41 +123,6 @@ export class Track {
 		return track;
 	}
 
-	toFMCommands() {
-		const track = new Track(this.name);
-		const registers = new Array(512).fill(0);
-		let clockDivider = 6;
-		for (const command of this.commands) {
-			if (command instanceof CommandOPNB) {
-				registers[command.address] = command.value;
-				const addressLSB = command.address & 0xFF;
-				const channel = (command.address >> 8) << 2 | command.address & 3;
-				if (command.address == 0x28) {
-					track.addCommand(CommandFMKey.of(command.value & 7, command.value >> 4));
-				} else if (addressLSB >= 0xA0 && addressLSB < 0xA4) {
-					const value = registers[command.address + 4] << 8 | registers[command.address];
-					track.addCommand(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), command.clockFrequency / clockDivider));
-				} else if (addressLSB >= 0x30 && addressLSB < 0x90 || addressLSB >= 0xB0 && addressLSB < 0xB4) {
-					const offset = (channel >> 2) << 8 | channel & 3;
-					track.addCommand(CommandFMInstrument.of(channel,
-						registers[0x30 + offset], registers[0x34 + offset], registers[0x38 + offset], registers[0x3C + offset],
-						registers[0x40 + offset], registers[0x44 + offset], registers[0x48 + offset], registers[0x4C + offset],
-						registers[0x50 + offset], registers[0x54 + offset], registers[0x58 + offset], registers[0x5C + offset],
-						registers[0x60 + offset], registers[0x64 + offset], registers[0x68 + offset], registers[0x6C + offset],
-						registers[0x70 + offset], registers[0x74 + offset], registers[0x78 + offset], registers[0x7C + offset],
-						registers[0x80 + offset], registers[0x84 + offset], registers[0x88 + offset], registers[0x8C + offset],
-						registers[0xB0 + offset] | 0xC0
-					));
-				} else if (command.address >= 0x2D && command.address < 0x30) {
-					clockDivider = [6, 3, 2][command.address - 0x2D];
-				}
-			} else {
-				track.addCommand(command);
-			}
-		}
-		return track;
-	}
-
 	mapChannels(mapping) {
 		checkTypes(arguments, Array);
 		const track = new Track(this.name);
@@ -244,28 +209,6 @@ export class Command {
 	constructor() {
 	}
 }
-
-export class CommandOPNB extends Command {
-	constructor(address, value, clockFrequency) {
-		checkTypes(arguments, "number", "number", "number");
-		if (address >= 0xC0 && address < 0x100 || address >= 0x1C0)
-			throw new Error("Invalid OPN register.");
-		if ((address & 0xFF) >= 0x90 && (address & 0xFF) < 0xA0)
-			throw new Error("SSG-EG not supported.");
-		if (address == 0x27 && value & 0xC0)
-			throw new Error("CSM or 3ch modes not supported.");
-		super();
-		this.address = address;
-		this.value = value;
-		this.clockFrequency = clockFrequency;
-	}
-
-	static of(address, value, clockFrequency) {
-		return commandOPNBMemo.get(address, value, clockFrequency);
-	}
-}
-
-const commandOPNBMemo = new MemoConstructor(CommandOPNB);
 
 export class CommandFMChannel extends Command {
 	constructor(channel) {

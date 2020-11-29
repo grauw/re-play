@@ -1,7 +1,8 @@
 import fs from "fs";
 import { checkTypes } from "./utils.js";
 import { Track, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait,
-	CommandOPNB, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./audio.js";
+	CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./audio.js";
+import { ChipOPN } from "./ChipOPN.js";
 
 export class AudioFile {
 	constructor(name, path) {
@@ -22,7 +23,7 @@ export class VGMFile extends AudioFile {
 		const version = getDoubleWord(0x08);
 		const loop = getDoubleWord(0x1C) ? getDoubleWord(0x1C) + 0x1C : 0;
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
-		const opnFrequency = version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0;
+		const opn = new ChipOPN(version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0);
 		const tickFrequency = 44100;
 		const track = new Track(this.name);
 		let address = headerSize;
@@ -33,15 +34,11 @@ export class VGMFile extends AudioFile {
 			if (type == 0x55) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				track.addCommand(CommandOPNB.of(register, value, opnFrequency * 2));
+				opn.writeRegister(register, value, command => track.addCommand(command));
 			} else if (type == 0xA5) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				if (register == 0x28) {
-					track.addCommand(CommandOPNB.of(register, value | 4, opnFrequency * 2));
-				} else if (register >= 0x30) {
-					track.addCommand(CommandOPNB.of(register | 0x100, value, opnFrequency * 2));
-				}
+				opn.writeRegister(register | 0x100, value, command => track.addCommand(command));
 			} else if (type == 0x61) {
 				track.addCommand(CommandWait.of(getWord(address), tickFrequency));
 				address += 2;
@@ -72,9 +69,7 @@ export class VGMFile extends AudioFile {
 		let loopSamples = -1;
 		const commandData = [];
 		for (const command of track.commands) {
-			if (command instanceof CommandOPNB) {
-				commandData.push(0x58 | command.address >> 8, command.address & 0xFF, command.value);
-			} else if (command instanceof CommandFMKey) {
+			if (command instanceof CommandFMKey) {
 				commandData.push(0x58, 0x28, command.slots << 4 | command.channel);
 			} else if (command instanceof CommandFMFrequency) {
 				const fNumBlock = command.getFNumBlock(opnbFrequency / 6);
@@ -146,9 +141,7 @@ export class VGMFile extends AudioFile {
 		let loopSamples = -1;
 		const commandData = [];
 		for (const command of track.commands) {
-			if (command instanceof CommandOPNB) {
-				throw new Error("Use toFMCommands() first.");
-			} else if (command instanceof CommandFMKey) {
+			if (command instanceof CommandFMKey) {
 				commandData.push(0x54, 0x08, command.slots << 3 | command.channel);
 			} else if (command instanceof CommandFMFrequency) {
 				const keyCodeFraction = command.getKeyCodeFraction(opmFrequency);

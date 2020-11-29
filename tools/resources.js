@@ -16,7 +16,7 @@ async function main() {
 	await resources.write();
 
 	for (const track of resources.tracks) {
-		const unusedChannels = track.toFMCommands().getUnusedChannels();
+		const unusedChannels = track.getUnusedChannels();
 		if (unusedChannels.length > 0) {
 			console.log(`Warning: Track ${track.name} has unused channels: ${unusedChannels.join(", ")}`);
 		}
@@ -75,7 +75,6 @@ export class ResourcesLoader {
 			return (track
 				.moveWaitAfterLoop()
 				.removeWaitsUnder(waitThreshold)
-				.toFMCommands()
 				.mapChannels(channelMapping)
 				.attenuateVolume(attenuation)
 				.frequencyBeforeKeyOn()
