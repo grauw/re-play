@@ -22,7 +22,7 @@ export class VGMFile extends AudioFile {
 		const version = getDoubleWord(0x08);
 		const loop = getDoubleWord(0x1C) ? getDoubleWord(0x1C) + 0x1C : 0;
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
-		const opnFrequency = version >= 0x150 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0;
+		const opnFrequency = version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0;
 		const tickFrequency = 44100;
 		const track = new Track(this.name);
 		let address = headerSize;
@@ -217,7 +217,7 @@ export class GNGFile extends AudioFile {
 			} else if (command instanceof CommandWait) {
 				ticks += command.getTime(tickFrequency);
 				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0x6D);
+					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
 					data.push(0x92 + waitTicks);
 					ticks -= waitTicks;
 				}
