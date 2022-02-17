@@ -7,137 +7,137 @@
 	"tracks": [
 		{
 			"name": "01",
-			"path": "01 Credit.vgm",
+			"path": "01 Credit.vgz",
 			"channelMapping": [1, -1, 2, -1, 5, -1, 6, -1]
 		},
 		{
 			"name": "02",
-			"path": "02 Start Demo.vgm",
+			"path": "02 Start Demo.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "03",
-			"path": "03 Stage Introduction Map.vgm",
+			"path": "03 Stage Introduction Map.vgz",
 			"channelMapping": [1, 0, 2, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "04",
-			"path": "04 Ground BGM (1, 2 Stage).vgm",
+			"path": "04 Ground BGM (1, 2 Stage).vgz",
 			"channelMapping": [1, 2, 0, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "05",
-			"path": "05 Theme of Giant (1, 2 Stage Boss).vgm",
+			"path": "05 Theme of Giant (1, 2 Stage Boss).vgz",
 			"channelMapping": [1, 4, 2, -1, 5, 6, 0, -1]
 		},
 		{
 			"name": "06",
-			"path": "06 Stage Clear (1).vgm",
+			"path": "06 Stage Clear (1).vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "07",
-			"path": "07 Stage Clear (2).vgm",
+			"path": "07 Stage Clear (2).vgz",
 			"channelMapping": [1, 2, 4, -1, 5, 6, 0, -1]
 		},
 		{
 			"name": "08",
-			"path": "08 Cave BGM (3, 4 Stage).vgm",
+			"path": "08 Cave BGM (3, 4 Stage).vgz",
 			"channelMapping": [1, 2, 0, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "09",
-			"path": "09 Theme of Dragon (3, 4 Stage Boss).vgm",
+			"path": "09 Theme of Dragon (3, 4 Stage Boss).vgz",
 			"channelMapping": [1, 2, -1, -1, -1, 5, 6, -1]
 		},
 		{
 			"name": "10",
-			"path": "10 Final Stage Inside Great Demon King's Castle BGM (5, 6 Stage).vgm",
+			"path": "10 Final Stage Inside Great Demon King's Castle BGM (5, 6 Stage).vgz",
 			"channelMapping": [1, 2, 0, -1, 5, 6, 4, -1]
 		},
 		{
 			"name": "11",
-			"path": "11 Theme of Satan (5, 6 Stage Boss).vgm",
+			"path": "11 Theme of Satan (5, 6 Stage Boss).vgz",
 			"channelMapping": [1, 2, 5, -1, 0, 6, 4, -1]
 		},
 		{
 			"name": "12",
-			"path": "12 Theme of Great Demon King.vgm",
+			"path": "12 Theme of Great Demon King.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "13",
-			"path": "13 Great Demon King Stage (7 Stage Boss).vgm",
+			"path": "13 Great Demon King Stage (7 Stage Boss).vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "14",
-			"path": "14 1st Lap Clear.vgm",
+			"path": "14 1st Lap Clear.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "15",
-			"path": "15 2nd Lap Clear.vgm",
+			"path": "15 2nd Lap Clear.vgz",
 			"channelMapping": [1, 0, 2, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "16",
-			"path": "16 Hurry Up!.vgm",
+			"path": "16 Hurry Up!.vgz",
 			"channelMapping": [1, 2, 0, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "17",
-			"path": "17 Player Out.vgm",
+			"path": "17 Player Out.vgz",
 			"channelMapping": [1, 2, 0, -1, 5, 6, 4, -1]
 		},
 		{
 			"name": "18",
-			"path": "18 Game Over.vgm",
+			"path": "18 Game Over.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "19",
-			"path": "19 1st Place Name Registration.vgm",
+			"path": "19 1st Place Name Registration.vgz",
 			"channelMapping": [1, 2, 0, -1, 5, 6, -1, -1]
 		},
 		{
 			"name": "20",
-			"path": "20 1st Place Entry End.vgm",
+			"path": "20 1st Place Entry End.vgz",
 			"channelMapping": [1, 2, 0, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "21",
-			"path": "21 Below 2nd Place Name Registration.vgm",
+			"path": "21 Below 2nd Place Name Registration.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 6, 4, -1]
 		},
 		{
 			"name": "22",
-			"path": "22 Below 2nd Place Entry End.vgm",
+			"path": "22 Below 2nd Place Entry End.vgz",
 			"channelMapping": [1, 0, 2, -1, 4, 5, 6, -1]
 		},
 		{
 			"name": "23",
-			"path": "23 Unused Jingle.vgm",
+			"path": "23 Unused Jingle.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 6, -1, -1]
 		},
 		{
 			"name": "24",
-			"path": "24 Start Demo (1).vgm",
+			"path": "24 Start Demo (1).vgz",
 			"channelMapping": [1, 2, 5, -1, -1, -1, -1, -1]
 		},
 		{
 			"name": "25",
-			"path": "25 Start Demo (2).vgm",
+			"path": "25 Start Demo (2).vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "26",
-			"path": "26 Extend.vgm",
+			"path": "26 Extend.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		},
 		{
 			"name": "27",
-			"path": "27 Credit.vgm",
+			"path": "27 Credit.vgz",
 			"channelMapping": [1, 0, 2, -1, 5, 4, 6, -1]
 		}
 	]

@@ -1,4 +1,6 @@
 import fs from "fs";
+import zlib from "zlib";
+import util from "util";
 import { checkTypes } from "./utils.js";
 import { Format } from "./Format.js";
 import { Track } from "./Track.js";
@@ -8,7 +10,7 @@ import { ChipOPN } from "./ChipOPN.js";
 
 export class FormatVGM extends Format {
 	async loadTrack() {
-		const vgm = await fs.promises.readFile(this.path);
+		const vgm = await loadMaybeGzipCompressed(this.path);
 		const getByte = address => vgm[address];
 		const getWord = address => getByte(address) | getByte(address + 1) << 8;
 		const getDoubleWord = address => getWord(address) | getWord(address + 2) << 16;
@@ -188,4 +190,11 @@ export class FormatVGM extends Format {
 
 		await fs.promises.writeFile(this.path, Buffer.from(data));
 	}
+}
+
+async function loadMaybeGzipCompressed(path) {
+	const vgm = await fs.promises.readFile(path);
+	if (vgm.length >= 2 && vgm[0] == 0x1f && vgm[1] == 0x8b)
+		return await util.promisify(zlib.gunzip)(vgm);
+	return vgm;
 }
