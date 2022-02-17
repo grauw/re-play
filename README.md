@@ -54,7 +54,7 @@ Music data format
 Re-play files start with a byte indicating the data format, followed by a
 command stream with events based on the data format.
 
-Data format `0` (OPM / OPNA / OPNB FM) consists of these events:
+Data format `0`: `opn` (OPM / OPNA / OPNB FM) consists of these events:
 
   * 00-7F: Key on / off event.
            Bit 0-2: channel, bit 3-6: slots.

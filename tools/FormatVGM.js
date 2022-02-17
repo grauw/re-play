@@ -8,6 +8,9 @@ import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { ChipOPN } from "./ChipOPN.js";
 
+export const FORMAT_VGM_OPM = 0x200;
+export const FORMAT_VGM_OPNB = 0x201;
+
 export class FormatVGM extends Format {
 	async loadTrack() {
 		const vgm = await loadMaybeGzipCompressed(this.path);

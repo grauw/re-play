@@ -2,8 +2,8 @@ import fs from "fs";
 import path from "path";
 import { checkTypes } from "./utils.js";
 import { Track } from "./Track.js";
-import { FormatVGM } from "./FormatVGM.js";
-import { FormatOPN } from "./FormatOPN.js";
+import { FormatVGM, FORMAT_VGM_OPM, FORMAT_VGM_OPNB } from "./FormatVGM.js";
+import { FormatOPN, FORMAT_OPN } from "./FormatOPN.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -25,8 +25,9 @@ async function main() {
 }
 
 export class Resources {
-	constructor(tickFrequency, opnbFrequency, opmFrequency) {
-		checkTypes(arguments, "number", "number", "number");
+	constructor(format, tickFrequency, opnbFrequency, opmFrequency) {
+		checkTypes(arguments, "number", "number", "number", "number");
+		this.format = format;
 		this.tracks = [];
 		this.tickFrequency = tickFrequency;
 		this.opnbFrequency = opnbFrequency;
@@ -39,20 +40,24 @@ export class Resources {
 	}
 
 	async write() {
-		return Promise.all([
-			Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGM(track.name, `bin/${track.name}-opnb.vgm`);
-				file.saveTrackOPNB(track, this.opnbFrequency);
-			})),
-			Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGM(track.name, `bin/${track.name}-opm.vgm`);
-				file.saveTrackOPM(track, this.opmFrequency);
-			})),
-			Promise.all(this.tracks.map(async track => {
+		if (this.format == FORMAT_OPN) {
+			return Promise.all(this.tracks.map(async track => {
 				const file = new FormatOPN(track.name, `bin/${track.name}.rep`);
 				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
-			}))
-		]);
+			}));
+		}
+		if (this.format == FORMAT_VGM_OPM) {
+			return Promise.all(this.tracks.map(async track => {
+				const file = new FormatVGM(track.name, `bin/${track.name}-opm.vgm`);
+				file.saveTrackOPM(track, this.opmFrequency);
+			}));
+		}
+		if (this.format == FORMAT_VGM_OPNB) {
+			return Promise.all(this.tracks.map(async track => {
+				const file = new FormatVGM(track.name, `bin/${track.name}-opnb.vgm`);
+				file.saveTrackOPNB(track, this.opnbFrequency);
+			}));
+		}
 	}
 }
 
@@ -65,7 +70,7 @@ export class ResourcesLoader {
 	async parse() {
 		const json = JSON.parse(await fs.promises.readFile(this.path));
 
-		const resources = new Resources(json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+		const resources = new Resources(formats[json.format], json.tickFrequency, json.opnbFrequency, json.opmFrequency);
 
 		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
@@ -89,6 +94,12 @@ export class ResourcesLoader {
 
 		return resources;
 	}
+}
+
+const formats = {
+	"opn": FORMAT_OPN,
+	"vgm-opm": FORMAT_VGM_OPM,
+	"vgm-opnb": FORMAT_VGM_OPNB
 }
 
 main().catch(reason => { throw reason; });
