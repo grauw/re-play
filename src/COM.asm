@@ -2,21 +2,19 @@
 ;
 ;
 BDOS: equ 0005H
-FCB1: equ 005CH
 JIFFY: equ 0FC9EH
-
-FCB_RECORD_SIZE: equ 0EH
-FCB_FILE_SIZE: equ 10H
-FCB_RANDOM_RECORD_NUMBER: equ 21H
 
 _INNOE: equ 08H
 _CONST: equ 0BH
-_FOPEN: equ 0FH
-_FCLOSE: equ 10H
-_SETDTA: equ 1AH
-_RDBLK: equ 27H
+_OPEN: equ 43H
+_CLOSE: equ 45H
+_READ: equ 48H
+_TERM: equ 62H
+_DOSVER: equ 6FH
 
-SoundData: equ 6000H
+PARAMETERS: equ 80H
+
+SoundData: equ 4000H
 
 	org 100H
 
@@ -26,28 +24,28 @@ SoundData: equ 6000H
 	INCLUDE "Memory.asm"
 
 Main:
-	ld de,FCB1
-	ld c,_FOPEN
+	call DOS_IsDOS2
+	ret c
+	ld a,(PARAMETERS)
+	cp 2
+	ld a,89H  ; .NOPAR Missing parameter
+	jp c,DOS_TerminateWithErrorCode
+	ld de,PARAMETERS + 2
+	ld a,1  ; no write
+	ld c,_OPEN
 	call BDOS
-	and a
-	ret nz
+	jp nz,DOS_TerminateWithErrorCode
+	push bc
 	ld de,SoundData
-	ld c,_SETDTA
+	ld hl,4000H
+	ld c,_READ
 	call BDOS
-	ld hl,1
-	ld (FCB1 + FCB_RECORD_SIZE),hl
-	ld hl,0
-	ld (FCB1 + FCB_RANDOM_RECORD_NUMBER),hl
-	ld (FCB1 + FCB_RANDOM_RECORD_NUMBER + 2),hl
-	ld hl,(FCB1 + FCB_FILE_SIZE)
-	ld de,FCB1
-	ld c,_RDBLK
+	jp nz,DOS_TerminateWithErrorCode
+	pop bc
+	ld c,_CLOSE
 	call BDOS
-	ld de,FCB1
-	ld c,_FCLOSE
-	call BDOS
-	and a
-	ret nz
+	jp nz,DOS_TerminateWithErrorCode
+
 	call Player_Detect
 	ld hl,SoundData
 	call Player_Play
@@ -86,4 +84,20 @@ Main_Pause:
 	jr Main_Loop
 Main_End:
 	call Player_Stop
+	ret
+
+; a = error code
+DOS_TerminateWithErrorCode:
+	ld b,a
+	ld c,_TERM
+	jp BDOS
+
+; f <- c: not DOS 2
+DOS_IsDOS2:
+	ld c,_DOSVER
+	call BDOS
+	add a,-1
+	ret c
+	ld a,b
+	cp 2
 	ret

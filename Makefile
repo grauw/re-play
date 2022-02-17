@@ -19,4 +19,4 @@ copy: all
 	diskutil umount $(COPY_TARGET)
 
 run: all
-	openmsx -machine Panasonic_FS-A1GT -ext Yamaha_SFG-05 -diska bin/ -script openmsx.tcl
+	openmsx -machine Panasonic_FS-A1GT -ext ide -ext Yamaha_SFG-05 -script openmsx.tcl
