@@ -1,5 +1,5 @@
-Ghosts ’n Goblins music converter & player
-==========================================
+Re-Play music converter & player
+================================
 
 Copyright 2020 Laurens Holst
 
@@ -7,14 +7,12 @@ Project information
 -------------------
 
   * Author: Laurens Holst <laurens@grauw.nl>
-  * Source: <https://hg.sr.ht/~grauw/gngplay>
+  * Source: <https://hg.sr.ht/~grauw/re-play>
   * License: Simplified BSD License
 
-Converts the Ghosts ’n Goblins arcade music in VGM format to a data stream
-suitable for play back on Yamaha SFG, Neotron or Makoto. The format aims to be
-both efficient for playback and small in size. Due to a compact representation
-for the most frequent event types to reduce the individual tracks are all
-below 8K and the total size is less than 64K.
+Converts music in VGM format to data streams suitable for play back on MSX
+sound chips. The formats aims to be both efficient for playback and small
+in size.
 
 
 System requirements
@@ -53,7 +51,7 @@ with VGMPlay and debugging with vgm2txt.
 Music data format
 -----------------
 
-The data format consists of five types of events:
+The GNG data format consists of five types of events:
 
   * 00-7F: Key on / off event.
            Bit 0-2: channel, bit 3-6: slots.
@@ -90,15 +88,9 @@ to use track 27 instead of track 01.
 Usage instructions
 ------------------
 
-Extract the Ghosts ’n Goblins arcade
-[VGM pack](https://vgmrips.net/packs/pack/ghosts-n-goblins-ghosts-n-goblins),
-rename the .vgz files to .vgm.gz and extract each of them again, and then put
-them in the `res/` directory. It is recommended to re-loop track 24 so that it
-becomes smaller and the loop sounds better. Use vgm_trim with parameters
-start: 0, loop: 35111, end: 364391.
-
-The `resources.json` file in the `res` directory contains a manifest of the
-files to convert and various settings.
+Put VGM files in the `res/` directory, if they are .vgz files then extract them
+to .vgm with gunzip. Add the files to the `resources.json` manifest file in the
+`res` directory and set the various settings.
 
 Then, on macOS and Linux execute the `make` command to convert the files and
 compile the replayer. Test by putting the MSX-DOS system files in the `bin/`

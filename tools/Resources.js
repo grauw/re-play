@@ -49,7 +49,7 @@ export class Resources {
 				file.saveTrackOPM(track, this.opmFrequency);
 			})),
 			Promise.all(this.tracks.map(async track => {
-				const file = new FormatGNG(track.name, `bin/${track.name}.gng`);
+				const file = new FormatGNG(track.name, `bin/${track.name}.rep`);
 				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
 			}))
 		]);

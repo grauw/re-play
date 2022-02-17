@@ -1,12 +1,12 @@
 {
-  "name": "gngplay",
+  "name": "re-play",
   "version": "0.0.0",
-  "description": "Ghosts ’n Goblins music converter & player",
+  "description": "Re-Play music converter & player",
   "author": "Laurens Holst",
   "license": "BSD-2-Clause",
   "repository": {
     "type": "hg",
-    "url": "https://hg.sr.ht/~grauw/gngplay"
+    "url": "https://hg.sr.ht/~grauw/re-play"
   },
   "type": "module",
   "dependencies": {},
