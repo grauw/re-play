@@ -5,7 +5,7 @@ import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
-export class FormatGNG extends Format {
+export class FormatOPN extends Format {
 	async saveTrack(track, tickFrequency, opnFrequency, opmFrequency) {
 		checkTypes(arguments, Track, "number", "number", "number");
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];

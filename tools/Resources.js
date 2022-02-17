@@ -3,7 +3,7 @@ import path from "path";
 import { checkTypes } from "./utils.js";
 import { Track } from "./Track.js";
 import { FormatVGM } from "./FormatVGM.js";
-import { FormatGNG } from "./FormatGNG.js";
+import { FormatOPN } from "./FormatOPN.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -49,7 +49,7 @@ export class Resources {
 				file.saveTrackOPM(track, this.opmFrequency);
 			})),
 			Promise.all(this.tracks.map(async track => {
-				const file = new FormatGNG(track.name, `bin/${track.name}.rep`);
+				const file = new FormatOPN(track.name, `bin/${track.name}.rep`);
 				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
 			}))
 		]);

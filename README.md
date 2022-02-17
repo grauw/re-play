@@ -51,7 +51,7 @@ with VGMPlay and debugging with vgm2txt.
 Music data format
 -----------------
 
-The GNG data format consists of five types of events:
+The OPN data format consists of five types of events:
 
   * 00-7F: Key on / off event.
            Bit 0-2: channel, bit 3-6: slots.
