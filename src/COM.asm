@@ -46,7 +46,10 @@ Main:
 	call BDOS
 	jp nz,DOS_TerminateWithErrorCode
 
+	ld hl,SoundData
 	call Player_Detect
+	ld a,1
+	jp nc,DOS_TerminateWithErrorCode
 	ld hl,SoundData
 	call Player_Play
 	ld a,(JIFFY)

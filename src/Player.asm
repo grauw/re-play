@@ -5,10 +5,20 @@
 	INCLUDE "Makoto.asm"
 	INCLUDE "Neotron.asm"
 
+Player_FORMAT_OPN: equ 0
+
 Player_STACK_CAPACITY: equ 128
 
+; hl = sound data
 ; f <- c: found
 Player_Detect:
+	ld a,(hl)
+	xor Player_FORMAT_OPN
+	jp z,Player_Detect_OPN
+	jp Player_Detect_Fail
+
+; f <- c: found
+Player_Detect_OPN:
 	call SFG_Detect
 	ld bc,SFG_Process
 	ld de,SFG_Mute
@@ -24,6 +34,10 @@ Player_Detect:
 	ld de,Neotron_Mute
 	ld hl,Neotron_Restore
 	jr c,Player_SetProcessAndMute
+	jp Player_Detect_Fail
+
+; f <- c: found
+Player_Detect_Fail:
 	ld a,0C9H  ; ret
 	ld (Player_Process),a
 	ld (Player_Mute),a
@@ -45,6 +59,7 @@ Player_SetProcessAndMute:
 
 ; hl = sound data
 Player_Play:
+	inc hl
 	xor a
 	ld (Player_playing),a
 	ld (Player_position),hl

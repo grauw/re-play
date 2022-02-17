@@ -5,6 +5,8 @@ import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
+export const FORMAT_OPN = 0x00;
+
 export class FormatOPN extends Format {
 	async saveTrack(track, tickFrequency, opnFrequency, opmFrequency) {
 		checkTypes(arguments, Track, "number", "number", "number");
@@ -12,7 +14,7 @@ export class FormatOPN extends Format {
 		let ticks = 0;
 		const symbols = new Map();
 		const rewrites = [];
-		const data = [];
+		const data = [FORMAT_OPN];
 		for (const command of track.commands) {
 			if (command instanceof CommandFMKey) {
 				data.push(0x00 | command.slots << 3 | command.channel);

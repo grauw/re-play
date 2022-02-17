@@ -51,7 +51,10 @@ with VGMPlay and debugging with vgm2txt.
 Music data format
 -----------------
 
-The OPN data format consists of five types of events:
+Re-play files start with a byte indicating the data format, followed by a
+command stream with events based on the data format.
+
+Data format `0` (OPM / OPNA / OPNB FM) consists of these events:
 
   * 00-7F: Key on / off event.
            Bit 0-2: channel, bit 3-6: slots.
