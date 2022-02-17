@@ -47,6 +47,12 @@ export class FormatVGM extends Format {
 					track.addCommand(CommandReturn.of());
 				}
 				break;
+			} else if (type == 0x67) {
+				if (getByte(address++) != 0x66)
+					throw new Error(`Invalid data block sequence at address ${(address - 1).toString(16)}`);
+				const dataType = getByte(address++);
+				const dataSize = getDoubleWord(address);
+				address += 4 + dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));
 			} else {
