@@ -62,14 +62,14 @@ Player_Play:
 	inc hl
 	xor a
 	ld (Player_playing),a
-	ld (Player_position),hl
-	ld hl,Player_stack
-	ld (hl),Player_infiniteLoop
-	inc hl
-	ld (hl),Player_infiniteLoop >> 8
-	inc hl
-	ld (Player_stackPointer),hl
-	inc a
+	ld ix,Player_stack
+	push hl
+	ld hl,Player_infiniteLoop
+	call Player_Push
+	pop hl
+	call Player_Push
+	ld (Player_stackPointer),ix
+	ld a,1
 	ld (Player_wait),a
 	ld (Player_playing),a
 	ret
@@ -100,10 +100,10 @@ Player_Tick:
 	dec (hl)
 	ret nz
 	ld ix,(Player_stackPointer)
-	ld hl,(Player_position)
+	call Player_Pop
 	call Player_Process
 	ld (Player_wait),a
-	ld (Player_position),hl
+	call Player_Push
 	ld (Player_stackPointer),ix
 	ret
 
@@ -123,16 +123,29 @@ Player_Call:
 	inc hl
 	ld d,(hl)
 	inc hl
-	ld (ix + 0),l
-	ld (ix + 1),h
-	inc ix
-	inc ix
+	call Player_Push
 	add hl,de
 	ret
 
 ; hl = sound data
 ; ix = stack pointer
 Player_Return:
+	jp Player_Pop
+
+; hl = value
+; ix = stack pointer
+; ix <- stack pointer
+Player_Push:
+	ld (ix + 0),l
+	ld (ix + 1),h
+	inc ix
+	inc ix
+	ret
+
+; ix = stack pointer
+; hl <- value
+; ix <- stack pointer
+Player_Pop:
 	dec ix
 	dec ix
 	ld l,(ix + 0)
@@ -142,8 +155,6 @@ Player_Return:
 ; Data in RAM
 Player_playing:
 	db 0
-Player_position:
-	dw 0
 Player_wait:
 	db 0
 Player_stackPointer:
