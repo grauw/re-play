@@ -2,8 +2,9 @@ import fs from "fs";
 import path from "path";
 import { checkTypes } from "./utils.js";
 import { Track } from "./Track.js";
-import { FormatVGM, FORMAT_VGM_OPM, FORMAT_VGM_OPNB } from "./FormatVGM.js";
 import { FormatOPN, FORMAT_OPN } from "./FormatOPN.js";
+import { FormatText, FORMAT_TEXT } from "./FormatText.js";
+import { FormatVGM, FORMAT_VGM_OPM, FORMAT_VGM_OPNB } from "./FormatVGM.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -44,6 +45,12 @@ export class Resources {
 			return Promise.all(this.tracks.map(async track => {
 				const file = new FormatOPN(track.name, `bin/${track.name}.rep`);
 				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
+			}));
+		}
+		if (this.format == FORMAT_TEXT) {
+			return Promise.all(this.tracks.map(async track => {
+				const file = new FormatText(track.name, `bin/${track.name}.txt`);
+				file.saveTrack(track);
 			}));
 		}
 		if (this.format == FORMAT_VGM_OPM) {
@@ -98,6 +105,7 @@ export class ResourcesLoader {
 
 const formats = {
 	"opn": FORMAT_OPN,
+	"text": FORMAT_TEXT,
 	"vgm-opm": FORMAT_VGM_OPM,
 	"vgm-opnb": FORMAT_VGM_OPNB
 }

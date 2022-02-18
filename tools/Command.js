@@ -3,6 +3,10 @@ import { checkTypes, MemoConstructor } from "./utils.js";
 export class Command {
 	constructor() {
 	}
+
+	toString() {
+		return `Command`;
+	}
 }
 
 export class CommandWait extends Command {
@@ -28,6 +32,10 @@ export class CommandWait extends Command {
 			throw new Error("Base timing frequency mismatch.");
 		return CommandWait.of(this.time + other.time, this.tickFrequency);
 	}
+
+	toString() {
+		return `Wait ${this.time} / ${this.tickFrequency} s`;
+	}
 }
 
 const commandWaitMemo = new MemoConstructor(CommandWait);
@@ -41,6 +49,10 @@ export class CommandLabel extends Command {
 
 	static of(name) {
 		return commandLabelMemo.get(name);
+	}
+
+	toString() {
+		return `Label ${this.name}`;
 	}
 }
 
@@ -56,6 +68,10 @@ export class CommandJump extends Command {
 	static of(target) {
 		return commandJumpMemo.get(target);
 	}
+
+	toString() {
+		return `Jump ${this.target}`;
+	}
 }
 
 const commandJumpMemo = new MemoConstructor(CommandJump);
@@ -70,6 +86,10 @@ export class CommandCall extends Command {
 	static of(target) {
 		return commandCallMemo.get(target);
 	}
+
+	toString() {
+		return `Call ${this.target}`;
+	}
 }
 
 const commandCallMemo = new MemoConstructor(CommandCall);
@@ -77,6 +97,10 @@ const commandCallMemo = new MemoConstructor(CommandCall);
 export class CommandReturn extends Command {
 	static of() {
 		return commandReturnMemo;
+	}
+
+	toString() {
+		return `Return`;
 	}
 }
 

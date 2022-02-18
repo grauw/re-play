@@ -2,6 +2,9 @@ import { checkTypes, MemoConstructor } from "./utils.js";
 import { Command } from "./Command.js";
 
 export class CommandFM extends Command {
+	toString() {
+		return `FM`;
+	}
 }
 
 export class CommandFMChannel extends CommandFM {
@@ -11,6 +14,10 @@ export class CommandFMChannel extends CommandFM {
 			throw new Error("Channel out of range.");
 		super();
 		this.channel = channel;
+	}
+
+	toString() {
+		return `FMChannel ${this.channel}`;
 	}
 }
 
@@ -23,6 +30,10 @@ export class CommandFMKey extends CommandFMChannel {
 
 	static of(channel, slots) {
 		return commandFMKeyMemo.get(channel, slots);
+	}
+
+	toString() {
+		return `FMKey ${this.channel}: ${("000" + this.slots.toString(2)).slice(-4)}`;
 	}
 }
 
@@ -64,6 +75,10 @@ export class CommandFMFrequency extends CommandFMChannel {
 			throw new Error("FNum out of range.");
 		return CommandFMFrequency.of(channel, fNum * (opnFrequency / (24 << 21)));
 	}
+
+	toString() {
+		return `FMFrequency ${this.channel}: ${this.frequency} Hz`;
+	}
 }
 
 const commandFMFrequencyMemo = new MemoConstructor(CommandFMFrequency);
@@ -97,6 +112,10 @@ export class CommandFMInstrument extends CommandFMChannel {
 				parameters[7] = attenuate(parameters[7], dB);
 		}
 		return CommandFMInstrument.of(this.channel, ...parameters);
+	}
+
+	toString() {
+		return `FMInstrument ${this.channel}: ${this.parameters.map(p => ("0" + p.toString(16)).slice(-2)).join(", ")}`;
 	}
 }
 
