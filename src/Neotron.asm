@@ -78,34 +78,19 @@ Neotron_Process_Loop:
 
 ; hl = sound data
 Neotron_Jump:
-	ld e,(hl)
-	inc hl
-	ld d,(hl)
-	inc hl
-	add hl,de
+	call Player_Jump
 	jp Neotron_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 Neotron_Call:
-	ld e,(hl)
-	inc hl
-	ld d,(hl)
-	inc hl
-	ld (ix + 0),l
-	ld (ix + 1),h
-	inc ix
-	inc ix
-	add hl,de
+	call Player_Call
 	jp Neotron_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 Neotron_Return:
-	dec ix
-	dec ix
-	ld l,(ix + 0)
-	ld h,(ix + 1)
+	call Player_Return
 	jp Neotron_Process_Loop
 
 ; hl = sound data

@@ -107,6 +107,38 @@ Player_Tick:
 	ld (Player_stackPointer),ix
 	ret
 
+; hl = sound data
+Player_Jump:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	add hl,de
+	ret
+
+; hl = sound data
+; ix = stack pointer
+Player_Call:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	ld (ix + 0),l
+	ld (ix + 1),h
+	inc ix
+	inc ix
+	add hl,de
+	ret
+
+; hl = sound data
+; ix = stack pointer
+Player_Return:
+	dec ix
+	dec ix
+	ld l,(ix + 0)
+	ld h,(ix + 1)
+	ret
+
 ; Data in RAM
 Player_playing:
 	db 0
