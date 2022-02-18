@@ -70,9 +70,9 @@ Player_Play:
 	pop hl
 	pop af
 	call Player_Push
-	ld (Player_stackPointer),ix
 	ld a,1
-	ld (Player_wait),a
+	ld (ix),a
+	ld (Player_stackPointer),ix
 	ld (Player_playing),a
 	ret
 
@@ -98,18 +98,18 @@ Player_Tick:
 	ld a,(Player_playing)
 	and a
 	ret z
-	ld hl,Player_wait
-	dec (hl)
+	ld ix,(Player_stackPointer)
+	dec (ix)
 	ret nz
 	call Mapper_GetBank
 	push af
-	ld ix,(Player_stackPointer)
 	call Player_Pop
 	call Mapper_SetBank
 	call Player_Process
-	ld (Player_wait),a
+	ld b,a
 	call Mapper_GetBank
 	call Player_Push
+	ld (ix),b
 	ld (Player_stackPointer),ix
 	pop af
 	call Mapper_SetBank
@@ -176,12 +176,10 @@ Player_Pop:
 ; Data in RAM
 Player_playing:
 	db 0
-Player_wait:
-	db 0
 Player_stackPointer:
 	dw Player_stack
 Player_stack:
-	ds Player_STACK_CAPACITY * 3
+	ds Player_STACK_CAPACITY * 3 + 1
 Player_infiniteLoop:
 	db 0FFH, 90H, 0FCH, 0FFH, 0FFH
 Player_instruments:
