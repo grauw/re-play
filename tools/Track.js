@@ -1,23 +1,19 @@
-import { checkTypes, peek } from "./utils.js";
-import { Command } from "./Command.js";
+import { peek } from "./utils.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class Track {
 	constructor(name) {
-		checkTypes(arguments, "string");
 		this.name = name;
 		this.commands = [];
 		this.symbols = new Map();
 	}
 
 	getSymbol(name) {
-		checkTypes(arguments, "string");
 		return this.symbols.get(name);
 	}
 
 	addCommand(command) {
-		checkTypes(arguments, Command);
 		if (command instanceof CommandWait && peek(this.commands) instanceof CommandWait) {
 			command = command.add(this.commands.pop());
 		} else if (command instanceof CommandLabel) {
@@ -50,7 +46,6 @@ export class Track {
 	}
 
 	addCommands(commands) {
-		checkTypes(arguments, Array);
 		for (const command of commands)
 			this.addCommand(command);
 	}
@@ -72,7 +67,6 @@ export class Track {
 	}
 
 	removeWaitsUnder(threshold) {
-		checkTypes(arguments, "number");
 		const track = new Track(this.name);
 		let accumulator = 0;
 		for (const command of this.commands) {
@@ -97,7 +91,6 @@ export class Track {
 	}
 
 	quantise(newTickFrequency) {
-		checkTypes(arguments, "number");
 		const track = new Track(this.name);
 		let time = 0;
 		for (const command of this.commands) {
@@ -127,7 +120,6 @@ export class Track {
 	}
 
 	mapChannels(mapping) {
-		checkTypes(arguments, Array);
 		const track = new Track(this.name);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMChannel) {
@@ -149,7 +141,6 @@ export class Track {
 	}
 
 	attenuateVolume(dB) {
-		checkTypes(arguments, "number");
 		const track = new Track(this.name);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMInstrument) {
@@ -201,7 +192,6 @@ export class Track {
 
 export class Symbol {
 	constructor(name, position, command) {
-		checkTypes(arguments, "string", "number", Command);
 		this.name = name;
 		this.position = position;
 		this.command = command;

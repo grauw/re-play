@@ -1,7 +1,5 @@
 import fs from "fs";
-import { checkTypes } from "./utils.js";
 import { Format } from "./Format.js";
-import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
@@ -9,7 +7,6 @@ export const FORMAT_OPN = 0x00;
 
 export class FormatOPN extends Format {
 	async saveTrack(track, tickFrequency, opnFrequency, opmFrequency) {
-		checkTypes(arguments, Track, "number", "number", "number");
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 		let ticks = 0;
 		const symbols = new Map();

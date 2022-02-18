@@ -1,16 +1,13 @@
-import { checkTypes } from "./utils.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class ChipOPN {
 	constructor(clockFrequency) {
-		checkTypes(arguments, "number");
 		this.clockFrequency = clockFrequency * 2;
 		this.clockDividers = [6, 6];
 		this.registers = new Array(512).fill(0);
 	}
 
 	writeRegister(address, value, emit) {
-		checkTypes(arguments, "number", "number", Function);
 		const addressLow = address & 0xFF;
 		const addressHigh = address >>> 8;
 		if (addressHigh >= 2 || addressLow >= 0xC0)

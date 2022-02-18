@@ -1,7 +1,6 @@
 import fs from "fs";
 import zlib from "zlib";
 import util from "util";
-import { checkTypes } from "./utils.js";
 import { Format } from "./Format.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
@@ -68,7 +67,6 @@ export class FormatVGM extends Format {
 	}
 
 	async saveTrackOPNB(track, opnbFrequency) {
-		checkTypes(arguments, Track, "number");
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -140,7 +138,6 @@ export class FormatVGM extends Format {
 	}
 
 	async saveTrackOPM(track, opmFrequency) {
-		checkTypes(arguments, Track, "number");
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;

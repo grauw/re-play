@@ -1,4 +1,4 @@
-import { checkTypes, MemoConstructor } from "./utils.js";
+import { MemoConstructor } from "./utils.js";
 import { Command } from "./Command.js";
 
 export class CommandFM extends Command {
@@ -9,7 +9,6 @@ export class CommandFM extends Command {
 
 export class CommandFMChannel extends CommandFM {
 	constructor(channel) {
-		checkTypes(arguments, "number");
 		if (channel < 0 || channel >= 8)
 			throw new Error("Channel out of range.");
 		super();
@@ -23,7 +22,6 @@ export class CommandFMChannel extends CommandFM {
 
 export class CommandFMKey extends CommandFMChannel {
 	constructor(channel, slots) {
-		checkTypes(arguments, "number", "number");
 		super(channel);
 		this.slots = slots;
 	}
@@ -41,7 +39,6 @@ const commandFMKeyMemo = new MemoConstructor(CommandFMKey);
 
 export class CommandFMFrequency extends CommandFMChannel {
 	constructor(channel, frequency) {
-		checkTypes(arguments, "number", "number");
 		super(channel);
 		this.frequency = frequency;
 	}
@@ -51,7 +48,6 @@ export class CommandFMFrequency extends CommandFMChannel {
 	}
 
 	getFNumBlock(opnFrequency) {
-		checkTypes(arguments, "number");
 		const fNum = Math.min(this.frequency * ((24 << 21) / opnFrequency), 0x3FFFF);
 		const block = Math.max(Math.floor(Math.log2(fNum) - 10), 0);
 		const fNumRounded = fNum + Math.pow(2, block - 1);
@@ -60,7 +56,6 @@ export class CommandFMFrequency extends CommandFMChannel {
 	}
 
 	getKeyCodeFraction(opmFrequency) {
-		checkTypes(arguments, "number");
 		const logarithm = Math.log2(this.frequency / 440 * (3579545 / opmFrequency)) + 4 + 8 / 12;
 		const keyFraction = Math.min(Math.max(Math.round(logarithm * 12 * 64), 0), 8 * 12 * 64 - 1);
 		const note = Math.floor(keyFraction / 64);
@@ -70,7 +65,6 @@ export class CommandFMFrequency extends CommandFMChannel {
 	}
 
 	static ofFNum(channel, fNum, opnFrequency) {
-		checkTypes(arguments, "number", "number", "number");
 		if (fNum < 0 || fNum > 0x3FFFF)
 			throw new Error("FNum out of range.");
 		return CommandFMFrequency.of(channel, fNum * (opnFrequency / (24 << 21)));
@@ -85,7 +79,6 @@ const commandFMFrequencyMemo = new MemoConstructor(CommandFMFrequency);
 
 export class CommandFMInstrument extends CommandFMChannel {
 	constructor(channel, ...parameters) {
-		checkTypes(arguments, "number");
 		if (parameters.length != 25)
 			throw new Error("Incorrect number of parameters.");
 		super(channel);
@@ -97,7 +90,6 @@ export class CommandFMInstrument extends CommandFMChannel {
 	}
 
 	attenuateVolume(dB) {
-		checkTypes(arguments, "number");
 		const attenuate = (level, dB) => Math.min(Math.max(Math.round(level - dB * 8 / 6), 0), 127);
 		const parameters = this.parameters.slice(0);
 		switch (parameters[24] & 7) {

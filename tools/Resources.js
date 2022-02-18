@@ -1,7 +1,5 @@
 import fs from "fs";
 import path from "path";
-import { checkTypes } from "./utils.js";
-import { Track } from "./Track.js";
 import { FormatOPN, FORMAT_OPN } from "./FormatOPN.js";
 import { FormatText, FORMAT_TEXT } from "./FormatText.js";
 import { FormatVGM, FORMAT_VGM_OPM, FORMAT_VGM_OPNB } from "./FormatVGM.js";
@@ -27,7 +25,6 @@ async function main() {
 
 export class Resources {
 	constructor(format, tickFrequency, opnbFrequency, opmFrequency) {
-		checkTypes(arguments, "number", "number", "number", "number");
 		this.format = format;
 		this.tracks = [];
 		this.tickFrequency = tickFrequency;
@@ -36,7 +33,6 @@ export class Resources {
 	}
 
 	addTrack(track) {
-		checkTypes(arguments, Track);
 		this.tracks.push(track);
 	}
 
@@ -70,7 +66,6 @@ export class Resources {
 
 export class ResourcesLoader {
 	constructor(path) {
-		checkTypes(arguments, "string");
 		this.path = path;
 	}
 
