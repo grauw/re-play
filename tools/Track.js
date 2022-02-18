@@ -66,7 +66,7 @@ export class Track {
 		}
 	}
 
-	removeWaitsUnder(threshold) {
+	removeWaitsUnder(threshold = 0) {
 		const track = new Track(this.name);
 		let accumulator = 0;
 		for (const command of this.commands) {
@@ -90,7 +90,7 @@ export class Track {
 		return track;
 	}
 
-	quantise(newTickFrequency) {
+	quantise(newTickFrequency = 315000000 / 5256768) {
 		const track = new Track(this.name);
 		let time = 0;
 		for (const command of this.commands) {
@@ -119,7 +119,7 @@ export class Track {
 		return track;
 	}
 
-	mapChannels(mapping) {
+	mapChannels(mapping = [0, 1, 2, 3, 4, 5, 6, 7]) {
 		const track = new Track(this.name);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMChannel) {
@@ -140,7 +140,7 @@ export class Track {
 		return track;
 	}
 
-	attenuateVolume(dB) {
+	attenuateVolume(dB = 0) {
 		const track = new Track(this.name);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMInstrument) {
