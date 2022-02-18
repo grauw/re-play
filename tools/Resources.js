@@ -93,7 +93,7 @@ export class ResourcesLoader {
 	parseFormat(json) {
 		switch (json.format) {
 			case "opn":
-				return new FormatOPN(json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+				return new FormatOPN(json.bankSize, json.tickFrequency, json.opnbFrequency, json.opmFrequency);
 			case "text":
 				return new FormatText();
 			case "vgm-opm":
