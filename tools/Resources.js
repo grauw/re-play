@@ -39,26 +39,26 @@ export class Resources {
 	async write() {
 		if (this.format == FORMAT_OPN) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatOPN(track.name, `bin/${track.name}.rep`);
-				file.saveTrack(track, this.tickFrequency, this.opnbFrequency, this.opmFrequency);
+				const file = new FormatOPN(this.tickFrequency, this.opnbFrequency, this.opmFrequency);
+				file.saveTrack(track, `bin/${track.name}.rep`);
 			}));
 		}
 		if (this.format == FORMAT_TEXT) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatText(track.name, `bin/${track.name}.txt`);
-				file.saveTrack(track);
+				const file = new FormatText();
+				file.saveTrack(track, `bin/${track.name}.txt`);
 			}));
 		}
 		if (this.format == FORMAT_VGM_OPM) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGM(track.name, `bin/${track.name}-opm.vgm`);
-				file.saveTrackOPM(track, this.opmFrequency);
+				const file = new FormatVGMOPM(this.opmFrequency);
+				file.saveTrack(track, `bin/${track.name}-opm.vgm`);
 			}));
 		}
 		if (this.format == FORMAT_VGM_OPNB) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGM(track.name, `bin/${track.name}-opnb.vgm`);
-				file.saveTrackOPNB(track, this.opnbFrequency);
+				const file = new FormatVGMOPNB(this.opnbFrequency);
+				file.saveTrack(track, `bin/${track.name}-opnb.vgm`);
 			}));
 		}
 	}
@@ -76,7 +76,7 @@ export class ResourcesLoader {
 
 		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
-			const track = await new FormatVGM(jsonTrack.name, trackPath).loadTrack();
+			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name);
 			const waitThreshold = "waitThreshold" in jsonTrack ? jsonTrack.waitThreshold : json.waitThreshold || 0;
 			const channelMapping = "channelMapping" in jsonTrack ? jsonTrack.channelMapping : json.channelMapping || [0, 1, 2, 3, 4, 5, 6, 7];
 			const attenuation = "attenuation" in jsonTrack ? jsonTrack.attenuation : json.attenuation || 0;

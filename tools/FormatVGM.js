@@ -11,16 +11,14 @@ export const FORMAT_VGM_OPM = 0x200;
 export const FORMAT_VGM_OPNB = 0x201;
 
 export class FormatVGM extends Format {
-	async loadTrack() {
-		const vgm = await fs.promises.readFile(this.path);
-		if (vgm[0] == 0x1f && vgm[1] == 0x8b) {  // gzip magic number
-			return this.readTrack(await util.promisify(zlib.gunzip)(vgm));
-		} else {
-			return this.readTrack(vgm);
-		}
+	async loadTrack(path, name) {
+		let vgm = await fs.promises.readFile(path);
+		if (vgm[0] == 0x1f && vgm[1] == 0x8b)  // gzip magic number
+			vgm = await util.promisify(zlib.gunzip)(vgm);
+		return this.readTrack(vgm, name);
 	}
 
-	readTrack(vgm) {
+	readTrack(vgm, name) {
 		const getByte = address => vgm[address];
 		const getWord = address => getByte(address) | getByte(address + 1) << 8;
 		const getDoubleWord = address => getWord(address) | getWord(address + 2) << 16;
@@ -31,7 +29,7 @@ export class FormatVGM extends Format {
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
 		const opn = new ChipOPN(version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0);
 		const tickFrequency = 44100;
-		const track = new Track(this.name);
+		const track = new Track(name);
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop)
@@ -73,13 +71,20 @@ export class FormatVGM extends Format {
 		}
 		return track;
 	}
+}
 
-	async saveTrackOPNB(track, opnbFrequency) {
-		const data = this.writeTrackOPNB(track, opnbFrequency);
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+export class FormatVGMOPNB extends Format {
+	constructor(opnbFrequency) {
+		super();
+		this.opnbFrequency = opnbFrequency;
 	}
 
-	writeTrackOPNB(track, opnbFrequency) {
+	async saveTrack(track, path) {
+		const data = this.writeTrack(track);
+		await fs.promises.writeFile(path, Buffer.from(data));
+	}
+
+	writeTrack(track) {
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -88,7 +93,7 @@ export class FormatVGM extends Format {
 			if (command instanceof CommandFMKey) {
 				commandData.push(0x58, 0x28, command.slots << 4 | command.channel);
 			} else if (command instanceof CommandFMFrequency) {
-				const fNumBlock = command.getFNumBlock(opnbFrequency / 6);
+				const fNumBlock = command.getFNumBlock(this.opnbFrequency / 6);
 				commandData.push(0x58 + (command.channel >> 2), 0xA4 + (command.channel & 3), fNumBlock >> 8);
 				commandData.push(0x58 + (command.channel >> 2), 0xA0 + (command.channel & 3), fNumBlock & 0xFF);
 			} else if (command instanceof CommandFMInstrument) {
@@ -131,8 +136,8 @@ export class FormatVGM extends Format {
 		data.push(0x00, 0x00, 0x00, 0x00);  // 40 RF5C68 clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 44 YM2203 clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 48 YM2608 clock
-		// data.push(...doubleWord(opnbFrequency | Math.pow(2, 31)));  // 4C YM2610 / YM2610B clock
-		data.push(...doubleWord(opnbFrequency));  // 4C YM2610 / YM2610B clock
+		// data.push(...doubleWord(this.opnbFrequency | Math.pow(2, 31)));  // 4C YM2610 / YM2610B clock
+		data.push(...doubleWord(this.opnbFrequency));  // 4C YM2610 / YM2610B clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 50 YM3812 clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 54 YM3526 clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 58 Y8950 clock
@@ -148,13 +153,20 @@ export class FormatVGM extends Format {
 		data.push(...commandData);
 		return data;
 	}
+}
 
-	async saveTrackOPM(track, opmFrequency) {
-		const data = this.writeTrackOPM(track, opmFrequency);
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+export class FormatVGMOPM extends Format {
+	constructor(opmFrequency) {
+		super();
+		this.opmFrequency = opmFrequency;
 	}
 
-	writeTrackOPM(track, opmFrequency) {
+	async saveTrack(track, path) {
+		const data = this.writeTrack(track);
+		await fs.promises.writeFile(path, Buffer.from(data));
+	}
+
+	writeTrack(track) {
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -163,7 +175,7 @@ export class FormatVGM extends Format {
 			if (command instanceof CommandFMKey) {
 				commandData.push(0x54, 0x08, command.slots << 3 | command.channel);
 			} else if (command instanceof CommandFMFrequency) {
-				const keyCodeFraction = command.getKeyCodeFraction(opmFrequency);
+				const keyCodeFraction = command.getKeyCodeFraction(this.opmFrequency);
 				commandData.push(0x54, 0x30 + command.channel, keyCodeFraction & 0xFF);
 				commandData.push(0x54, 0x28 + command.channel, keyCodeFraction >> 8);
 			} else if (command instanceof CommandFMInstrument) {
@@ -199,7 +211,7 @@ export class FormatVGM extends Format {
 		data.push(0x00, 0x00, 0x00, 0x00);  // 24 Rate
 		data.push(0x00, 0x00, 0x00, 0x00);  // 28 SN76489 flags
 		data.push(0x00, 0x00, 0x00, 0x00);  // 2C YM2612 / YM3438 clock
-		data.push(...doubleWord(opmFrequency));  // 30 YM2151 / YM2164 clock
+		data.push(...doubleWord(this.opmFrequency));  // 30 YM2151 / YM2164 clock
 		data.push(...doubleWord(0x40 - 0x34));  // 34 VGM data offset
 		data.push(0x00, 0x00, 0x00, 0x00);  // 38 Sega PCM clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 3C Sega PCM interface register

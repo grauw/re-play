@@ -6,12 +6,19 @@ import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./Command
 export const FORMAT_OPN = 0x00;
 
 export class FormatOPN extends Format {
-	async saveTrack(track, tickFrequency, opnFrequency, opmFrequency) {
-		const data = this.writeTrack(track, tickFrequency, opnFrequency, opmFrequency);
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+	constructor(tickFrequency, opnFrequency, opmFrequency) {
+		super();
+		this.tickFrequency = tickFrequency;
+		this.opnFrequency = opnFrequency;
+		this.opmFrequency = opmFrequency;
 	}
 
-	writeTrack(track, tickFrequency, opnFrequency, opmFrequency) {
+	async saveTrack(track, path) {
+		const data = this.writeTrack(track);
+		await fs.promises.writeFile(path, Buffer.from(data));
+	}
+
+	writeTrack(track) {
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 		let ticks = 0;
 		const symbols = new Map();
@@ -21,13 +28,13 @@ export class FormatOPN extends Format {
 			if (command instanceof CommandFMKey) {
 				data.push(0x00 | command.slots << 3 | command.channel);
 			} else if (command instanceof CommandFMFrequency) {
-				const keyCodeFraction = command.getKeyCodeFraction(opmFrequency);
-				const fNumBlock = command.getFNumBlock(opnFrequency / 6);
+				const keyCodeFraction = command.getKeyCodeFraction(this.opmFrequency);
+				const fNumBlock = command.getFNumBlock(this.opnFrequency / 6);
 				data.push(0x80 + command.channel, ...word(keyCodeFraction), fNumBlock >> 8, fNumBlock & 0xFF);
 			} else if (command instanceof CommandFMInstrument) {
 				data.push(0x88 + command.channel, ...command.parameters);
 			} else if (command instanceof CommandWait) {
-				ticks += command.getTime(tickFrequency);
+				ticks += command.getTime(this.tickFrequency);
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
 					data.push(0x92 + waitTicks);
