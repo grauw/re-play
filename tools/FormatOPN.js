@@ -4,7 +4,7 @@ import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } fr
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { BankedData } from "./BankedData.js";
 
-const FORMAT_OPN = 0x00;
+const FORMAT_OPN_ID = 0x00;
 
 export class FormatOPN extends Format {
 	constructor(bankSize, tickFrequency = 315000000 / 5256768, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
@@ -25,7 +25,7 @@ export class FormatOPN extends Format {
 
 		let ticks = 0;
 		const data = new BankedData(this.bankSize, [0x90, 0, 0, 0]);
-		data.add(FORMAT_OPN);
+		data.add(FORMAT_OPN_ID);
 		for (const command of track.commands) {
 			if (command instanceof CommandFMKey) {
 				data.add(0x00 | command.slots << 3 | command.channel);

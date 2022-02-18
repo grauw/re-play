@@ -1,40 +1,24 @@
 ;
 ;
 ;
-	INCLUDE "SFG.asm"
-	INCLUDE "Makoto.asm"
-	INCLUDE "Neotron.asm"
-
-Player_FORMAT_OPN: equ 0
+	INCLUDE "FormatOPN.asm"
 
 Player_STACK_CAPACITY: equ 128
 
 ; hl = sound data
 ; f <- c: found
 Player_Detect:
-	ld a,(hl)
-	xor Player_FORMAT_OPN
-	jp z,Player_Detect_OPN
+	call Player_Detect_Format
+	jp c,Player_SetProcessAndMute
 	jp Player_Detect_Fail
 
+; hl = sound data
 ; f <- c: found
-Player_Detect_OPN:
-	call SFG_Detect
-	ld bc,SFG_Process
-	ld de,SFG_Mute
-	ld hl,SFG_Restore
-	jr c,Player_SetProcessAndMute
-	call Makoto_Detect
-	ld bc,Makoto_Process
-	ld de,Makoto_Mute
-	ld hl,Makoto_Restore
-	jr c,Player_SetProcessAndMute
-	call Neotron_Detect
-	ld bc,Neotron_Process
-	ld de,Neotron_Mute
-	ld hl,Neotron_Restore
-	jr c,Player_SetProcessAndMute
-	jp Player_Detect_Fail
+Player_Detect_Format:
+	ld a,FormatOPN_ID
+	xor (hl)
+	jp z,FormatOPN_Detect
+	ret
 
 ; f <- c: found
 Player_Detect_Fail:
@@ -182,8 +166,6 @@ Player_stack:
 	ds Player_STACK_CAPACITY * 3 + 1
 Player_infiniteLoop:
 	db 0FFH, 90H, 0FCH, 0FFH, 0FFH
-Player_instruments:
-	ds 8 * 2
 Player_Process:
 	db 0C9H, 0, 0
 Player_Mute:

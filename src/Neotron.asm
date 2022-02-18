@@ -146,7 +146,7 @@ Neotron_Instrument:
 	ex de,hl
 	ld c,a
 	ld b,0
-	ld hl,Player_instruments
+	ld hl,FormatOPN_instruments
 	add hl,bc
 	add hl,bc
 	ld (hl),e
@@ -230,7 +230,7 @@ Neotron_Restore:
 	call ENASLT
 	ei
 	ld a,0
-	ld hl,Player_instruments
+	ld hl,FormatOPN_instruments
 Neotron_Restore_Loop:
 	ld e,(hl)
 	inc hl
