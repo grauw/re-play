@@ -3,10 +3,10 @@ import { Format } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
-export const FORMAT_OPN = 0x00;
+const FORMAT_OPN = 0x00;
 
 export class FormatOPN extends Format {
-	constructor(tickFrequency, opnFrequency, opmFrequency) {
+	constructor(tickFrequency = 315000000 / 5256768, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
 		super();
 		this.tickFrequency = tickFrequency;
 		this.opnFrequency = opnFrequency;

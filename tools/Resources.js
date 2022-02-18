@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { FormatOPN, FORMAT_OPN } from "./FormatOPN.js";
-import { FormatText, FORMAT_TEXT } from "./FormatText.js";
-import { FormatVGM, FORMAT_VGM_OPM, FORMAT_VGM_OPNB } from "./FormatVGM.js";
+import { FormatOPN } from "./FormatOPN.js";
+import { FormatText } from "./FormatText.js";
+import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 
 async function main() {
 	if (process.argv.length < 3) {
@@ -24,12 +24,9 @@ async function main() {
 }
 
 export class Resources {
-	constructor(format, tickFrequency, opnbFrequency, opmFrequency) {
+	constructor(format) {
 		this.format = format;
 		this.tracks = [];
-		this.tickFrequency = tickFrequency;
-		this.opnbFrequency = opnbFrequency;
-		this.opmFrequency = opmFrequency;
 	}
 
 	addTrack(track) {
@@ -37,28 +34,24 @@ export class Resources {
 	}
 
 	async write() {
-		if (this.format == FORMAT_OPN) {
+		if (this.format instanceof FormatOPN) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatOPN(this.tickFrequency, this.opnbFrequency, this.opmFrequency);
-				file.saveTrack(track, `bin/${track.name}.rep`);
+				await this.format.saveTrack(track, `bin/${track.name}.rep`);
 			}));
 		}
-		if (this.format == FORMAT_TEXT) {
+		if (this.format instanceof FormatText) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatText();
-				file.saveTrack(track, `bin/${track.name}.txt`);
+				await this.format.saveTrack(track, `bin/${track.name}.txt`);
 			}));
 		}
-		if (this.format == FORMAT_VGM_OPM) {
+		if (this.format instanceof FormatVGMOPM) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGMOPM(this.opmFrequency);
-				file.saveTrack(track, `bin/${track.name}-opm.vgm`);
+				await this.format.saveTrack(track, `bin/${track.name}-opm.vgm`);
 			}));
 		}
-		if (this.format == FORMAT_VGM_OPNB) {
+		if (this.format instanceof FormatVGMOPNB) {
 			return Promise.all(this.tracks.map(async track => {
-				const file = new FormatVGMOPNB(this.opnbFrequency);
-				file.saveTrack(track, `bin/${track.name}-opnb.vgm`);
+				await this.format.saveTrack(track, `bin/${track.name}-opnb.vgm`);
 			}));
 		}
 	}
@@ -72,7 +65,7 @@ export class ResourcesLoader {
 	async parse() {
 		const json = JSON.parse(await fs.promises.readFile(this.path));
 
-		const resources = new Resources(formats[json.format], json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+		const resources = new Resources(this.parseFormat(json));
 
 		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
@@ -96,13 +89,21 @@ export class ResourcesLoader {
 
 		return resources;
 	}
-}
 
-const formats = {
-	"opn": FORMAT_OPN,
-	"text": FORMAT_TEXT,
-	"vgm-opm": FORMAT_VGM_OPM,
-	"vgm-opnb": FORMAT_VGM_OPNB
+	parseFormat(json) {
+		switch (json.format) {
+			case "opn":
+				return new FormatOPN(json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+			case "text":
+				return new FormatText();
+			case "vgm-opm":
+				return new FormatVGMOPM(json.opmFrequency);
+			case "vgm-opnb":
+				return new FormatVGMOPNB(json.opnbFrequency);
+			default:
+				throw new Error("Unrecognised format.");
+		}
+	}
 }
 
 main().catch(reason => { throw reason; });

@@ -7,9 +7,6 @@ import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { ChipOPN } from "./ChipOPN.js";
 
-export const FORMAT_VGM_OPM = 0x200;
-export const FORMAT_VGM_OPNB = 0x201;
-
 export class FormatVGM extends Format {
 	async loadTrack(path, name) {
 		let vgm = await fs.promises.readFile(path);
@@ -74,7 +71,7 @@ export class FormatVGM extends Format {
 }
 
 export class FormatVGMOPNB extends Format {
-	constructor(opnbFrequency) {
+	constructor(opnbFrequency = 8000000) {
 		super();
 		this.opnbFrequency = opnbFrequency;
 	}
@@ -156,7 +153,7 @@ export class FormatVGMOPNB extends Format {
 }
 
 export class FormatVGMOPM extends Format {
-	constructor(opmFrequency) {
+	constructor(opmFrequency = 315000000 / 88) {
 		super();
 		this.opmFrequency = opmFrequency;
 	}
