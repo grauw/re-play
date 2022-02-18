@@ -57,9 +57,10 @@ Player_SetProcessAndMute:
 	ld (Player_Restore + 1),hl
 	ret
 
-; hl = sound data
+; ahl = sound data
 Player_Play:
 	inc hl
+	push af
 	xor a
 	ld (Player_playing),a
 	ld ix,Player_stack
@@ -67,6 +68,7 @@ Player_Play:
 	ld hl,Player_infiniteLoop
 	call Player_Push
 	pop hl
+	pop af
 	call Player_Push
 	ld (Player_stackPointer),ix
 	ld a,1
@@ -99,12 +101,18 @@ Player_Tick:
 	ld hl,Player_wait
 	dec (hl)
 	ret nz
+	call Mapper_GetBank
+	push af
 	ld ix,(Player_stackPointer)
 	call Player_Pop
+	call Mapper_SetBank
 	call Player_Process
 	ld (Player_wait),a
+	call Mapper_GetBank
 	call Player_Push
 	ld (Player_stackPointer),ix
+	pop af
+	call Mapper_SetBank
 	ret
 
 ; hl = sound data
@@ -113,8 +121,12 @@ Player_Jump:
 	inc hl
 	ld d,(hl)
 	inc hl
+	ld b,(hl)
+	inc hl
+	call Mapper_GetBank
 	add hl,de
-	ret
+	add a,b
+	jp Mapper_SetBank
 
 ; hl = sound data
 ; ix = stack pointer
@@ -123,14 +135,19 @@ Player_Call:
 	inc hl
 	ld d,(hl)
 	inc hl
+	ld b,(hl)
+	inc hl
+	call Mapper_GetBank
 	call Player_Push
 	add hl,de
-	ret
+	add a,b
+	jp Mapper_SetBank
 
 ; hl = sound data
 ; ix = stack pointer
 Player_Return:
-	jp Player_Pop
+	call Player_Pop
+	jp Mapper_SetBank
 
 ; hl = value
 ; ix = stack pointer
@@ -138,6 +155,8 @@ Player_Return:
 Player_Push:
 	ld (ix + 0),l
 	ld (ix + 1),h
+	ld (ix + 2),a
+	inc ix
 	inc ix
 	inc ix
 	ret
@@ -148,8 +167,10 @@ Player_Push:
 Player_Pop:
 	dec ix
 	dec ix
+	dec ix
 	ld l,(ix + 0)
 	ld h,(ix + 1)
+	ld a,(ix + 2)
 	ret
 
 ; Data in RAM
@@ -160,9 +181,9 @@ Player_wait:
 Player_stackPointer:
 	dw Player_stack
 Player_stack:
-	ds Player_STACK_CAPACITY * 2
+	ds Player_STACK_CAPACITY * 3
 Player_infiniteLoop:
-	db 0FFH, 90H, 0FCH, 0FFH
+	db 0FFH, 90H, 0FCH, 0FFH, 0FFH
 Player_instruments:
 	ds 8 * 2
 Player_Process:

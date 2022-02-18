@@ -63,9 +63,9 @@ Data format `0`: `opn` (OPM / OPNA / OPNB FM) consists of these events:
   * 88-8F: Instrument settings.
            Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
   * 90:    Relative jump.
-           Bytes 1-2: offset to target.
+           Byte 1: bank offset, byte 2-3: address offset.
   * 91:    Relative call.
-           Bytes 1-2: offset to target.
+           Byte 1: bank offset, byte 2-3: address offset.
   * 92:    Return.
   * 93-FF: Wait.
            n - 92H: nr. of 60Hz ticks.

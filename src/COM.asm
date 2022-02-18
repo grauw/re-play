@@ -16,16 +16,22 @@ PARAMETERS: equ 80H
 
 SoundData: equ 4000H
 
+Mapper_GetBank: equ DOS2Mapper_GetBank
+Mapper_SetBank: equ DOS2Mapper_SetBank
+
 	org 100H
 
 	jp Main
 
 	INCLUDE "Player.asm"
 	INCLUDE "Memory.asm"
+	INCLUDE "DOS2Mapper.asm"
 
 Main:
 	call DOS_IsDOS2
 	ret c
+	call DOS2Mapper_Initialize
+
 	ld a,(PARAMETERS)
 	cp 2
 	ld a,89H  ; .NOPAR Missing parameter
@@ -37,10 +43,85 @@ Main:
 	jp nz,DOS_TerminateWithErrorCode
 	push bc
 	ld de,SoundData
-	ld hl,4000H
+	ld hl,8000H
 	ld c,_READ
 	call BDOS
 	jp nz,DOS_TerminateWithErrorCode
+	bit 7,h
+	jp z,Main_ReadComplete
+Main_ReadLoop:
+	call DOS2Mapper_Allocate
+	push af
+	ld a,0DEH  ; .NORAM Not enough memory
+	jp c,DOS_TerminateWithErrorCode
+	pop af
+	call DOS2Mapper_SetBank
+	pop bc
+	push bc
+	ld de,Main_loadBuffer
+	ld hl,1000H
+	ld c,_READ
+	call BDOS
+	jp nz,Main_ReadContinue
+	exx
+	ld hl,Main_loadBuffer
+	ld de,SoundData
+	ld bc,1000H
+	ldir
+	exx
+	pop bc
+	push bc
+	ld de,Main_loadBuffer
+	ld hl,1000H
+	ld c,_READ
+	call BDOS
+	jp nz,Main_ReadContinue
+	exx
+	ld hl,Main_loadBuffer
+	ld de,SoundData + 1000H
+	ld bc,1000H
+	ldir
+	exx
+	pop bc
+	push bc
+	ld de,Main_loadBuffer
+	ld hl,1000H
+	ld c,_READ
+	call BDOS
+	jp nz,Main_ReadContinue
+	exx
+	ld hl,Main_loadBuffer
+	ld de,SoundData + 2000H
+	ld bc,1000H
+	ldir
+	exx
+	pop bc
+	push bc
+	ld de,Main_loadBuffer
+	ld hl,1000H
+	ld c,_READ
+	call BDOS
+	jp nz,Main_ReadContinue
+	exx
+	ld hl,Main_loadBuffer
+	ld de,SoundData + 3000H
+	ld bc,1000H
+	ldir
+	exx
+Main_ReadContinue:
+	push af
+	push hl
+	ld a,0
+	call DOS2Mapper_SetBank
+	pop hl
+	pop af
+	cp 0C7H  ; .EOF End of file
+	jp z,Main_ReadComplete
+	and a
+	jp nz,DOS_TerminateWithErrorCode
+	bit 4,h
+	jp nz,Main_ReadLoop
+Main_ReadComplete:
 	pop bc
 	ld c,_CLOSE
 	call BDOS
@@ -50,6 +131,7 @@ Main:
 	call Player_Detect
 	ld a,1
 	jp nc,DOS_TerminateWithErrorCode
+	ld a,0
 	ld hl,SoundData
 	call Player_Play
 	ld a,(JIFFY)
@@ -104,3 +186,7 @@ DOS_IsDOS2:
 	ld a,b
 	cp 2
 	ret
+
+; Data in RAM
+Main_loadBuffer:
+	ds 1000H
