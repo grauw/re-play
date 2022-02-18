@@ -7,6 +7,11 @@ export const FORMAT_OPN = 0x00;
 
 export class FormatOPN extends Format {
 	async saveTrack(track, tickFrequency, opnFrequency, opmFrequency) {
+		const data = this.writeTrack(track, tickFrequency, opnFrequency, opmFrequency);
+		await fs.promises.writeFile(this.path, Buffer.from(data));
+	}
+
+	writeTrack(track, tickFrequency, opnFrequency, opmFrequency) {
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 		let ticks = 0;
 		const symbols = new Map();
@@ -45,7 +50,6 @@ export class FormatOPN extends Format {
 			data[rewrite.position] = offset[0];
 			data[rewrite.position + 1] = offset[1];
 		}
-
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+		return data;
 	}
 }

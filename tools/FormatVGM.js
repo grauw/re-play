@@ -12,7 +12,15 @@ export const FORMAT_VGM_OPNB = 0x201;
 
 export class FormatVGM extends Format {
 	async loadTrack() {
-		const vgm = await loadMaybeGzipCompressed(this.path);
+		const vgm = await fs.promises.readFile(this.path);
+		if (vgm[0] == 0x1f && vgm[1] == 0x8b) {  // gzip magic number
+			return this.readTrack(await util.promisify(zlib.gunzip)(vgm));
+		} else {
+			return this.readTrack(vgm);
+		}
+	}
+
+	readTrack(vgm) {
 		const getByte = address => vgm[address];
 		const getWord = address => getByte(address) | getByte(address + 1) << 8;
 		const getDoubleWord = address => getWord(address) | getWord(address + 2) << 16;
@@ -67,6 +75,11 @@ export class FormatVGM extends Format {
 	}
 
 	async saveTrackOPNB(track, opnbFrequency) {
+		const data = this.writeTrackOPNB(track, opnbFrequency);
+		await fs.promises.writeFile(this.path, Buffer.from(data));
+	}
+
+	writeTrackOPNB(track, opnbFrequency) {
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -133,11 +146,15 @@ export class FormatVGM extends Format {
 		data.push(0x00, 0x00, 0x00, 0x00);  // 78 YM2203 / YM2608/AY8910 flags
 		data.push(0x00, 0x00, 0x00, 0x00);  // 7C Volume / loop modifiers
 		data.push(...commandData);
-
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+		return data;
 	}
 
 	async saveTrackOPM(track, opmFrequency) {
+		const data = this.writeTrackOPM(track, opmFrequency);
+		await fs.promises.writeFile(this.path, Buffer.from(data));
+	}
+
+	writeTrackOPM(track, opmFrequency) {
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -187,14 +204,6 @@ export class FormatVGM extends Format {
 		data.push(0x00, 0x00, 0x00, 0x00);  // 38 Sega PCM clock
 		data.push(0x00, 0x00, 0x00, 0x00);  // 3C Sega PCM interface register
 		data.push(...commandData);
-
-		await fs.promises.writeFile(this.path, Buffer.from(data));
+		return data;
 	}
-}
-
-async function loadMaybeGzipCompressed(path) {
-	const vgm = await fs.promises.readFile(path);
-	if (vgm.length >= 2 && vgm[0] == 0x1f && vgm[1] == 0x8b)
-		return await util.promisify(zlib.gunzip)(vgm);
-	return vgm;
 }
