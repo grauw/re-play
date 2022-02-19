@@ -41,9 +41,14 @@ Player_SetProcessAndMute:
 	ld (Player_Restore + 1),hl
 	ret
 
+; bc = track number
 ; ahl = sound data
 Player_Play:
 	inc hl
+	add hl,bc
+	add hl,bc
+	add hl,bc
+	add hl,bc
 	push af
 	xor a
 	ld (Player_playing),a

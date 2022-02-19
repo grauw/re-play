@@ -50,6 +50,35 @@ export class Track {
 			this.addCommand(command);
 	}
 
+	static ofTracksWithIndex(name, tickFrequency, tracks) {
+		const track = new Track(name);
+		for (let i = 0; i < tracks.length; i++) {
+			track.addCommand(CommandJump.of(tracks[i].name));
+		}
+
+		for (const track_ of tracks) {
+			track.addCommands(track_.addScope(track_.name).commands);
+		}
+		return track;
+	}
+
+	addScope(scope) {
+		const track = new Track(scope);
+		track.addCommand(CommandLabel.of(scope));
+		for (const command of this.commands) {
+			if (command instanceof CommandLabel) {
+				track.addCommand(CommandLabel.of(`${scope}.${command.name}`));
+			} else if (command instanceof CommandJump) {
+				track.addCommand(CommandJump.of(`${scope}.${command.target}`));
+			} else if (command instanceof CommandCall) {
+				track.addCommand(CommandCall.of(`${scope}.${command.target}`));
+			} else {
+				track.addCommand(command);
+			}
+		}
+		return track;
+	}
+
 	moveWaitAfterLoop() {
 		const loop = this.getSymbol("loop");
 		if (loop && this.commands[loop.position + 1] instanceof CommandWait) {

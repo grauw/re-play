@@ -131,6 +131,8 @@ Main_ReadComplete:
 	call Player_Detect
 	ld a,1
 	jp nc,DOS_TerminateWithErrorCode
+Main_Play:
+	ld bc,(Main_currentTrack)
 	ld a,0
 	ld hl,SoundData
 	call Player_Play
@@ -161,12 +163,29 @@ Main_Tick_Loop:
 	pop bc
 	or 20H  ; lower-case
 	cp "p"
-	jr nz,Main_End
+	jr z,Main_Pause
+	cp "n"
+	jr z,Main_Next
+	cp "b"
+	jr z,Main_Previous
+	jr Main_End
 Main_Pause:
 	push bc
 	call Player_TogglePause
 	pop bc
 	jr Main_Loop
+Main_Next:
+	call Player_Stop
+	ld bc,(Main_currentTrack)
+	inc bc
+	ld (Main_currentTrack),bc
+	jp Main_Play
+Main_Previous:
+	call Player_Stop
+	ld bc,(Main_currentTrack)
+	dec bc
+	ld (Main_currentTrack),bc
+	jp Main_Play
 Main_End:
 	call Player_Stop
 	ret
@@ -188,5 +207,7 @@ DOS_IsDOS2:
 	ret
 
 ; Data in RAM
+Main_currentTrack:
+	dw 0
 Main_loadBuffer:
 	ds 1000H

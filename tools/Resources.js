@@ -1,19 +1,21 @@
 import fs from "fs";
 import path from "path";
+import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 
 async function main() {
-	if (process.argv.length < 3) {
-		console.log(`Usage: node ${process.argv[1]} resources.json`);
+	if (process.argv.length < 4) {
+		console.log(`Usage: node ${process.argv[1]} resources.json output.rep`);
 		process.exit(1);
 	}
 
-	const path = process.argv[2];
+	const resourcesPath = process.argv[2];
+	const outputPath = process.argv[3];
 
-	const resources = await new ResourcesLoader(path).parse();
-	await resources.write();
+	const resources = await new ResourcesLoader(resourcesPath).parse();
+	await resources.write(outputPath);
 
 	for (const track of resources.tracks) {
 		const unusedChannels = track.getUnusedChannels();
@@ -33,25 +35,27 @@ export class Resources {
 		this.tracks.push(track);
 	}
 
-	async write() {
+	getCombinedTracks() {
+		return Track.ofTracksWithIndex("combined", this.format.tickFrequency, this.tracks);
+	}
+
+	async write(path) {
 		if (this.format instanceof FormatOPN) {
-			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, `bin/${track.name}.rep`);
-			}));
+			const track = this.getCombinedTracks();
+			return await this.format.saveTrack(track, path);
 		}
 		if (this.format instanceof FormatText) {
-			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, `bin/${track.name}.txt`);
-			}));
+			const track = this.getCombinedTracks();
+			return await this.format.saveTrack(track, path);
 		}
 		if (this.format instanceof FormatVGMOPM) {
 			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, `bin/${track.name}-opm.vgm`);
+				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
 			}));
 		}
 		if (this.format instanceof FormatVGMOPNB) {
 			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, `bin/${track.name}-opnb.vgm`);
+				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
 			}));
 		}
 	}

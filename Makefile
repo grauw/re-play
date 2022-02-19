@@ -2,7 +2,7 @@ COPY_TARGET = /Volumes/MSXDOS2
 
 all: #node_modules
 	mkdir -p bin
-	node --unhandled-rejections=strict tools/Resources.js res/Makaimura/resources.json
+	node --unhandled-rejections=strict tools/Resources.js res/Makaimura/resources.json bin/makaimura.rep
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.sym
 
 node_modules: package.json
