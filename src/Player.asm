@@ -2,6 +2,7 @@
 ;
 ;
 	INCLUDE "FormatOPN.asm"
+	INCLUDE "FormatOPL4Wave.asm"
 
 Player_STACK_CAPACITY: equ 128
 
@@ -18,6 +19,9 @@ Player_Detect_Format:
 	ld a,FormatOPN_ID
 	xor (hl)
 	jp z,FormatOPN_Detect
+	ld a,FormatOPL4Wave_ID
+	xor (hl)
+	jp z,FormatOPL4Wave_Detect
 	ret
 
 ; f <- c: found

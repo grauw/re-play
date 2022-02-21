@@ -3,6 +3,7 @@ COPY_TARGET = /Volumes/MSXDOS2
 all: #node_modules
 	mkdir -p bin
 	node --unhandled-rejections=strict tools/Resources.js res/Makaimura/resources.json bin/makaimura.rep
+	node --unhandled-rejections=strict tools/Resources.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.sym
 
 node_modules: package.json
@@ -19,4 +20,4 @@ copy: all
 	diskutil umount $(COPY_TARGET)
 
 run: all
-	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -script openmsx.tcl
+	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl

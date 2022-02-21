@@ -6,6 +6,7 @@ import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { ChipOPN } from "./ChipOPN.js";
+import { ChipOPL4 } from "./ChipOPL4.js";
 
 export class FormatVGM extends Format {
 	async loadTrack(path, name) {
@@ -25,6 +26,7 @@ export class FormatVGM extends Format {
 		const loop = getDoubleWord(0x1C) ? getDoubleWord(0x1C) + 0x1C : 0;
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
 		const opn = new ChipOPN(version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0);
+		const opl4 = new ChipOPL4(version >= 0x151 && headerSize >= 0x64 ? getDoubleWord(0x60) & 0x3FFFFFFF : 0);
 		const tickFrequency = 44100;
 		const track = new Track(name);
 		let address = headerSize;
@@ -32,6 +34,7 @@ export class FormatVGM extends Format {
 			if (address == loop) {
 				track.addCommand(CommandLabel.of("loop"));
 				opn.unsetAll();
+				opl4.unsetAll();
 			}
 			const type = getByte(address++);
 			if (type == 0x55) {
@@ -42,6 +45,11 @@ export class FormatVGM extends Format {
 				const register = getByte(address++);
 				const value = getByte(address++);
 				opn.writeRegister(register | 0x100, value, command => track.addCommand(command));
+			} else if (type == 0xD0) {
+				const port = getByte(address++);
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(port << 8 | register, value, command => track.addCommand(command));
 			} else if (type == 0x61) {
 				track.addCommand(CommandWait.of(getWord(address), tickFrequency));
 				address += 2;
