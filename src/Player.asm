@@ -68,9 +68,9 @@ Player_Stop:
 	ret
 
 Player_Resume:
+	call Player_Restore
 	ld a,1
 	ld (Player_playing),a
-	call Player_Restore
 	ret
 
 Player_TogglePause:
