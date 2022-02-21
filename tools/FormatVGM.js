@@ -29,8 +29,10 @@ export class FormatVGM extends Format {
 		const track = new Track(name);
 		let address = headerSize;
 		while (address < vgm.length) {
-			if (address == loop)
+			if (address == loop) {
 				track.addCommand(CommandLabel.of("loop"));
+				opn.unsetAll();
+			}
 			const type = getByte(address++);
 			if (type == 0x55) {
 				const register = getByte(address++);
