@@ -48,11 +48,11 @@ export class FormatVGM extends Format {
 			} else if (type == 0x63) {
 				track.addCommand(CommandWait.of(882, tickFrequency));
 			} else if (type == 0x66) {
-				if (loop) {
-					track.addCommand(CommandJump.of("loop"));
-				} else {
-					track.addCommand(CommandReturn.of());
+				if (!loop) {
+					track.addCommand(CommandLabel.of("loop"));
+					track.addCommand(CommandWait.of(2 * 735, tickFrequency));
 				}
+				track.addCommand(CommandJump.of("loop"));
 				break;
 			} else if (type == 0x67) {
 				if (getByte(address++) != 0x66)

@@ -49,15 +49,11 @@ Player_Play:
 	add hl,bc
 	add hl,bc
 	add hl,bc
-	push af
+	ld b,a
 	xor a
 	ld (Player_playing),a
+	ld a,b
 	ld ix,Player_stack
-	push hl
-	ld hl,Player_infiniteLoop
-	call Player_Push
-	pop hl
-	pop af
 	call Player_Push
 	ld a,1
 	ld (ix),a
@@ -169,8 +165,6 @@ Player_stackPointer:
 	dw Player_stack
 Player_stack:
 	ds Player_STACK_CAPACITY * 3 + 1
-Player_infiniteLoop:
-	db 0FFH, 90H, 0FCH, 0FFH, 0FFH
 Player_Process:
 	db 0C9H, 0, 0
 Player_Mute:
