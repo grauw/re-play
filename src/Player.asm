@@ -106,11 +106,10 @@ Player_Jump:
 	inc hl
 	ld d,(hl)
 	inc hl
-	ld b,(hl)
-	inc hl
 	call Mapper_GetBank
+	add a,(hl)
+	inc hl
 	add hl,de
-	add a,b
 	jp Mapper_SetBank
 
 ; hl = sound data
