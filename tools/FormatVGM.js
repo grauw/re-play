@@ -69,7 +69,16 @@ export class FormatVGM extends Format {
 					throw new Error(`Invalid data block sequence at address ${(address - 1).toString(16)}`);
 				const dataType = getByte(address++);
 				const dataSize = getDoubleWord(address);
-				address += 4 + dataSize;  // skip
+				address += 4;
+				if (dataType == 0x84) {
+					opl4.writeROMData(getDoubleWord(address), getDoubleWord(address + 4),
+						vgm.subarray(address + 8, address + dataSize));
+				}
+				if (dataType == 0x87) {
+					opl4.writeRAMData(getDoubleWord(address), getDoubleWord(address + 4),
+						vgm.subarray(address + 8, address + dataSize));
+				}
+				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));
 			} else {

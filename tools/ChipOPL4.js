@@ -8,6 +8,19 @@ export class ChipOPL4 extends Chip {
 		this.clockFrequency = clockFrequency;
 		this.memory = new Uint8Array(0x400000);
 		this.memory.set(yrw801Headers);
+		this.romSize = 0x200000;
+	}
+
+	writeROMData(romSize, dataStart, data) {
+		if (romSize != this.romSize) {
+			this.memory.copyWithin(romSize, this.romSize);
+		}
+		this.romSize = romSize;
+		this.memory.set(data, dataStart);
+	}
+
+	writeRAMData(ramSize, dataStart, data) {
+		this.memory.set(data, this.romSize + dataStart);
 	}
 
 	writeRegister(address, value, emit) {
