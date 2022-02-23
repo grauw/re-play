@@ -21,30 +21,39 @@ export class FormatOPL4Wave extends Format {
 
 	writeTrack(track) {
 		let ticks = 0;
-		const data = new BankedData(this.bankSize, [0xFB, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0x01, 0, 0, 0]);
 		data.add(FORMAT_OPL4_WAVE_ID);
+		const registerBlock = [];
 		for (const command of track.commands) {
 			if (command instanceof CommandOPL4Wave) {
-				data.add(command.register, command.value);
-			} else if (command instanceof CommandWait) {
+				registerBlock.push(command);
+				continue;
+			} else {
+				while (registerBlock.length) {
+					const count = Math.min(registerBlock.length, 0x80);
+					data.add(0x80 | count, ...registerBlock.splice(0, count).flatMap(c => [c.register, c.value]));
+				}
+			}
+
+			if (command instanceof CommandWait) {
 				ticks += command.getTime(this.tickFrequency);
 				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 7);
-					data.add(0x00 + waitTicks);
+					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
+					data.add(0x03 + waitTicks);
 					ticks -= waitTicks;
 				}
 			} else if (command instanceof CommandOPL4WaitLoad) {
-				data.add(0xFA);
+				data.add(0x00);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
-				data.add(0xFB, 0, 0, 0);
+				data.add(0x01, 0, 0, 0);
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandCall) {
-				data.add(0xFC, 0, 0, 0);
+				data.add(0x02, 0, 0, 0);
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0xFD);
+				data.add(0x03);
 			}
 		}
 

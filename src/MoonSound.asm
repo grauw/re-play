@@ -38,14 +38,13 @@ MoonSound_Process:
 MoonSound_Process_Loop:
 	ld a,(hl)
 	inc hl
-	cp 008H
-	ret c
-	cp 0FAH
+	add a,a
 	jr c,MoonSound_Write
-	cp 0FBH
-	jr c,MoonSound_WaitLoad
+	rra
+	jr z,MoonSound_WaitLoad
+	cp 01H
 	jr z,MoonSound_Jump
-	sub 0FDH
+	sub 03H
 	jr c,MoonSound_Call
 	jr z,MoonSound_Return
 	ret
@@ -67,13 +66,18 @@ MoonSound_Return:
 	call Player_Return
 	jp MoonSound_Process_Loop
 
+; a = count * 2
 ; hl = sound data
 MoonSound_Write:
-	out (MoonSound_WAVE_ADDRESS),a
-	cp (hl)  ; extra wait for R800 -- wait 2.6 µs (19 cycles, but 18 works)
-	ld a,(hl)
-	inc hl
-	out (MoonSound_WAVE_DATA),a
+	ld b,a
+	ld c,MoonSound_WAVE_DATA
+MoonSound_Write_Loop:
+	dec c
+	outi
+	jp $ + 3  ; extra wait for R800 -- wait 2.6 µs (19 cycles, but 18 works)
+	inc c
+	outi
+	jp nz,MoonSound_Write_Loop
 	jp MoonSound_Process_Loop
 
 ; hl = sound data
