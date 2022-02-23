@@ -7,6 +7,18 @@ export class CommandOPL4 extends Command {
 	}
 }
 
+export class CommandOPL4WaitLoad extends CommandOPL4 {
+	static of() {
+		return commandOPL4WaitLoadMemo;
+	}
+
+	toString() {
+		return "OPL4WaitLoad";
+	}
+}
+
+const commandOPL4WaitLoadMemo = new CommandOPL4WaitLoad();
+
 export class CommandOPL4Wave extends CommandOPL4 {
 	constructor(register, value) {
 		super();

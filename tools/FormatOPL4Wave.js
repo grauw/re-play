@@ -1,7 +1,7 @@
 import fs from "fs";
 import { Format } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandOPL4Wave } from "./CommandOPL4.js";
+import { CommandOPL4Wave, CommandOPL4WaitLoad } from "./CommandOPL4.js";
 import { BankedData } from "./BankedData.js";
 
 export const FORMAT_OPL4_WAVE_ID = 0x01;
@@ -21,7 +21,7 @@ export class FormatOPL4Wave extends Format {
 
 	writeTrack(track) {
 		let ticks = 0;
-		const data = new BankedData(this.bankSize, [0xFA, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0xFB, 0, 0, 0]);
 		data.add(FORMAT_OPL4_WAVE_ID);
 		for (const command of track.commands) {
 			if (command instanceof CommandOPL4Wave) {
@@ -33,16 +33,18 @@ export class FormatOPL4Wave extends Format {
 					data.add(0x00 + waitTicks);
 					ticks -= waitTicks;
 				}
+			} else if (command instanceof CommandOPL4WaitLoad) {
+				data.add(0xFA);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
-				data.add(0xFA, 0, 0, 0);
-				data.addRewrite(command.target);
-			} else if (command instanceof CommandCall) {
 				data.add(0xFB, 0, 0, 0);
 				data.addRewrite(command.target);
+			} else if (command instanceof CommandCall) {
+				data.add(0xFC, 0, 0, 0);
+				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0xFC);
+				data.add(0xFD);
 			}
 		}
 

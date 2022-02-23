@@ -40,12 +40,12 @@ MoonSound_Process_Loop:
 	inc hl
 	cp 008H
 	ret c
-	cp 020H
-	jr c,MoonSound_Write_Wait
 	cp 0FAH
 	jr c,MoonSound_Write
+	cp 0FBH
+	jr c,MoonSound_WaitLoad
 	jr z,MoonSound_Jump
-	sub 0FCH
+	sub 0FDH
 	jr c,MoonSound_Call
 	jr z,MoonSound_Return
 	ret
@@ -77,16 +77,10 @@ MoonSound_Write:
 	jp MoonSound_Process_Loop
 
 ; hl = sound data
-MoonSound_Write_Wait:
-	out (MoonSound_WAVE_ADDRESS),a
-	cp (hl)  ; extra wait for R800 -- wait 2.6 µs (19 cycles, but 18 works)
-	ld a,(hl)
-	inc hl
-	out (MoonSound_WAVE_DATA),a
-MoonSound_Write_Wait_Loop:
+MoonSound_WaitLoad:
 	in a,(MoonSound_STATUS)
 	and 00000010B
-	jr nz,MoonSound_Write_Wait_Loop
+	jr nz,MoonSound_WaitLoad
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:
