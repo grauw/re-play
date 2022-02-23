@@ -30,7 +30,8 @@ export class FormatOPL4Wave extends Format {
 				continue;
 			} else {
 				while (registerBlock.length) {
-					const count = Math.min(registerBlock.length, 0x80);
+					const space = Math.floor((data.free - data.jump.length - 1) / 2);
+					const count = Math.min(registerBlock.length, 0x80, space > 0 ? space : Infinity);
 					data.add(0x80 | count, ...registerBlock.splice(0, count).flatMap(c => [c.register, c.value]));
 				}
 			}
