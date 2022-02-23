@@ -35,13 +35,6 @@ export class FormatOPN extends Format {
 				data.add(0x80 + command.channel, ...word(keyCodeFraction), fNumBlock >> 8, fNumBlock & 0xFF);
 			} else if (command instanceof CommandFMInstrument) {
 				data.add(0x88 + command.channel, ...command.parameters);
-			} else if (command instanceof CommandWait) {
-				ticks += command.getTime(this.tickFrequency);
-				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
-					data.add(0x92 + waitTicks);
-					ticks -= waitTicks;
-				}
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
@@ -52,6 +45,13 @@ export class FormatOPN extends Format {
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
 				data.add(0x92);
+			} else if (command instanceof CommandWait) {
+				ticks += command.getTime(this.tickFrequency);
+				while (ticks >= 1) {
+					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
+					data.add(0x92 + waitTicks);
+					ticks -= waitTicks;
+				}
 			}
 		}
 		return data.getData();

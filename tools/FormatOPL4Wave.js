@@ -36,14 +36,7 @@ export class FormatOPL4Wave extends Format {
 				}
 			}
 
-			if (command instanceof CommandWait) {
-				ticks += command.getTime(this.tickFrequency);
-				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
-					data.add(0x03 + waitTicks);
-					ticks -= waitTicks;
-				}
-			} else if (command instanceof CommandOPL4WaitLoad) {
+			if (command instanceof CommandOPL4WaitLoad) {
 				data.add(0x00);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
@@ -55,6 +48,13 @@ export class FormatOPL4Wave extends Format {
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
 				data.add(0x03);
+			} else if (command instanceof CommandWait) {
+				ticks += command.getTime(this.tickFrequency);
+				while (ticks >= 1) {
+					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
+					data.add(0x03 + waitTicks);
+					ticks -= waitTicks;
+				}
 			}
 		}
 
