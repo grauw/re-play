@@ -7,10 +7,9 @@ import { BankedData } from "./BankedData.js";
 const FORMAT_OPN_ID = 0x00;
 
 export class FormatOPN extends Format {
-	constructor(bankSize, tickFrequency = 315000000 / 5256768, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
+	constructor(bankSize, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
 		super();
 		this.bankSize = bankSize;
-		this.tickFrequency = tickFrequency;
 		this.opnFrequency = opnFrequency;
 		this.opmFrequency = opmFrequency;
 	}
@@ -23,7 +22,6 @@ export class FormatOPN extends Format {
 	writeTrack(track) {
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 
-		let ticks = 0;
 		const data = new BankedData(this.bankSize, [0x90, 0, 0, 0]);
 		data.add(FORMAT_OPN_ID);
 		for (const command of track.commands) {
@@ -46,7 +44,7 @@ export class FormatOPN extends Format {
 			} else if (command instanceof CommandReturn) {
 				data.add(0x92);
 			} else if (command instanceof CommandWait) {
-				ticks += command.getTime(this.tickFrequency);
+				let ticks = command.time;
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
 					data.add(0x92 + waitTicks);

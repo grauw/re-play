@@ -7,10 +7,9 @@ import { BankedData } from "./BankedData.js";
 export const FORMAT_OPL4_WAVE_ID = 0x01;
 
 export class FormatOPL4Wave extends Format {
-	constructor(bankSize, tickFrequency = 315000000 / 5256768, opl4Frequency = 33868800) {
+	constructor(bankSize, opl4Frequency = 33868800) {
 		super();
 		this.bankSize = bankSize;
-		this.tickFrequency = tickFrequency;
 		this.opl4Frequency = opl4Frequency;
 	}
 
@@ -20,7 +19,6 @@ export class FormatOPL4Wave extends Format {
 	}
 
 	writeTrack(track) {
-		let ticks = 0;
 		const data = new BankedData(this.bankSize, [0x01, 0, 0, 0]);
 		data.add(FORMAT_OPL4_WAVE_ID);
 		const registerBlock = [];
@@ -49,7 +47,7 @@ export class FormatOPL4Wave extends Format {
 			} else if (command instanceof CommandReturn) {
 				data.add(0x03);
 			} else if (command instanceof CommandWait) {
-				ticks += command.getTime(this.tickFrequency);
+				let ticks = command.time;
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
 					data.add(0x03 + waitTicks);

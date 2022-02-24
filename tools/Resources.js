@@ -89,7 +89,7 @@ export class ResourcesLoader {
 				.attenuateVolume(attenuation)
 				.frequencyBeforeKeyOn()
 				.trimLeadingSilence()
-				// .quantise(60)
+				.quantise(json.tickFrequency)
 			);
 		}));
 
@@ -102,9 +102,9 @@ export class ResourcesLoader {
 	parseFormat(json) {
 		switch (json.format) {
 			case "opn":
-				return new FormatOPN(json.bankSize, json.tickFrequency, json.opnbFrequency, json.opmFrequency);
+				return new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency);
 			case "opl4-wave":
-				return new FormatOPL4Wave(json.bankSize, json.tickFrequency, json.opl4Frequency);
+				return new FormatOPL4Wave(json.bankSize, json.opl4Frequency);
 			case "text":
 				return new FormatText();
 			case "vgm-opm":
