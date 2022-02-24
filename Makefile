@@ -2,8 +2,8 @@ COPY_TARGET = /Volumes/MSXDOS2
 
 all: #node_modules
 	mkdir -p bin
-	node tools/Resources.js res/Makaimura/resources.json bin/makaimura.rep
-	node tools/Resources.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep
+	node tools/cli.js res/Makaimura/resources.json bin/makaimura.rep
+	node tools/cli.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.sym
 
 node_modules: package.json

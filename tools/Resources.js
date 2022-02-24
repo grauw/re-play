@@ -6,26 +6,6 @@ import { FormatOPL4Wave } from "./FormatOPL4Wave.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 
-async function main() {
-	if (process.argv.length < 4) {
-		console.log(`Usage: node ${process.argv[1]} resources.json output.rep`);
-		process.exit(1);
-	}
-
-	const resourcesPath = process.argv[2];
-	const outputPath = process.argv[3];
-
-	const resources = await new ResourcesLoader(resourcesPath).parse();
-	await resources.write(outputPath);
-
-	for (const track of resources.tracks) {
-		const unusedChannels = track.getUnusedChannels();
-		if (unusedChannels.length > 0) {
-			console.log(`Warning: Track ${track.name} has unused channels: ${unusedChannels.join(", ")}`);
-		}
-	}
-}
-
 export class Resources {
 	constructor(format) {
 		this.format = format;
@@ -116,5 +96,3 @@ export class ResourcesLoader {
 		}
 	}
 }
-
-main().catch(reason => { throw reason; });
