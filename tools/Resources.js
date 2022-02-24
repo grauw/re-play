@@ -37,7 +37,7 @@ export class Resources {
 	}
 
 	getCombinedTracks() {
-		return Track.ofTracksWithIndex("combined", this.format.tickFrequency, this.tracks);
+		return Track.ofTracksWithIndex("combined", this.tracks);
 	}
 
 	async write(path) {

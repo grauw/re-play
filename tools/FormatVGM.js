@@ -28,7 +28,7 @@ export class FormatVGM extends Format {
 		const opn = new ChipOPN(version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0);
 		const opl4 = new ChipOPL4(version >= 0x151 && headerSize >= 0x64 ? getDoubleWord(0x60) & 0x3FFFFFFF : 0);
 		const tickFrequency = 44100;
-		const track = new Track(name);
+		const track = new Track(name, tickFrequency);
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop) {
@@ -51,16 +51,16 @@ export class FormatVGM extends Format {
 				const value = getByte(address++);
 				opl4.writeRegister(port << 8 | register, value, command => track.addCommand(command));
 			} else if (type == 0x61) {
-				track.addCommand(CommandWait.of(getWord(address), tickFrequency));
+				track.addCommand(CommandWait.of(getWord(address)));
 				address += 2;
 			} else if (type == 0x62) {
-				track.addCommand(CommandWait.of(735, tickFrequency));
+				track.addCommand(CommandWait.of(735));
 			} else if (type == 0x63) {
-				track.addCommand(CommandWait.of(882, tickFrequency));
+				track.addCommand(CommandWait.of(882));
 			} else if (type == 0x66) {
 				if (!loop) {
 					track.addCommand(CommandLabel.of("loop"));
-					track.addCommand(CommandWait.of(2 * 735, tickFrequency));
+					track.addCommand(CommandWait.of(2 * 735));
 				}
 				track.addCommand(CommandJump.of("loop"));
 				break;
@@ -80,7 +80,7 @@ export class FormatVGM extends Format {
 				}
 				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {
-				track.addCommand(CommandWait.of((type & 15) + 1, tickFrequency));
+				track.addCommand(CommandWait.of((type & 15) + 1));
 			} else {
 				throw new Error(`Unsupported command ${type.toString(16)} at address ${(address - 1).toString(16)}`);
 			}
@@ -117,7 +117,7 @@ export class FormatVGMOPNB extends Format {
 					commandData.push(0x58 + (command.channel >> 2), 0x30 + i * 4 + (command.channel & 3), command.parameters[i]);
 				commandData.push(0x58 + (command.channel >> 2), 0xB0 + (command.channel & 3), command.parameters[24]);
 			} else if (command instanceof CommandWait) {
-				let ticks = Math.round(command.getTime(44100));
+				let ticks = Math.round(command.time * 44100 / track.tickFrequency);
 				samples += ticks;
 				while (ticks > 0) {
 					const ticksCapped = Math.min(ticks, 65535);
@@ -199,7 +199,7 @@ export class FormatVGMOPM extends Format {
 					commandData.push(0x54, 0x40 + i * 8 + command.channel, command.parameters[i]);
 				commandData.push(0x54, 0x20 + command.channel, command.parameters[24]);
 			} else if (command instanceof CommandWait) {
-				let ticks = Math.round(command.getTime(44100));
+				let ticks = Math.round(command.time * 44100 / track.tickFrequency);
 				samples += ticks;
 				while (ticks > 0) {
 					const ticksCapped = Math.min(ticks, 65535);

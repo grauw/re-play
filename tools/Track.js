@@ -3,8 +3,9 @@ import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } fr
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class Track {
-	constructor(name) {
+	constructor(name, tickFrequency) {
 		this.name = name;
+		this.tickFrequency = tickFrequency;
 		this.commands = [];
 		this.symbols = new Map();
 	}
@@ -50,8 +51,9 @@ export class Track {
 			this.addCommand(command);
 	}
 
-	static ofTracksWithIndex(name, tickFrequency, tracks) {
-		const track = new Track(name);
+	static ofTracksWithIndex(name, tracks) {
+		const tickFrequency = tracks.length / tracks.reduce((sum, track) => sum + 1 / track.tickFrequency, 0);
+		const track = new Track(name, tickFrequency);
 		for (let i = 0; i < tracks.length; i++) {
 			track.addCommand(CommandJump.of(tracks[i].name));
 		}
@@ -63,7 +65,7 @@ export class Track {
 	}
 
 	addScope(scope) {
-		const track = new Track(scope);
+		const track = new Track(scope, this.tickFrequency);
 		track.addCommand(CommandLabel.of(scope));
 		for (const command of this.commands) {
 			if (command instanceof CommandLabel) {
@@ -82,7 +84,7 @@ export class Track {
 	moveWaitAfterLoop() {
 		const loop = this.getSymbol("loop");
 		if (loop && this.commands[loop.position + 1] instanceof CommandWait) {
-			const track = new Track(this.name);
+			const track = new Track(this.name, this.tickFrequency);
 			track.addCommands(this.commands.slice(0, loop.position));
 			track.addCommand(this.commands[loop.position + 1]);
 			track.addCommand(this.commands[loop.position]);
@@ -96,19 +98,19 @@ export class Track {
 	}
 
 	removeWaitsUnder(threshold = 0) {
-		const track = new Track(this.name);
+		const track = new Track(this.name, this.tickFrequency);
 		let accumulator = 0;
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
 				if (command.time >= threshold) {
-					track.addCommand(CommandWait.of(command.time + accumulator, 44100));
+					track.addCommand(CommandWait.of(command.time + accumulator));
 					accumulator = 0;
 				} else {
 					accumulator += command.time;
 				}
 			} else if (command instanceof CommandLabel || command instanceof CommandJump) {
 				if (accumulator > 0) {
-					track.addCommand(CommandWait.of(accumulator, 44100));
+					track.addCommand(CommandWait.of(accumulator));
 					accumulator = 0;
 				}
 				track.addCommand(command);
@@ -120,15 +122,15 @@ export class Track {
 	}
 
 	quantise(newTickFrequency = 315000000 / 5256768) {
-		const track = new Track(this.name);
+		const track = new Track(this.name, newTickFrequency);
 		let time = 0;
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
 				time += command.time * newTickFrequency;
-				if (time >= command.tickFrequency) {
-					const ticks = Math.floor(time / command.tickFrequency);
-					track.addCommand(CommandWait.of(ticks, newTickFrequency));
-					time -= ticks * command.tickFrequency;
+				if (time >= this.tickFrequency) {
+					const ticks = Math.floor(time / this.tickFrequency);
+					track.addCommand(CommandWait.of(ticks));
+					time -= ticks * this.tickFrequency;
 				}
 			} else {
 				track.addCommand(command);
@@ -138,7 +140,7 @@ export class Track {
 	}
 
 	trimLeadingSilence() {
-		const track = new Track(this.name);
+		const track = new Track(this.name, this.tickFrequency);
 		for (let index = 0; index < this.commands.length; ++index) {
 			if (!(this.commands[index] instanceof CommandWait)) {
 				track.addCommands(this.commands.slice(index, this.commands.length));
@@ -149,7 +151,7 @@ export class Track {
 	}
 
 	mapChannels(mapping = [0, 1, 2, 3, 4, 5, 6, 7]) {
-		const track = new Track(this.name);
+		const track = new Track(this.name, this.tickFrequency);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMChannel) {
 				const newChannel = mapping[command.channel];
@@ -170,7 +172,7 @@ export class Track {
 	}
 
 	attenuateVolume(dB = 0) {
-		const track = new Track(this.name);
+		const track = new Track(this.name, this.tickFrequency);
 		for (const command of this.commands) {
 			if (command instanceof CommandFMInstrument) {
 				track.addCommand(command.attenuateVolume(dB));
@@ -182,7 +184,7 @@ export class Track {
 	}
 
 	frequencyBeforeKeyOn() {
-		const track = new Track(this.name);
+		const track = new Track(this.name, this.tickFrequency);
 		let lastCommand = null;
 		for (const command of this.commands) {
 			if (command instanceof CommandFMFrequency && lastCommand instanceof CommandFMKey &&

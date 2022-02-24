@@ -10,28 +10,21 @@ export class Command {
 }
 
 export class CommandWait extends Command {
-	constructor(time, tickFrequency) {
+	constructor(time) {
 		super();
 		this.time = time;
-		this.tickFrequency = tickFrequency;
 	}
 
-	static of(time, tickFrequency) {
-		return commandWaitMemo.get(time, tickFrequency);
-	}
-
-	getTime(tickFrequency = this.tickFrequency) {
-		return tickFrequency == this.tickFrequency ? this.time : this.time * tickFrequency / this.tickFrequency;
+	static of(time) {
+		return commandWaitMemo.get(time);
 	}
 
 	add(other) {
-		if (other.tickFrequency != this.tickFrequency)
-			throw new Error("Base timing frequency mismatch.");
-		return CommandWait.of(this.time + other.time, this.tickFrequency);
+		return CommandWait.of(this.time + other.time);
 	}
 
 	toString() {
-		return `Wait ${this.time} / ${this.tickFrequency} s`;
+		return `Wait ${this.time}`;
 	}
 }
 
