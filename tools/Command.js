@@ -10,21 +10,23 @@ export class Command {
 }
 
 export class CommandWait extends Command {
-	constructor(time) {
+	constructor(ticks) {
 		super();
-		this.time = time;
+		if (!Number.isInteger(ticks))
+			throw new Error("Non-integer ticks count.");
+		this.ticks = ticks;
 	}
 
-	static of(time) {
-		return commandWaitMemo.get(time);
+	static of(ticks) {
+		return commandWaitMemo.get(ticks);
 	}
 
 	add(other) {
-		return CommandWait.of(this.time + other.time);
+		return CommandWait.of(this.ticks + other.ticks);
 	}
 
 	toString() {
-		return `Wait ${this.time}`;
+		return `Wait ${this.ticks}`;
 	}
 }
 

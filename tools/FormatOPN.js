@@ -44,7 +44,7 @@ export class FormatOPN extends Format {
 			} else if (command instanceof CommandReturn) {
 				data.add(0x92);
 			} else if (command instanceof CommandWait) {
-				let ticks = command.time;
+				let ticks = command.ticks;
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0x92);
 					data.add(0x92 + waitTicks);

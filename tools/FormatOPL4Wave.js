@@ -47,7 +47,7 @@ export class FormatOPL4Wave extends Format {
 			} else if (command instanceof CommandReturn) {
 				data.add(0x03);
 			} else if (command instanceof CommandWait) {
-				let ticks = command.time;
+				let ticks = command.ticks;
 				while (ticks >= 1) {
 					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
 					data.add(0x03 + waitTicks);

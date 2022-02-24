@@ -102,11 +102,11 @@ export class Track {
 		let accumulator = 0;
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
-				if (command.time >= threshold) {
-					track.addCommand(CommandWait.of(command.time + accumulator));
+				if (command.ticks >= threshold) {
+					track.addCommand(CommandWait.of(command.ticks + accumulator));
 					accumulator = 0;
 				} else {
-					accumulator += command.time;
+					accumulator += command.ticks;
 				}
 			} else if (command instanceof CommandLabel || command instanceof CommandJump) {
 				if (accumulator > 0) {
@@ -123,14 +123,14 @@ export class Track {
 
 	quantise(newTickFrequency = 315000000 / 5256768) {
 		const track = new Track(this.name, newTickFrequency);
-		let time = 0;
+		let accumulator = 0;
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
-				time += command.time * newTickFrequency;
-				if (time >= this.tickFrequency) {
-					const ticks = Math.floor(time / this.tickFrequency);
-					track.addCommand(CommandWait.of(ticks));
-					time -= ticks * this.tickFrequency;
+				accumulator += command.ticks * newTickFrequency;
+				if (accumulator >= this.tickFrequency) {
+					const newTicks = Math.floor(accumulator / this.tickFrequency);
+					track.addCommand(CommandWait.of(newTicks));
+					accumulator -= newTicks * this.tickFrequency;
 				}
 			} else {
 				track.addCommand(command);

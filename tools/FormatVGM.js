@@ -117,7 +117,7 @@ export class FormatVGMOPNB extends Format {
 					commandData.push(0x58 + (command.channel >> 2), 0x30 + i * 4 + (command.channel & 3), command.parameters[i]);
 				commandData.push(0x58 + (command.channel >> 2), 0xB0 + (command.channel & 3), command.parameters[24]);
 			} else if (command instanceof CommandWait) {
-				let ticks = Math.round(command.time * 44100 / track.tickFrequency);
+				let ticks = Math.round(command.ticks * 44100 / track.tickFrequency);
 				samples += ticks;
 				while (ticks > 0) {
 					const ticksCapped = Math.min(ticks, 65535);
@@ -199,7 +199,7 @@ export class FormatVGMOPM extends Format {
 					commandData.push(0x54, 0x40 + i * 8 + command.channel, command.parameters[i]);
 				commandData.push(0x54, 0x20 + command.channel, command.parameters[24]);
 			} else if (command instanceof CommandWait) {
-				let ticks = Math.round(command.time * 44100 / track.tickFrequency);
+				let ticks = Math.round(command.ticks * 44100 / track.tickFrequency);
 				samples += ticks;
 				while (ticks > 0) {
 					const ticksCapped = Math.min(ticks, 65535);
