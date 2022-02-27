@@ -30,29 +30,32 @@ export class CommandOPL4Wave extends CommandOPL4 {
 		return commandOPL4WaveMemo.get(register, value);
 	}
 
+	get channel() {
+		return (this.register - 0x08) % 24;
+	}
+
 	toString() {
 		let description = "";
-		const channel = (this.register - 0x08) % 24;
 		if (this.register >= 0x08 && this.register < 0x20)
-			description = `Ch${channel} Wave Table Number Low`;
+			description = `Ch${this.channel} Wave Table Number Low`;
 		if (this.register >= 0x20 && this.register < 0x38)
-			description = `Ch${channel} F-Number Low, Wave Table Number High`;
+			description = `Ch${this.channel} F-Number Low, Wave Table Number High`;
 		if (this.register >= 0x38 && this.register < 0x50)
-			description = `Ch${channel} F-Number High, Octave, Pseudo-Reverb`;
+			description = `Ch${this.channel} F-Number High, Octave, Pseudo-Reverb`;
 		if (this.register >= 0x50 && this.register < 0x68)
-			description = `Ch${channel} Total Level, Level Direct`;
+			description = `Ch${this.channel} Total Level, Level Direct`;
 		if (this.register >= 0x68 && this.register < 0x80)
-			description = `Ch${channel} Key On, Damp, LFO Reset, Ch, Panpot`;
+			description = `Ch${this.channel} Key On, Damp, LFO Reset, Ch, Panpot`;
 		if (this.register >= 0x80 && this.register < 0x98)
-			description = `Ch${channel} LFO Speed, VIB Depth`;
+			description = `Ch${this.channel} LFO Speed, VIB Depth`;
 		if (this.register >= 0x98 && this.register < 0xB0)
-			description = `Ch${channel} Attack Rate, Decay 1 Rate`;
+			description = `Ch${this.channel} Attack Rate, Decay 1 Rate`;
 		if (this.register >= 0xB0 && this.register < 0xC8)
-			description = `Ch${channel} Decay Level, Decay 2 Rate`;
+			description = `Ch${this.channel} Decay Level, Decay 2 Rate`;
 		if (this.register >= 0xC8 && this.register < 0xE0)
-			description = `Ch${channel} Rate Correction, Release Rate`;
+			description = `Ch${this.channel} Rate Correction, Release Rate`;
 		if (this.register >= 0xE0 && this.register < 0xF8)
-			description = `Ch${channel} Tremolo Depth`;
+			description = `Ch${this.channel} Tremolo Depth`;
 		if (this.register >= 0xF8 && this.register < 0xF9)
 			description = `Mixing Control`;
 
