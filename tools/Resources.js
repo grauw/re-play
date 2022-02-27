@@ -7,6 +7,7 @@ import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 import { TransformAttenuateVolume, TransformFrequencyBeforeKeyOn, TransformMapChannels, TransformMoveWaitAfterLoop,
 	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence } from "./Transform.js";
+import { TransformOPL4InsertWaitLoads } from "./TransformOPL4.js";
 
 export class Resources {
 	constructor(format) {
@@ -69,7 +70,8 @@ export class ResourcesLoader {
 				new TransformAttenuateVolume(jsonTrack.attenuation ?? json.attenuation),
 				new TransformFrequencyBeforeKeyOn(),
 				new TransformTrimLeadingSilence(),
-				new TransformQuantize(json.tickFrequency)
+				new TransformQuantize(json.tickFrequency),
+				new TransformOPL4InsertWaitLoads()
 			];
 
 			return transforms.reduce((track, transform) => transform.apply(track), track);

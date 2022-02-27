@@ -1,6 +1,6 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
-import { CommandOPL4Wave, CommandOPL4WaitLoad } from "./CommandOPL4.js";
+import { CommandOPL4Wave } from "./CommandOPL4.js";
 
 export class ChipOPL4 extends Chip {
 	constructor(clockFrequency = 33868800) {
@@ -39,10 +39,6 @@ export class ChipOPL4 extends Chip {
 
 		if (changed && address >= 0x208 && address < 0x2FA) {
 			emit(CommandOPL4Wave.of(address & 0xFF, value));
-		}
-
-		if (address >= 0x208 && address < 0x220) {
-			emit(CommandOPL4WaitLoad.of());
 		}
 	}
 
