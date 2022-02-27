@@ -1,6 +1,6 @@
 import { peek } from "./utils.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandFMChannel, CommandFMKey, CommandFMInstrument } from "./CommandFM.js";
 
 export class Track {
 	constructor(name, tickFrequency) {
@@ -77,125 +77,6 @@ export class Track {
 			} else {
 				track.addCommand(command);
 			}
-		}
-		return track;
-	}
-
-	moveWaitAfterLoop() {
-		const loop = this.getSymbol("loop");
-		if (loop && this.commands[loop.position + 1] instanceof CommandWait) {
-			const track = new Track(this.name, this.tickFrequency);
-			track.addCommands(this.commands.slice(0, loop.position));
-			track.addCommand(this.commands[loop.position + 1]);
-			track.addCommand(this.commands[loop.position]);
-			track.addCommands(this.commands.slice(loop.position + 2, this.commands.length - 1));
-			track.addCommand(this.commands[loop.position + 1]);
-			track.addCommand(this.commands[this.commands.length - 1]);
-			return track;
-		} else {
-			return this;
-		}
-	}
-
-	removeWaitsUnder(threshold = 0) {
-		const track = new Track(this.name, this.tickFrequency);
-		let accumulator = 0;
-		for (const command of this.commands) {
-			if (command instanceof CommandWait) {
-				if (command.ticks >= threshold) {
-					track.addCommand(CommandWait.of(command.ticks + accumulator));
-					accumulator = 0;
-				} else {
-					accumulator += command.ticks;
-				}
-			} else if (command instanceof CommandLabel || command instanceof CommandJump) {
-				if (accumulator > 0) {
-					track.addCommand(CommandWait.of(accumulator));
-					accumulator = 0;
-				}
-				track.addCommand(command);
-			} else {
-				track.addCommand(command);
-			}
-		}
-		return track;
-	}
-
-	quantise(newTickFrequency = 315000000 / 5256768) {
-		const track = new Track(this.name, newTickFrequency);
-		let accumulator = 0;
-		for (const command of this.commands) {
-			if (command instanceof CommandWait) {
-				accumulator += command.ticks * newTickFrequency;
-				if (accumulator >= this.tickFrequency) {
-					const newTicks = Math.floor(accumulator / this.tickFrequency);
-					track.addCommand(CommandWait.of(newTicks));
-					accumulator -= newTicks * this.tickFrequency;
-				}
-			} else {
-				track.addCommand(command);
-			}
-		}
-		return track;
-	}
-
-	trimLeadingSilence() {
-		const track = new Track(this.name, this.tickFrequency);
-		for (let index = 0; index < this.commands.length; ++index) {
-			if (!(this.commands[index] instanceof CommandWait)) {
-				track.addCommands(this.commands.slice(index, this.commands.length));
-				break;
-			}
-		}
-		return track;
-	}
-
-	mapChannels(mapping = [0, 1, 2, 3, 4, 5, 6, 7]) {
-		const track = new Track(this.name, this.tickFrequency);
-		for (const command of this.commands) {
-			if (command instanceof CommandFMChannel) {
-				const newChannel = mapping[command.channel];
-				if (newChannel < 0) {
-					// skip
-				} else if (command instanceof CommandFMKey) {
-					track.addCommand(CommandFMKey.of(mapping[command.channel], command.slots));
-				} else if (command instanceof CommandFMFrequency) {
-					track.addCommand(CommandFMFrequency.of(mapping[command.channel], command.frequency));
-				} else if (command instanceof CommandFMInstrument) {
-					track.addCommand(CommandFMInstrument.of(mapping[command.channel], ...command.parameters));
-				}
-			} else {
-				track.addCommand(command);
-			}
-		}
-		return track;
-	}
-
-	attenuateVolume(dB = 0) {
-		const track = new Track(this.name, this.tickFrequency);
-		for (const command of this.commands) {
-			if (command instanceof CommandFMInstrument) {
-				track.addCommand(command.attenuateVolume(dB));
-			} else {
-				track.addCommand(command);
-			}
-		}
-		return track;
-	}
-
-	frequencyBeforeKeyOn() {
-		const track = new Track(this.name, this.tickFrequency);
-		let lastCommand = null;
-		for (const command of this.commands) {
-			if (command instanceof CommandFMFrequency && lastCommand instanceof CommandFMKey &&
-				lastCommand.slots && command.channel == lastCommand.channel) {
-				track.commands.pop();
-				track.addCommand(command);
-				track.addCommand(lastCommand);
-			} else {
-				track.addCommand(command);
-			}
-			lastCommand = command;
 		}
 		return track;
 	}
