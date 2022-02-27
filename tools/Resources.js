@@ -59,14 +59,12 @@ export class ResourcesLoader {
 		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name);
-			const waitThreshold = "waitThreshold" in jsonTrack ? jsonTrack.waitThreshold : json.waitThreshold;
-			const channelMapping = "channelMapping" in jsonTrack ? jsonTrack.channelMapping : json.channelMapping;
-			const attenuation = "attenuation" in jsonTrack ? jsonTrack.attenuation : json.attenuation;
+
 			return (track
 				.moveWaitAfterLoop()
-				.removeWaitsUnder(waitThreshold)
-				.mapChannels(channelMapping)
-				.attenuateVolume(attenuation)
+				.removeWaitsUnder(jsonTrack.waitThreshold ?? json.waitThreshold)
+				.mapChannels(jsonTrack.channelMapping ?? json.channelMapping)
+				.attenuateVolume(jsonTrack.attenuation ?? json.attenuation)
 				.frequencyBeforeKeyOn()
 				.trimLeadingSilence()
 				.quantise(json.tickFrequency)
