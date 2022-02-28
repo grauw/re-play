@@ -102,6 +102,11 @@ export class TransformAttenuateVolume extends Transform {
 		for (const command of input.commands) {
 			if (command instanceof CommandFMInstrument) {
 				output.addCommand(command.attenuateVolume(this.dB));
+			} else if (command instanceof CommandOPL4Wave && command.register >= 0x50 && command.register < 0x68) {
+				const level = command.value >> 1;
+				const direct = command.value & 1;
+				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0), 127);
+				output.addCommand(CommandOPL4Wave.of(command.register, newLevel << 1 | direct));
 			} else {
 				output.addCommand(command);
 			}
