@@ -12,6 +12,23 @@ export class ChipOPL4 extends Chip {
 		this.ramSize = 0x000000;
 	}
 
+	set(address, value) {
+		let changed = super.set(address, value);
+
+		if (address >= 0x208 && address < 0x220) {
+			const channel = address - 0x208;
+			const waveTableNumber = (this.get(address + 24) << 8 | value) & 0x1FF;
+			const egSettings = this.getWaveTableEGSettings(waveTableNumber);
+			changed = this.set(0x280 + channel, egSettings[0]) || changed;
+			changed = this.set(0x298 + channel, egSettings[1]) || changed;
+			changed = this.set(0x2B0 + channel, egSettings[2]) || changed;
+			changed = this.set(0x2C8 + channel, egSettings[3]) || changed;
+			changed = this.set(0x2E0 + channel, egSettings[4]) || changed;
+		}
+
+		return changed;
+	}
+
 	writeROMData(romSize, dataStart, data, emit) {
 		this.memory = Uint8Array.from(this.memory);
 		if (romSize != this.romSize) {
@@ -30,19 +47,7 @@ export class ChipOPL4 extends Chip {
 	}
 
 	writeRegister(address, value, emit) {
-		let changed = this.set(address, value);
-
-		if (address >= 0x208 && address < 0x220) {
-			const channel = (address - 0x208) % 24;
-			const waveTableNumber = (this.get(address + 24) << 8 | value) & 0x1FF;
-			const egSettings = this.getWaveTableEGSettings(waveTableNumber);
-			changed = this.set(0x280 + channel, egSettings[0]) || changed;
-			changed = this.set(0x298 + channel, egSettings[1]) || changed;
-			changed = this.set(0x2B0 + channel, egSettings[2]) || changed;
-			changed = this.set(0x2C8 + channel, egSettings[3]) || changed;
-			changed = this.set(0x2E0 + channel, egSettings[4]) || changed;
-		}
-
+		const changed = this.set(address, value);
 		if (changed && address >= 0x208 && address < 0x2FA) {
 			emit(CommandOPL4Wave.of(address & 0xFF, value));
 		}
