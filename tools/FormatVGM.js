@@ -72,11 +72,11 @@ export class FormatVGM extends Format {
 				address += 4;
 				if (dataType == 0x84) {
 					opl4.writeROMData(getDoubleWord(address), getDoubleWord(address + 4),
-						vgm.subarray(address + 8, address + dataSize));
+						vgm.subarray(address + 8, address + dataSize), command => track.addCommand(command));
 				}
 				if (dataType == 0x87) {
 					opl4.writeRAMData(getDoubleWord(address), getDoubleWord(address + 4),
-						vgm.subarray(address + 8, address + dataSize));
+						vgm.subarray(address + 8, address + dataSize), command => track.addCommand(command));
 				}
 				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {

@@ -1,4 +1,4 @@
-import { MemoConstructor } from "./utils.js";
+import { MemoConstructor, HashTypedArray } from "./utils.js";
 import { Command } from "./Command.js";
 
 export class CommandOPL4 extends Command {
@@ -104,3 +104,23 @@ export class CommandOPL4Wave extends CommandOPL4 {
 }
 
 const commandOPL4WaveMemo = new MemoConstructor(CommandOPL4Wave);
+
+export class CommandOPL4WaveMemory extends CommandOPL4 {
+	constructor(memory, romSize, ramSize) {
+		super();
+		this.memory = memory instanceof HashTypedArray ? memory.array : memory;
+		this.romSize = romSize;
+		this.ramSize = ramSize;
+	}
+
+	static of(memory, romSize, ramSize) {
+		return commandOPL4WaveMemoryMemo.get(new HashTypedArray(memory), romSize, ramSize);
+	}
+
+	toString() {
+		const hex = value => value.toString(16).toUpperCase();
+		return `OPL4WaveMemory ROM Size: 0x${hex(this.romSize)}, RAM Size: 0x${hex(this.ramSize)}`;
+	}
+}
+
+const commandOPL4WaveMemoryMemo = new MemoConstructor(CommandOPL4WaveMemory);

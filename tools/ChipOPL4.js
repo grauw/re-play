@@ -1,6 +1,6 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
-import { CommandOPL4Wave } from "./CommandOPL4.js";
+import { CommandOPL4Wave, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
 export class ChipOPL4 extends Chip {
 	constructor(clockFrequency = 33868800) {
@@ -9,18 +9,24 @@ export class ChipOPL4 extends Chip {
 		this.memory = new Uint8Array(0x400000);
 		this.memory.set(yrw801Headers);
 		this.romSize = 0x200000;
+		this.ramSize = 0x000000;
 	}
 
-	writeROMData(romSize, dataStart, data) {
+	writeROMData(romSize, dataStart, data, emit) {
+		this.memory = Uint8Array.from(this.memory);
 		if (romSize != this.romSize) {
 			this.memory.copyWithin(romSize, this.romSize);
 		}
 		this.romSize = romSize;
 		this.memory.set(data, dataStart);
+		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
 	}
 
-	writeRAMData(ramSize, dataStart, data) {
+	writeRAMData(ramSize, dataStart, data, emit) {
+		this.memory = Uint8Array.from(this.memory);
+		this.ramSize = ramSize;
 		this.memory.set(data, this.romSize + dataStart);
+		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
 	}
 
 	writeRegister(address, value, emit) {
