@@ -1,6 +1,7 @@
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPL4Wave } from "./CommandOPL4.js";
 
 export class Transform {
 	apply(input) {
@@ -58,7 +59,7 @@ export class TransformRemoveWaitsUnder extends Transform {
 }
 
 export class TransformMapChannels extends Transform {
-	constructor(mapping = [0, 1, 2, 3, 4, 5, 6, 7]) {
+	constructor(mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]) {
 		super();
 		this.mapping = mapping;
 	}
@@ -71,11 +72,16 @@ export class TransformMapChannels extends Transform {
 				if (newChannel < 0) {
 					// skip
 				} else if (command instanceof CommandFMKey) {
-					output.addCommand(CommandFMKey.of(this.mapping[command.channel], command.slots));
+					output.addCommand(CommandFMKey.of(newChannel, command.slots));
 				} else if (command instanceof CommandFMFrequency) {
-					output.addCommand(CommandFMFrequency.of(this.mapping[command.channel], command.frequency));
+					output.addCommand(CommandFMFrequency.of(newChannel, command.frequency));
 				} else if (command instanceof CommandFMInstrument) {
-					output.addCommand(CommandFMInstrument.of(this.mapping[command.channel], ...command.parameters));
+					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
+				}
+			} else if (command instanceof CommandOPL4Wave && command.register >= 0x08 && command.register < 0xF8) {
+				const newChannel = this.mapping[command.channel];
+				if (newChannel >= 0) {
+					output.addCommand(CommandOPL4Wave.of(command.register - command.channel + newChannel, command.value));
 				}
 			} else {
 				output.addCommand(command);
