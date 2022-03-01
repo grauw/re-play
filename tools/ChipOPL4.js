@@ -1,15 +1,13 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
 import { CommandOPL4Wave, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { rangeMap } from "./utils.js";
 
 export class ChipOPL4 extends Chip {
 	constructor(clockFrequency = 33868800) {
 		super(0x300);
 		this.clockFrequency = clockFrequency;
-		this.waveTables = [];
-		for (let i = 0; i < 24; i++) {
-			this.waveTables.push(new ChipOPL4WaveTable());
-		}
+		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
 		this.memory = new Uint8Array(0x400000);
 		this.memory.set(yrw801Headers);
 		this.romSize = 0x200000;

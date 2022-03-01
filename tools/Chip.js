@@ -1,9 +1,8 @@
+import { rangeMap } from "./utils.js";
+
 export class Chip {
 	constructor(registerCount) {
-		this.registers = [];
-		for (let i = 0; i < registerCount; i++) {
-			this.registers.push(new Register());
-		}
+		this.registers = rangeMap(registerCount, i => new Register());
 	}
 
 	get(address) {

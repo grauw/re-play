@@ -4,6 +4,13 @@ export function peek(array) {
 	return array.length > 0 ? array[array.length - 1] : undefined;
 }
 
+export function rangeMap(count, callback) {
+	const array = [];
+	for (let i = 0; i < count; i++)
+		array.push(callback(i));
+	return array;
+}
+
 export class MemoConstructor {
 	constructor(type) {
 		this.type = type;
