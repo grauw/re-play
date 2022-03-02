@@ -42,6 +42,12 @@ export class ChipOPL4 extends Chip {
 		}
 	}
 
+	setMemory(memory, romSize, ramSize) {
+		this.memory = memory;
+		this.romSize = romSize;
+		this.ramSize = ramSize;
+	}
+
 	getWaveTable(channel) {
 		return this.waveTables[channel];
 	}
@@ -120,5 +126,9 @@ class ChipOPL4WaveTable {
 
 	unset() {
 		this.initialized = false;
+	}
+
+	equals(other) {
+		return this.start == other.start && this.loop == other.loop && this.end == other.end;
 	}
 }
