@@ -1,7 +1,7 @@
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
-import { CommandOPL4Wave } from "./CommandOPL4.js";
+import { CommandOPL4Register } from "./CommandOPL4.js";
 
 export class Transform {
 	apply(input) {
@@ -78,10 +78,10 @@ export class TransformMapChannels extends Transform {
 				} else if (command instanceof CommandFMInstrument) {
 					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
 				}
-			} else if (command instanceof CommandOPL4Wave && command.register >= 0x08 && command.register < 0xF8) {
+			} else if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
 				const newChannel = this.mapping[command.channel];
 				if (newChannel >= 0) {
-					output.addCommand(CommandOPL4Wave.of(command.register - command.channel + newChannel, command.value));
+					output.addCommand(CommandOPL4Register.of(command.address - command.channel + newChannel, command.value));
 				}
 			} else {
 				output.addCommand(command);
@@ -102,11 +102,11 @@ export class TransformAttenuateVolume extends Transform {
 		for (const command of input.commands) {
 			if (command instanceof CommandFMInstrument) {
 				output.addCommand(command.attenuateVolume(this.dB));
-			} else if (command instanceof CommandOPL4Wave && command.register >= 0x50 && command.register < 0x68) {
+			} else if (command instanceof CommandOPL4Register && command.address >= 0x250 && command.address < 0x268) {
 				const level = command.value >> 1;
 				const direct = command.value & 1;
 				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0), 127);
-				output.addCommand(CommandOPL4Wave.of(command.register, newLevel << 1 | direct));
+				output.addCommand(CommandOPL4Register.of(command.address, newLevel << 1 | direct));
 			} else {
 				output.addCommand(command);
 			}

@@ -1,6 +1,6 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
-import { CommandOPL4Wave, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { rangeMap } from "./utils.js";
 
 export class ChipOPL4 extends Chip {
@@ -75,9 +75,8 @@ export class ChipOPL4 extends Chip {
 	}
 
 	writeRegister(address, value, emit) {
-		const changed = this.set(address, value);
-		if (changed && address >= 0x208 && address < 0x2FA) {
-			emit(CommandOPL4Wave.of(address & 0xFF, value));
+		if (this.set(address, value)) {
+			emit(CommandOPL4Register.of(address, value));
 		}
 	}
 }

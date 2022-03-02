@@ -1,7 +1,7 @@
 import fs from "fs";
 import { Format } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandOPL4Wave, CommandOPL4WaitLoad } from "./CommandOPL4.js";
+import { CommandOPL4Register, CommandOPL4WaitLoad } from "./CommandOPL4.js";
 import { BankedData } from "./BankedData.js";
 
 export const FORMAT_OPL4_WAVE_ID = 0x01;
@@ -23,14 +23,14 @@ export class FormatOPL4Wave extends Format {
 		data.add(FORMAT_OPL4_WAVE_ID);
 		const registerBlock = [];
 		for (const command of track.commands) {
-			if (command instanceof CommandOPL4Wave) {
+			if (command instanceof CommandOPL4Register && command.address >= 0x200) {
 				registerBlock.push(command);
 				continue;
 			} else {
 				while (registerBlock.length) {
 					const space = Math.floor((data.free - data.jump.length - 1) / 2);
 					const count = Math.min(registerBlock.length, 0x80, space > 0 ? space : Infinity);
-					data.add(0x80 | count, ...registerBlock.splice(0, count).flatMap(c => [c.register, c.value]));
+					data.add(0x80 | count, ...registerBlock.splice(0, count).flatMap(c => [c.address, c.value]));
 				}
 			}
 
