@@ -5,8 +5,9 @@ import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4Wave } from "./FormatOPL4Wave.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
-import { TransformAttenuateVolume, TransformFrequencyBeforeKeyOn, TransformMapChannels, TransformMoveWaitAfterLoop,
+import { TransformAttenuateVolume, TransformMapChannels, TransformMoveWaitAfterLoop,
 	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence, TransformEndLoop } from "./Transform.js";
+import { TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4InsertWaitLoads, TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
 
 export class Resources {
@@ -68,7 +69,7 @@ export class ResourcesLoader {
 				new TransformRemoveWaitsUnder(jsonTrack.waitThreshold ?? json.waitThreshold),
 				new TransformMapChannels(jsonTrack.channelMapping ?? json.channelMapping),
 				new TransformAttenuateVolume(jsonTrack.attenuation ?? json.attenuation),
-				new TransformFrequencyBeforeKeyOn(),
+				new TransformOPNFrequencyBeforeKeyOn(),
 				new TransformTrimLeadingSilence(),
 				new TransformQuantize(json.tickFrequency),
 				new TransformOPL4FrameSanitizer(),
