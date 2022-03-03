@@ -1,9 +1,5 @@
 import { createHash } from "crypto";
 
-export function peek(array) {
-	return array.length > 0 ? array[array.length - 1] : undefined;
-}
-
 export function rangeMap(count, callback) {
 	const array = [];
 	for (let i = 0; i < count; i++)

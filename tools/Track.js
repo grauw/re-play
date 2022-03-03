@@ -1,4 +1,3 @@
-import { peek } from "./utils.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4WaveMemory } from "./CommandOPL4.js";
@@ -16,19 +15,19 @@ export class Track {
 	}
 
 	addCommand(command) {
-		if (command instanceof CommandWait && peek(this.commands) instanceof CommandWait) {
+		if (command instanceof CommandWait && this.commands.at(-1) instanceof CommandWait) {
 			command = command.add(this.commands.pop());
 		} else if (command instanceof CommandLabel) {
 			if (this.symbols.has(command.name)) {
 				throw new Error(`Symbol already exists: ${command.name}`);
 			}
-			if (peek(this.commands) instanceof CommandJump && peek(this.commands).target == command.name) {
+			if (this.commands.at(-1) instanceof CommandJump && this.commands.at(-1).target == command.name) {
 				this.commands.pop();
 			}
 			this.symbols.set(command.name, new Symbol(command.name, this.commands.length, command));
 		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
-			while (peek(this.commands) instanceof CommandFMInstrument) {
+			while (this.commands.at(-1) instanceof CommandFMInstrument) {
 				const lastCommand = this.commands.pop();
 				if (lastCommand.channel == command.channel) {
 					break;
@@ -40,11 +39,11 @@ export class Track {
 				this.commands.push(tail.pop());
 			}
 		} else if (command instanceof CommandOPL4WaveMemory) {
-			if (peek(this.commands) instanceof CommandOPL4WaveMemory) {
+			if (this.commands.at(-1) instanceof CommandOPL4WaveMemory) {
 				this.commands.pop();
 			}
 		} else if (command instanceof CommandReturn) {
-			if (peek(this.commands) instanceof CommandCall) {
+			if (this.commands.at(-1) instanceof CommandCall) {
 				command = CommandJump.of(this.commands.pop().target);
 			}
 		}
