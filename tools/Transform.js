@@ -1,5 +1,5 @@
 import { Track } from "./Track.js";
-import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
+import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Register } from "./CommandOPL4.js";
 
@@ -44,7 +44,7 @@ export class TransformRemoveWaitsUnder extends Transform {
 				} else {
 					accumulator += command.ticks;
 				}
-			} else if (command instanceof CommandLabel || command instanceof CommandJump) {
+			} else if (command instanceof CommandLabel || command instanceof CommandJump || command instanceof CommandReturn) {
 				if (accumulator > 0) {
 					output.addCommand(CommandWait.of(accumulator));
 					accumulator = 0;
@@ -169,5 +169,21 @@ export class TransformQuantize extends Transform {
 			}
 		}
 		return output;
+	}
+}
+
+export class TransformEndLoop extends Transform {
+	apply(input) {
+		if (input.commands.at(-1) instanceof CommandReturn) {
+			const output = new Track(input.name, input.tickFrequency);
+			const stripCount = input.commands.at(-2) instanceof CommandWait ? 2 : 1;
+			output.addCommands(input.commands.slice(0, -stripCount));
+			output.addCommand(CommandLabel.of("loop"));
+			output.addCommand(CommandWait.of(1));
+			output.addCommand(CommandJump.of("loop"));
+			return output;
+		} else {
+			return input;
+		}
 	}
 }

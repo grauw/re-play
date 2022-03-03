@@ -6,7 +6,7 @@ import { FormatOPL4Wave } from "./FormatOPL4Wave.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 import { TransformAttenuateVolume, TransformFrequencyBeforeKeyOn, TransformMapChannels, TransformMoveWaitAfterLoop,
-	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence } from "./Transform.js";
+	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence, TransformEndLoop } from "./Transform.js";
 import { TransformOPL4InsertWaitLoads, TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
 
 export class Resources {
@@ -72,7 +72,8 @@ export class ResourcesLoader {
 				new TransformTrimLeadingSilence(),
 				new TransformQuantize(json.tickFrequency),
 				new TransformOPL4FrameSanitizer(),
-				new TransformOPL4InsertWaitLoads()
+				new TransformOPL4InsertWaitLoads(),
+				new TransformEndLoop()
 			];
 
 			return transforms.reduce((track, transform) => transform.apply(track), track);
