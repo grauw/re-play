@@ -2,31 +2,29 @@ import { rangeMap } from "./utils.js";
 
 export class Chip {
 	constructor(registerCount) {
-		this.registers = rangeMap(registerCount, i => new Register());
+		this.registers = rangeMap(registerCount, address => new Register(address));
+	}
+
+	getRegister(address) {
+		if (address < 0 || address >= this.registers.length)
+			throw new Error("Register address out of range.");
+		return this.registers[address];
 	}
 
 	get(address) {
-		if (address < 0 || address >= this.registers.length)
-			throw new Error("Register address out of range.");
-		return this.registers[address].get();
+		return this.getRegister(address).get();
 	}
 
 	isSet(address) {
-		if (address < 0 || address >= this.registers.length)
-			throw new Error("Register address out of range.");
-		return this.registers[address].isSet();
+		return this.getRegister(address).isSet();
 	}
 
 	set(address, value) {
-		if (address < 0 || address >= this.registers.length)
-			throw new Error("Register address out of range.");
-		return this.registers[address].set(value);
+		return this.getRegister(address).set(value);
 	}
 
 	unset(address) {
-		if (address < 0 || address >= this.registers.length)
-			throw new Error("Register address out of range.");
-		this.registers[address].unset();
+		this.getRegister(address).unset();
 	}
 
 	unsetAll() {
@@ -37,8 +35,9 @@ export class Chip {
 }
 
 export class Register {
-	constructor() {
+	constructor(address) {
 		this.initialized = false;
+		this.address = address;
 		this.value = 0;
 	}
 
@@ -61,5 +60,9 @@ export class Register {
 
 	unset() {
 		this.initialized = false;
+	}
+
+	equals(other) {
+		return this.value == other.value;
 	}
 }

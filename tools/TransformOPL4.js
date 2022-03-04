@@ -109,9 +109,9 @@ class OPL4FrameSanitizerChannel {
 		this.firstKeyOn = false;
 		this.firstKeyOnOutput = false;
 		this.waveTableChanged = false;
-		this.keyOff = new Register();
-		this.totalLevelDirect = new Register();
-		this.waveTableHigh = new Register();
+		this.keyOff = new Register(0x268 + channel);
+		this.totalLevelDirect = new Register(0x250 + channel);
+		this.waveTableHigh = new Register(0x220 + channel);
 	}
 
 	processRegisterWrite(opl4Input, opl4Output, address, value) {
