@@ -15,6 +15,10 @@ export class ChipOPL4 extends Chip {
 	}
 
 	set(address, value) {
+		if (address == 0x004 && value & 0x80) {
+			return true;
+		}
+
 		let changed = super.set(address, value);
 
 		if (address >= 0x208 && address < 0x220) {

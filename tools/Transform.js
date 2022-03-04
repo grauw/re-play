@@ -135,6 +135,14 @@ export class TransformQuantize extends Transform {
 	}
 
 	apply(input) {
+		if (this.tickFrequency == "opl4-timer") {
+			return this.applyOPL4Timer(input);
+		} else {
+			return this.applyHertz(input);
+		}
+	}
+
+	applyHertz(input) {
 		const output = new Track(input.name, this.tickFrequency);
 		let accumulator = 0;
 		for (const command of input.commands) {
@@ -149,6 +157,34 @@ export class TransformQuantize extends Transform {
 				output.addCommand(command);
 			}
 		}
+		return output;
+	}
+
+	applyOPL4Timer(input) {
+		let inputTicks = 0;
+		let outputTicks = 0;
+		let timerActive = false;
+		const output = new Track(input.name, 0);
+		for (const command of input.commands) {
+			if (command instanceof CommandWait) {
+				if (timerActive) {
+					inputTicks += command.ticks;
+				}
+			} else if (command instanceof CommandOPL4Register && command.address == 0x004) {
+				if (command.value & 0x80) {
+					output.addCommand(CommandWait.of(1));
+					outputTicks++;
+				} else {
+					timerActive = (command.value & 0x03) != 0;
+				}
+			} else {
+				output.addCommand(command);
+			}
+		}
+		if (inputTicks == 0) {
+			throw new Error(`No timer active in track ${input.name}.`);
+		}
+		output.tickFrequency = input.tickFrequency * outputTicks / inputTicks;
 		return output;
 	}
 }
