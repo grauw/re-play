@@ -3,6 +3,7 @@ import { Track } from "./Track.js";
 import { CommandWait, CommandControlFlow } from "./Command.js";
 import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
+import { Register } from "./Chip.js";
 import { rangeMap } from "./utils.js";
 
 export class TransformOPL4InsertWaitLoads extends Transform {
@@ -108,9 +109,9 @@ class OPL4FrameSanitizerChannel {
 		this.firstKeyOn = false;
 		this.firstKeyOnOutput = false;
 		this.waveTableChanged = false;
-		this.keyOff = -1;
-		this.totalLevelDirect = -1;
-		this.waveTableHigh = 0;
+		this.keyOff = new Register();
+		this.totalLevelDirect = new Register();
+		this.waveTableHigh = new Register();
 	}
 
 	processRegisterWrite(opl4Input, opl4Output, address, value) {
@@ -121,14 +122,16 @@ class OPL4FrameSanitizerChannel {
 			if (value & 0x80) {
 				this.firstKeyOn = true;
 			} else {
-				this.keyOff = this.keyOff >= 0 ? this.keyOff & 0x20 | value : value;
+				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | value : value);
 			}
 		} else if (address >= 0x250 && address < 0x268) {
 			if (value & 1) {
-				this.totalLevelDirect = value;
+				this.totalLevelDirect.set(value);
 			}
 		} else if (address >= 0x208 && address < 0x220) {
-			this.waveTableHigh = opl4Input.get(address + 24) & 1;
+			this.waveTableHigh.set(opl4Input.get(address + 24));
+		} else if (address >= 0x220 && address < 0x238) {
+			this.waveTableHigh.set(value & 0xFE | this.waveTableHigh.get() & 1);
 		}
 		opl4Input.set(address, value);
 	}
@@ -137,21 +140,21 @@ class OPL4FrameSanitizerChannel {
 		this.waveTableChanged = opl4Input.isSet(0x208 + this.channel) && (!opl4Output.isSet(0x208 + this.channel) ||
 			!opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel)));
 		if (this.waveTableChanged) {
-			this.keyOff = this.keyOff >= 0 ? this.keyOff & 0x20 | 0x48 : 0x48;  // Force mute
+			this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
 		}
 	}
 
 	emitKeyOff(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOnOutput && this.keyOff >= 0) {
-			opl4Output.writeRegister(0x268 + this.channel, this.keyOff, emit);
+		if (this.firstKeyOnOutput && this.keyOff.isSet()) {
+			opl4Output.writeRegister(0x268 + this.channel, this.keyOff.get(), emit);
 		}
-		this.keyOff = -1;
+		this.keyOff.unset();
 	}
 
 	emitWaveTable(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			if (!opl4Output.isSet(0x220 + this.channel) || (opl4Output.get(0x220 + this.channel) & 1) != this.waveTableHigh) {
-				opl4Output.writeRegister(0x220 + this.channel, opl4Input.get(0x220 + this.channel) & 0xFE | this.waveTableHigh, emit);
+			if (!opl4Output.isSet(0x220 + this.channel) || (opl4Output.get(0x220 + this.channel) & 1) != (this.waveTableHigh.get() & 1)) {
+				opl4Output.writeRegister(0x220 + this.channel, this.waveTableHigh.get(), emit);
 			}
 			opl4Output.writeRegister(0x208 + this.channel, opl4Input.get(0x208 + this.channel), emit);
 		}
@@ -159,16 +162,16 @@ class OPL4FrameSanitizerChannel {
 
 	emitFrequency(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			opl4Output.writeRegister(0x220 + this.channel, opl4Input.get(0x220 + this.channel) & 0xFE | this.waveTableHigh, emit);
+			opl4Output.writeRegister(0x220 + this.channel, opl4Input.get(0x220 + this.channel), emit);
 			opl4Output.writeRegister(0x238 + this.channel, opl4Input.get(0x238 + this.channel), emit);
 		}
 	}
 
 	emitTotalLevel(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			if (this.totalLevelDirect >= 0) {
-				opl4Output.writeRegister(0x250 + this.channel, this.totalLevelDirect, emit);
-				this.totalLevelDirect = -1;
+			if (this.totalLevelDirect.isSet()) {
+				opl4Output.writeRegister(0x250 + this.channel, this.totalLevelDirect.get(), emit);
+				this.totalLevelDirect.unset();
 			}
 			opl4Output.writeRegister(0x250 + this.channel, opl4Input.get(0x250 + this.channel), emit);
 		}
