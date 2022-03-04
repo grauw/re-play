@@ -1,5 +1,5 @@
 import { Track } from "./Track.js";
-import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
+import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Register } from "./CommandOPL4.js";
 
@@ -44,7 +44,7 @@ export class TransformRemoveWaitsUnder extends Transform {
 				} else {
 					accumulator += command.ticks;
 				}
-			} else if (command instanceof CommandLabel || command instanceof CommandJump || command instanceof CommandReturn) {
+			} else if (command instanceof CommandControlFlow) {
 				if (accumulator > 0) {
 					output.addCommand(CommandWait.of(accumulator));
 					accumulator = 0;

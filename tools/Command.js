@@ -32,7 +32,13 @@ export class CommandWait extends Command {
 
 const commandWaitMemo = new MemoConstructor(CommandWait);
 
-export class CommandLabel extends Command {
+export class CommandControlFlow extends Command {
+	toString() {
+		return `CommandControlFlow`;
+	}
+}
+
+export class CommandLabel extends CommandControlFlow {
 	constructor(name) {
 		super();
 		this.name = name;
@@ -49,7 +55,7 @@ export class CommandLabel extends Command {
 
 const commandLabelMemo = new MemoConstructor(CommandLabel);
 
-export class CommandJump extends Command {
+export class CommandJump extends CommandControlFlow {
 	constructor(target) {
 		super();
 		this.target = target;
@@ -66,7 +72,7 @@ export class CommandJump extends Command {
 
 const commandJumpMemo = new MemoConstructor(CommandJump);
 
-export class CommandCall extends Command {
+export class CommandCall extends CommandControlFlow {
 	constructor(target) {
 		super();
 		this.target = target;
@@ -83,7 +89,7 @@ export class CommandCall extends Command {
 
 const commandCallMemo = new MemoConstructor(CommandCall);
 
-export class CommandReturn extends Command {
+export class CommandReturn extends CommandControlFlow {
 	static of() {
 		return commandReturnMemo;
 	}

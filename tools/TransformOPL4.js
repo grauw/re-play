@@ -1,6 +1,6 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
-import { CommandJump, CommandReturn, CommandWait } from "./Command.js";
+import { CommandWait, CommandControlFlow } from "./Command.js";
 import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { rangeMap } from "./utils.js";
@@ -30,7 +30,7 @@ export class TransformOPL4InsertWaitLoads extends Transform {
 							emitWaitLoad();
 						}
 					}
-				} else if (loadChannels && command instanceof CommandJump) {
+				} else if (loadChannels && command instanceof CommandControlFlow) {
 					emitWaitLoad();
 				}
 				output.addCommand(command);
@@ -58,7 +58,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				opl4Input.setMemory(command.memory, command.romSize, command.ramSize);
 				opl4Output.setMemory(command.memory, command.romSize, command.ramSize);
 				output.addCommand(command);
-			} else if (command instanceof CommandWait || command instanceof CommandJump || command instanceof CommandReturn) {
+			} else if (command instanceof CommandWait || command instanceof CommandControlFlow) {
 				for (const channel of channels) {
 					channel.processFrame(opl4Input, opl4Output);
 				}
