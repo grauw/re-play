@@ -1,6 +1,6 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
-import { CommandWait, CommandControlFlow } from "./Command.js";
+import { CommandWait, CommandControlFlow, CommandLabel, CommandJump } from "./Command.js";
 import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
@@ -94,12 +94,42 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				for (const channel of channels) {
 					channel.emitKeyOn(opl4Input, opl4Output, emit);
 				}
+				if (command instanceof CommandLabel && command.name == "loop") {
+					this.unsetLoopChanges(input, opl4Output, channels, "loop");
+				}
 				output.addCommand(command);
 			} else {
 				output.addCommand(command);
 			}
 		}
 		return output;
+	}
+
+	unsetLoopChanges(input, opl4Output, channels, target) {
+		const opl4Loop = new ChipOPL4();
+		for (const command of input.commands) {
+			if (command instanceof CommandOPL4Register) {
+				opl4Loop.set(command.address, command.value);
+				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
+					channels[command.channel].firstKeyOn = true;
+					channels[command.channel].firstKeyOnOutput = true;
+				}
+			} else if (command instanceof CommandOPL4WaveMemory) {
+				opl4Loop.setMemory(command.memory, command.romSize, command.ramSize);
+			} else if (command instanceof CommandJump && command.target == target) {
+				break;
+			}
+		}
+		for (let address = 0x220; address < 0x2F8; address++) {
+			if (!opl4Output.getRegister(address).equals(opl4Loop.getRegister(address))) {
+				opl4Output.unset(address);
+			}
+		}
+		for (let channel = 0; channel < 24; channel++) {
+			if (!opl4Output.getWaveTable(channel).equals(opl4Loop.getWaveTable(channel))) {
+				opl4Output.unset(0x208 + channel);
+			}
+		}
 	}
 }
 
