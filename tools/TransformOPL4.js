@@ -145,52 +145,59 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitKeyOff(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOnOutput && this.keyOff.isSet()) {
-			opl4Output.writeRegister(0x268 + this.channel, this.keyOff.get(), emit);
+		if (this.firstKeyOnOutput) {
+			writeRegisterIfSet(opl4Output, this.keyOff, emit);
+		} else {
+			this.keyOff.unset();
 		}
-		this.keyOff.unset();
 	}
 
 	emitWaveTable(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
 			if (!opl4Output.isSet(0x220 + this.channel) || (opl4Output.get(0x220 + this.channel) & 1) != (this.waveTableHigh.get() & 1)) {
-				opl4Output.writeRegister(0x220 + this.channel, this.waveTableHigh.get(), emit);
+				writeRegisterIfSet(opl4Output, this.waveTableHigh, emit);
 			}
-			opl4Output.writeRegister(0x208 + this.channel, opl4Input.get(0x208 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x208 + this.channel), emit);
 		}
 	}
 
 	emitFrequency(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			opl4Output.writeRegister(0x220 + this.channel, opl4Input.get(0x220 + this.channel), emit);
-			opl4Output.writeRegister(0x238 + this.channel, opl4Input.get(0x238 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x220 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x238 + this.channel), emit);
 		}
 	}
 
 	emitTotalLevel(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			if (this.totalLevelDirect.isSet()) {
-				opl4Output.writeRegister(0x250 + this.channel, this.totalLevelDirect.get(), emit);
-				this.totalLevelDirect.unset();
-			}
-			opl4Output.writeRegister(0x250 + this.channel, opl4Input.get(0x250 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, this.totalLevelDirect, emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x250 + this.channel), emit);
 		}
 	}
 
 	emitLFOADSR(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			opl4Output.writeRegister(0x280 + this.channel, opl4Input.get(0x280 + this.channel), emit);
-			opl4Output.writeRegister(0x298 + this.channel, opl4Input.get(0x298 + this.channel), emit);
-			opl4Output.writeRegister(0x2B0 + this.channel, opl4Input.get(0x2B0 + this.channel), emit);
-			opl4Output.writeRegister(0x2C8 + this.channel, opl4Input.get(0x2C8 + this.channel), emit);
-			opl4Output.writeRegister(0x2E0 + this.channel, opl4Input.get(0x2E0 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x280 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x298 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x2B0 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x2C8 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x2E0 + this.channel), emit);
 		}
 	}
 
 	emitKeyOn(opl4Input, opl4Output, emit) {
 		if (this.firstKeyOn) {
-			opl4Output.writeRegister(0x268 + this.channel, opl4Input.get(0x268 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x268 + this.channel), emit);
 			this.firstKeyOnOutput = true;
 		}
+	}
+}
+
+function writeRegisterIfSet(opl4Output, register, emit) {
+	if (register.isSet()) {
+		if (opl4Output.set(register.address, register.value)) {
+			emit(CommandOPL4Register.of(register.address, register.value));
+		}
+		register.unset();
 	}
 }
