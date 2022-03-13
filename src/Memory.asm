@@ -128,3 +128,10 @@ Memory_MatchSlotString_NotFound:
 	pop af
 	and a
 	ret
+
+; ix = address
+Memory_CallBIOS:
+	ld iy,(EXPTBL - 1)
+	call CALSLT
+	ei
+	ret

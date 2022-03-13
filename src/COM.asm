@@ -2,7 +2,9 @@
 ;
 ;
 BDOS: equ 0005H
+WRTVDP: equ 0047H
 JIFFY: equ 0FC9EH
+RG9SAV: equ 0FFE8H
 
 _INNOE: equ 08H
 _CONST: equ 0BH
@@ -168,6 +170,8 @@ Main_Tick_Loop:
 	jr z,Main_Next
 	cp "b"
 	jr z,Main_Previous
+	cp "f"
+	jr z,Main_ToggleFrequency
 	jr Main_End
 Main_Pause:
 	push bc
@@ -186,6 +190,17 @@ Main_Previous:
 	dec bc
 	ld (Main_currentTrack),bc
 	jp Main_Play
+Main_ToggleFrequency:
+	push bc
+	ld a,(RG9SAV)
+	xor 00000010B
+	ld (RG9SAV),a
+	ld b,a
+	ld c,9
+	ld ix,WRTVDP
+	call Memory_CallBIOS
+	pop bc
+	jp Main_Loop
 Main_End:
 	call Player_Stop
 	ret
