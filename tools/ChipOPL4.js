@@ -133,7 +133,8 @@ class ChipOPL4WaveTable {
 	}
 
 	equals(other) {
-		return this.start == other.start && this.loop == other.loop && this.end == other.end;
+		return !this.initialized && !other.initialized || this.initialized == other.initialized &&
+			this.start == other.start && this.loop == other.loop && this.end == other.end;
 	}
 }
 

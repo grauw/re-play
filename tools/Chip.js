@@ -63,6 +63,7 @@ export class Register {
 	}
 
 	equals(other) {
-		return (this.value & this.mask) == (other.value & other.mask);
+		return !this.initialized && !other.initialized || this.initialized == other.initialized &&
+			(this.value & this.mask) == (other.value & other.mask);
 	}
 }
