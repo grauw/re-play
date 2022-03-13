@@ -1,8 +1,6 @@
-import { rangeMap } from "./utils.js";
-
 export class Chip {
-	constructor(registerCount) {
-		this.registers = rangeMap(registerCount, address => new Register(address));
+	constructor(registerMasks) {
+		this.registers = registerMasks.map((mask, address) => new Register(address, mask));
 	}
 
 	getRegister(address) {
@@ -35,10 +33,11 @@ export class Chip {
 }
 
 export class Register {
-	constructor(address) {
+	constructor(address, mask = 0xFF, value = 0x00) {
 		this.initialized = false;
 		this.address = address;
-		this.value = 0;
+		this.mask = mask;
+		this.value = value;
 	}
 
 	get() {
@@ -51,10 +50,11 @@ export class Register {
 
 	set(value) {
 		if (value < 0 || value >= 0x100)
-			throw new Error("Register address out of range.");
-		const changed = !this.initialized || this.value != value;
-		this.initialized = true;
-		this.value = value;
+			throw new Error("Register value out of range.");
+		const initialized = this.mask != 0;
+		const changed = this.initialized != initialized || (this.value & this.mask) != (value & this.mask);
+		this.initialized = initialized;
+		this.value = this.value & ~this.mask | value & this.mask;
 		return changed;
 	}
 
@@ -63,6 +63,6 @@ export class Register {
 	}
 
 	equals(other) {
-		return this.value == other.value;
+		return (this.value & this.mask) == (other.value & other.mask);
 	}
 }
