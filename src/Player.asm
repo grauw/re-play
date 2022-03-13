@@ -6,22 +6,21 @@
 
 Player_STACK_CAPACITY: equ 128
 
-; hl = sound data
+; a = format ID (first byte of sound data)
 ; f <- c: found
 Player_Detect:
 	call Player_Detect_Format
 	jp c,Player_SetJumpTable
 	jp Player_ClearJumpTable
 
-; hl = sound data
+; a = format ID (first byte of sound data)
 ; f <- c: found
 Player_Detect_Format:
-	ld a,FormatOPN_ID
-	xor (hl)
+	cp FormatOPN_ID
 	jp z,FormatOPN_Detect
-	ld a,FormatOPL4Wave_ID
-	xor (hl)
+	cp FormatOPL4Wave_ID
 	jp z,FormatOPL4Wave_Detect
+	and a
 	ret
 
 ; f <- c: found

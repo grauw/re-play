@@ -127,7 +127,7 @@ Main_ReadComplete:
 	call BDOS
 	jp nz,DOS_TerminateWithErrorCode
 
-	ld hl,SoundData
+	ld a,(SoundData)
 	call Player_Detect
 	ld a,1
 	jp nc,DOS_TerminateWithErrorCode
