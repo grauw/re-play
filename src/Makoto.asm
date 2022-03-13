@@ -29,8 +29,6 @@ Makoto_Detect:
 	pop af
 	xor 00100000B
 	ret nz
-	ld a,1
-	ld (Makoto_found),a
 	ld de,2980H
 	call Makoto_WriteRegister1
 	scf
@@ -245,7 +243,3 @@ Makoto_WriteRegister2_Wait:
 	out (Makoto_FM2_DATA),a
 	pop af
 	ret
-
-; Data in RAM
-Makoto_found:
-	db 0

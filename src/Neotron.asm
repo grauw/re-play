@@ -19,8 +19,6 @@ Neotron_Detect:
 	push af
 	ld iyh,a
 	ld (Neotron_slot),a
-	ld a,1
-	ld (Neotron_found),a
 	ld ix,Neotron_SIOS_ENABLE_IO
 	and a
 	call CALSLT
@@ -293,7 +291,5 @@ Neotron_id:
 	db "OSC YM  OPNBYM2610"
 
 ; Data in RAM
-Neotron_found:
-	db 0
 Neotron_slot:
 	db 0

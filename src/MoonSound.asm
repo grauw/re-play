@@ -24,8 +24,6 @@ MoonSound_Detect:
 	and 11100000B
 	xor 00100000B
 	ret nz
-	ld a,1
-	ld (MoonSound_found),a
 	ld de,0210H
 	call MoonSound_WriteWaveRegister  ; set standard memory layout
 	scf
@@ -152,7 +150,3 @@ MoonSound_ReadWaveRegister:
 MoonSound_ReadStatusRegister:
 	in a,(MoonSound_STATUS)
 	ret
-
-; Data in RAM
-MoonSound_found:
-	db 0

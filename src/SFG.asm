@@ -13,8 +13,6 @@ SFG_Detect:
 	call Memory_SearchSlots
 	ret nc
 	ld (SFG_slot),a
-	ld a,1
-	ld (SFG_found),a
 	ret
 
 ; a = slot ID
@@ -224,7 +222,5 @@ SFG_id:
 	db "MCHFM0"
 
 ; Data in RAM
-SFG_found:
-	db 0
 SFG_slot:
 	db 0
