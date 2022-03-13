@@ -64,9 +64,9 @@ export class ResourcesLoader {
 
 		const resources = new Resources(this.parseFormat(json));
 
-		const tracks = Promise.all(json.tracks.map(async jsonTrack => {
+		const tracks = Promise.all(json.tracks.map(async (jsonTrack, index) => {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
-			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name);
+			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name || `${index + 1}`);
 
 			const transforms = [
 				new TransformMoveWaitAfterLoop(),

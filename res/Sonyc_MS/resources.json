@@ -5,51 +5,39 @@
 	"waitThreshold": 100,
 	"tracks": [
 		{
-			"name": "01_Title",
 			"path": "01_Title.vgm"
 		},
 		{
-			"name": "02_Map",
 			"path": "02_Map.vgm"
 		},
 		{
-			"name": "03_Palm",
 			"path": "03_Palm.vgm"
 		},
 		{
-			"name": "04_Battle",
 			"path": "04_Battle.vgm"
 		},
 		{
-			"name": "05_Death",
 			"path": "05_Death.vgm"
 		},
 		{
-			"name": "06_Over",
 			"path": "06_Over.vgm"
 		},
 		{
-			"name": "07_Bonus",
 			"path": "07_Bonus.vgm"
 		},
 		{
-			"name": "08_Ice",
 			"path": "08_Ice.vgm"
 		},
 		{
-			"name": "09_Ruins",
 			"path": "09_Ruins.vgm"
 		},
 		{
-			"name": "10_Forest",
 			"path": "10_Forest.vgm"
 		},
 		{
-			"name": "11_Complete",
 			"path": "11_Complete.vgm"
 		},
 		{
-			"name": "12_Credits",
 			"path": "12_Credits.vgm"
 		}
 	]
