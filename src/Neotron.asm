@@ -11,14 +11,15 @@ Neotron_FM2_DATA: equ Neotron_BASE + 3
 Neotron_ID_ADDRESS: equ 806CH
 Neotron_SIOS_ENABLE_IO: equ 801CH
 
+; a <- slot ID (if found)
 ; f <- c: found
 Neotron_Detect:
 	ld hl,Neotron_Detect_MatchID
 	call Memory_SearchSlots
 	ret nc
+	ld (Neotron_slot),a
 	push af
 	ld iyh,a
-	ld (Neotron_slot),a
 	ld ix,Neotron_SIOS_ENABLE_IO
 	and a
 	call CALSLT

@@ -7,6 +7,7 @@ SFG_DATA: equ SFG_BASE + 1
 SFG_STATUS: equ SFG_BASE + 1
 SFG_ID_ADDRESS: equ 80H
 
+; a <- slot ID (if found)
 ; f <- c: found
 SFG_Detect:
 	ld hl,SFG_Detect_MatchID
