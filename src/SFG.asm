@@ -222,6 +222,9 @@ SFG_WriteRegister_Wait:
 SFG_id:
 	db "MCHFM0"
 
-; Data in RAM
+	SECTION RAM
+
 SFG_slot:
 	db 0
+
+	ENDS

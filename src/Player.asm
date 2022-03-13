@@ -155,7 +155,8 @@ Player_Pop:
 	ld a,(ix + 2)
 	ret
 
-; Data in RAM
+	SECTION RAM
+
 Player_playing:
 	db 0
 Player_stackPointer:
@@ -168,3 +169,5 @@ Player_Mute:
 	db 0C9H, 0, 0
 Player_Restore:
 	db 0C9H, 0, 0
+
+	ENDS

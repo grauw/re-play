@@ -18,6 +18,9 @@ FormatOPN_Detect:
 	ld hl,Neotron_JumpTable
 	ret
 
-; Data in RAM
+	SECTION RAM
+
 FormatOPN_instruments:
 	ds 8 * 2
+
+	ENDS

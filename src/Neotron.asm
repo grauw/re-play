@@ -291,6 +291,9 @@ Neotron_WriteRegister2_Wait:
 Neotron_id:
 	db "OSC YM  OPNBYM2610"
 
-; Data in RAM
+	SECTION RAM
+
 Neotron_slot:
 	db 0
+
+	ENDS
