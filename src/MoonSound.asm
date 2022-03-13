@@ -31,6 +31,11 @@ MoonSound_Detect:
 	scf
 	ret
 
+MoonSound_JumpTable:
+	jp MoonSound_Process
+	jp MoonSound_Mute
+	jp MoonSound_Restore
+
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount

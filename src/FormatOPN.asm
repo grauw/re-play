@@ -9,19 +9,13 @@ FormatOPN_ID: equ 0
 
 FormatOPN_Detect:
 	call SFG_Detect
-	ld bc,SFG_Process
-	ld de,SFG_Mute
-	ld hl,SFG_Restore
+	ld hl,SFG_JumpTable
 	ret c
 	call Makoto_Detect
-	ld bc,Makoto_Process
-	ld de,Makoto_Mute
-	ld hl,Makoto_Restore
+	ld hl,Makoto_JumpTable
 	ret c
 	call Neotron_Detect
-	ld bc,Neotron_Process
-	ld de,Neotron_Mute
-	ld hl,Neotron_Restore
+	ld hl,Neotron_JumpTable
 	ret
 
 ; Data in RAM

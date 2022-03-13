@@ -28,6 +28,11 @@ Neotron_Detect:
 	pop af
 	ret
 
+Neotron_JumpTable:
+	jp Neotron_Process
+	jp Neotron_Mute
+	jp Neotron_Restore
+
 ; a = slot ID
 ; f <- c: found
 Neotron_Detect_MatchID:

@@ -36,6 +36,11 @@ Makoto_Detect:
 	scf
 	ret
 
+Makoto_JumpTable:
+	jp Makoto_Process
+	jp Makoto_Mute
+	jp Makoto_Restore
+
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount

@@ -10,8 +10,8 @@ Player_STACK_CAPACITY: equ 128
 ; f <- c: found
 Player_Detect:
 	call Player_Detect_Format
-	jp c,Player_SetProcessAndMute
-	jp Player_Detect_Fail
+	jp c,Player_SetJumpTable
+	jp Player_ClearJumpTable
 
 ; hl = sound data
 ; f <- c: found
@@ -25,24 +25,20 @@ Player_Detect_Format:
 	ret
 
 ; f <- c: found
-Player_Detect_Fail:
-	ld a,0C9H  ; ret
-	ld (Player_Process),a
-	ld (Player_Mute),a
-	ld (Player_Restore),a
+; hl = jump table
+Player_SetJumpTable:
+	ld de,Player_Process
+	ld bc,3 * 3
+	ldir
 	ret
 
-; bc = process function
-; de = mute function
-; hl = restore function
-Player_SetProcessAndMute:
-	ld a,0C3H  ; jp
-	ld (Player_Process),a
-	ld (Player_Process + 1),bc
-	ld (Player_Mute),a
-	ld (Player_Mute + 1),de
-	ld (Player_Restore),a
-	ld (Player_Restore + 1),hl
+; f <- c: found
+Player_ClearJumpTable:
+	ld hl,Player_Process
+	ld de,Player_Process + 1
+	ld bc,3 * 3 - 1
+	ld (hl),0C9H  ; ret
+	ldir
 	ret
 
 ; bc = track number

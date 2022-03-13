@@ -25,6 +25,11 @@ SFG_Detect_MatchID:
 	ld bc,6
 	jp Memory_MatchSlotString
 
+SFG_JumpTable:
+	jp SFG_Process
+	jp SFG_Mute
+	jp SFG_Restore
+
 ; hl = sound data
 ; a <- wait amount
 SFG_Process:
