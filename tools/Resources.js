@@ -51,12 +51,16 @@ export class Resources {
 }
 
 export class ResourcesLoader {
-	constructor(path) {
+	constructor(path, overrides = []) {
 		this.path = path;
+		this.overrides = overrides;
 	}
 
 	async parse() {
 		const json = JSON.parse(await fs.promises.readFile(this.path));
+		for (const override of this.overrides) {
+			override.apply(json);
+		}
 
 		const resources = new Resources(this.parseFormat(json));
 
@@ -101,5 +105,19 @@ export class ResourcesLoader {
 			default:
 				throw new Error("Unrecognised format.");
 		}
+	}
+}
+
+export class ResourceOverride {
+	constructor(path, value) {
+		this.path = path.split(".").map(part => /^\d+$/.test(part) ? parseInt(part, 10) : part);
+		this.value = value == "undefined" ? undefined : JSON.parse(value);
+	}
+
+	apply(json) {
+		for (let i = 0; i < this.path.length - 2; i++) {
+			json = json[this.path[i]];
+		}
+		json[this.path.at(-1)] = this.value;
 	}
 }

@@ -1,6 +1,5 @@
 {
 	"format": "opl4-wave",
-	"bankSize": 16384,
 	"tickFrequency": 50.158980081630157,
 	"opl4Frequency": 33868800,
 	"waitThreshold": 100,
