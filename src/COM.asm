@@ -134,7 +134,7 @@ Main_ReadComplete:
 Main_Play:
 	ld bc,(Main_currentTrack)
 	ld a,0
-	ld hl,SoundData
+	ld hl,SoundData + 1
 	call Player_Play
 	ld a,(JIFFY)
 	ld c,a

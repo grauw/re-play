@@ -41,9 +41,8 @@ Player_ClearJumpTable:
 	ret
 
 ; bc = track number
-; ahl = sound data
+; ahl = sound data (after format ID, so +1)
 Player_Play:
-	inc hl
 	add hl,bc
 	add hl,bc
 	add hl,bc
