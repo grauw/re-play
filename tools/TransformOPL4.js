@@ -41,12 +41,21 @@ export class TransformOPL4InsertWaitLoads extends Transform {
 	}
 }
 
+const ignoreAddresses = [
+	0x000, 0x001, 0x002, 0x003, 0x004, 0x100, 0x101, 0x105,
+	0x200, 0x201, 0x203, 0x204, 0x205, 0x206, 0x2F8, 0x2F9
+];
+
 export class TransformOPL4FrameSanitizer extends Transform {
 	apply(input) {
 		const output = new Track(input.name, input.tickFrequency);
 		const emit = command => output.addCommand(command);
 		const opl4Input = new ChipOPL4();
 		const opl4Output = new ChipOPL4();
+		for (const address of ignoreAddresses) {
+			opl4Output.getRegister(address).mask &= 0x00;
+		}
+		opl4Output.getRegister(0x202).mask = 0x1C;
 		const channels = rangeMap(24, channel => new OPL4FrameSanitizerChannel(channel));
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register) {
