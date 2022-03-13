@@ -56,6 +56,14 @@ Memory_GetSlot_SecondaryShiftDone:
     or c
     ret
 
+; h = memory address high byte (bits 6-7: page)
+; a <- slot ID formatted FxxxSSPP
+; Modifies: af, bc, de
+Memory_SetSlot:
+	call ENASLT
+	ei
+	ret
+
 ; Search all slots and subslots for a match.
 ; Invoke Continue to continue searching where a previous search left off.
 ; hl = detection routine (receives a = slot ID, can modify all)

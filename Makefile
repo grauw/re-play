@@ -1,10 +1,12 @@
 COPY_TARGET = /Volumes/MSXDOS2
 
 all: #node_modules
-	mkdir -p bin
+	mkdir -p bin gen
 	node tools/cli.js res/Makaimura/resources.json bin/makaimura.rep --set bankSize 16384
 	node tools/cli.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep --set bankSize 16384
-	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.sym
+	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 8192
+	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.com.sym
+	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom bin/re-play.rom.sym
 
 node_modules: package.json
 	npm install
@@ -21,3 +23,6 @@ copy: all
 
 run: all
 	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
+
+run2: all
+	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -cart bin/re-play.rom -romtype ASCII8
