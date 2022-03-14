@@ -1,0 +1,42 @@
+{
+	"format": "opl4",
+	"tickFrequency": 50,
+	"tracks": [
+		{
+			"path": "01 Painful Sigh.vgz"
+		},
+		{
+			"path": "02 Beyond Several Nights.vgz"
+		},
+		{
+			"path": "03 Timeless Area.vgz"
+		},
+		{
+			"path": "04 Tension Night.vgz"
+		},
+		{
+			"path": "05 Suspicious Pain.vgz"
+		},
+		{
+			"path": "06 Love the Party.vgz"
+		},
+		{
+			"path": "07 Encounter Like a Wind.vgz"
+		},
+		{
+			"path": "08 Don't Look For.vgz"
+		},
+		{
+			"path": "09 Deep Blue.vgz"
+		},
+		{
+			"path": "10 Obvious Lovers.vgz"
+		},
+		{
+			"path": "11 Our Statue of Liberty.vgz"
+		},
+		{
+			"path": "12 Morning Glow of Despair.vgz"
+		}
+	]
+}

@@ -25,8 +25,11 @@ export class FormatVGM extends Format {
 		const version = getDoubleWord(0x08);
 		const loop = getDoubleWord(0x1C) ? getDoubleWord(0x1C) + 0x1C : 0;
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
-		const opn = new ChipOPN(version >= 0x151 && headerSize >= 0x48 ? getDoubleWord(0x44) & 0x3FFFFFFF : 0);
-		const opl4 = new ChipOPL4(version >= 0x151 && headerSize >= 0x64 ? getDoubleWord(0x60) & 0x3FFFFFFF : 0);
+		const getHeaderWord = address => version >= 0x150 && headerSize >= address + 4 ? getDoubleWord(address) : 0;
+		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
+		const opn = new ChipOPN(getChipFrequency(0x44));
+		const opl4 = new ChipOPL4(getChipFrequency(0x60), getChipFrequency(0x60) ? 4 : getChipFrequency(0x5C) ? 3 :
+			getChipFrequency(0x50) ? 2 : getChipFrequency(0x54) || getChipFrequency(0x58) ? 1 : undefined);
 		const tickFrequency = 44100;
 		const track = new Track(name, tickFrequency);
 		let address = headerSize;
@@ -44,7 +47,27 @@ export class FormatVGM extends Format {
 			} else if (type == 0xA5) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opn.writeRegister(register | 0x100, value, command => track.addCommand(command));
+				opn.writeRegister(0x100 | register, value, command => track.addCommand(command));
+			} else if (type == 0x5A) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(register, value, command => track.addCommand(command));
+			} else if (type == 0x5B) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(register, value, command => track.addCommand(command));
+			} else if (type == 0x5C) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(register, value, command => track.addCommand(command));
+			} else if (type == 0x5E) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(register, value, command => track.addCommand(command));
+			} else if (type == 0x5F) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				opl4.writeRegister(0x100 | register, value, command => track.addCommand(command));
 			} else if (type == 0xD0) {
 				const port = getByte(address++);
 				const register = getByte(address++);

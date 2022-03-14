@@ -42,15 +42,19 @@ MoonSound_Process_Loop:
 	ld a,(hl)
 	inc hl
 	add a,a
-	jr c,MoonSound_Write
+	jr nc,MoonSound_Process_FM
+	jp p,MoonSound_WriteWave
 	rra
-	jr z,MoonSound_WaitLoad
-	cp 01H
+	cp 0C1H
+	jr c,MoonSound_WaitLoad
 	jr z,MoonSound_Jump
-	sub 03H
+	sub 0C3H
 	jr c,MoonSound_Call
 	jr z,MoonSound_Return
 	ret
+MoonSound_Process_FM:
+	jp p,MoonSound_WriteFM1
+	jp MoonSound_WriteFM2
 
 ; hl = sound data
 MoonSound_Jump:
@@ -69,18 +73,49 @@ MoonSound_Return:
 	call Player_Return
 	jp MoonSound_Process_Loop
 
-; a = count * 2
+; a = count * 2 - 2
 ; hl = sound data
-MoonSound_Write:
+MoonSound_WriteFM1:
+	add a,02H
+	ld b,a
+	ld c,MoonSound_FM1_DATA
+MoonSound_WriteFM1_Loop:
+	dec c
+	outi
+	nop  ; extra wait for R800 -- wait 1.7 µs (12 cycles)
+	inc c
+	outi
+	jp nz,MoonSound_WriteFM1_Loop
+	jp MoonSound_Process_Loop
+
+; a = 80H + count * 2 - 2
+; hl = sound data
+MoonSound_WriteFM2:
+	add a,82H
+	ld b,a
+	ld c,MoonSound_FM2_DATA
+MoonSound_WriteFM2_Loop:
+	dec c
+	outi
+	nop  ; extra wait for R800 -- wait 1.7 µs (12 cycles)
+	inc c
+	outi
+	jp nz,MoonSound_WriteFM2_Loop
+	jp MoonSound_Process_Loop
+
+; a = count * 2 - 2
+; hl = sound data
+MoonSound_WriteWave:
+	add a,02H
 	ld b,a
 	ld c,MoonSound_WAVE_DATA
-MoonSound_Write_Loop:
+MoonSound_WriteWave_Loop:
 	dec c
 	outi
 	jp $ + 3  ; extra wait for R800 -- wait 2.6 µs (19 cycles, but 18 works)
 	inc c
 	outi
-	jp nz,MoonSound_Write_Loop
+	jp nz,MoonSound_WriteWave_Loop
 	jp MoonSound_Process_Loop
 
 ; hl = sound data
@@ -91,8 +126,34 @@ MoonSound_WaitLoad:
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:
+	ld b,9
+	ld a,0BDH
+	call MoonSound_ReadFM1Register
+	and 11100000B
+	ld e,a
+	ld d,0BDH
+	call MoonSound_WriteFM1Register
+MoonSound_MuteFM1_Loop:
+	ld a,0B9H
+	sub b
+	ld d,a
+	call MoonSound_ReadFM1Register
+	and 11011111B
+	ld e,a
+	call MoonSound_WriteFM1Register
+	djnz MoonSound_MuteFM1_Loop
+	ld b,9
+MoonSound_MuteFM2_Loop:
+	ld a,0B9H
+	sub b
+	ld d,a
+	call MoonSound_ReadFM2Register
+	and 11011111B
+	ld e,a
+	call MoonSound_WriteFM2Register
+	djnz MoonSound_MuteFM2_Loop
 	ld b,24
-MoonSound_Mute_Loop:
+MoonSound_MuteWave_Loop:
 	ld a,80H
 	sub b
 	ld d,a
@@ -101,7 +162,7 @@ MoonSound_Mute_Loop:
 	or 01000000B
 	ld e,a
 	call MoonSound_WriteWaveRegister
-	djnz MoonSound_Mute_Loop
+	djnz MoonSound_MuteWave_Loop
 	ret
 
 MoonSound_Restore:
@@ -117,6 +178,15 @@ MoonSound_WriteFM1Register:
 	out (MoonSound_FM1_DATA),a
 	ret
 
+; a = register
+; a = value
+MoonSound_ReadFM1Register:
+	out (MoonSound_FM1_ADDRESS),a
+	nop  ; extra wait for R800 -- wait 1.7 µs (12 cycles)
+	nop
+	in a,(MoonSound_FM1_DATA)
+	ret
+
 ; d = register
 ; e = value
 MoonSound_WriteFM2Register:
@@ -125,6 +195,15 @@ MoonSound_WriteFM2Register:
 	nop  ; extra wait for R800 -- wait 1.7 µs (12 cycles)
 	ld a,e
 	out (MoonSound_FM2_DATA),a
+	ret
+
+; a = register
+; a = value
+MoonSound_ReadFM2Register:
+	out (MoonSound_FM2_ADDRESS),a
+	nop  ; extra wait for R800 -- wait 1.7 µs (12 cycles)
+	nop
+	in a,(MoonSound_FM2_DATA)
 	ret
 
 ; d = register

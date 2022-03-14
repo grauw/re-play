@@ -4,6 +4,7 @@ all: #node_modules
 	mkdir -p bin gen
 	node tools/cli.js res/Makaimura/resources.json bin/makaimura.rep --set bankSize 16384
 	node tools/cli.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep --set bankSize 16384
+	node tools/cli.js res/Miwaku\ no\ Chousho/resources.json bin/miwaku.rep --set bankSize 16384
 	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 8192
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.com.sym
 	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom bin/re-play.rom.sym

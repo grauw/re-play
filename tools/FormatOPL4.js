@@ -19,38 +19,40 @@ export class FormatOPL4 extends Format {
 	}
 
 	writeTrack(track) {
-		const data = new BankedData(this.bankSize, [0x01, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0xC1, 0, 0, 0]);
 		data.add(FORMAT_OPL4_ID);
-		const registerBlock = [];
+		let blockBank = -1;
+		let blockCommands = [];
 		for (const command of track.commands) {
-			if (command instanceof CommandOPL4Register && command.address >= 0x200) {
-				registerBlock.push(command);
-				continue;
-			} else {
-				while (registerBlock.length) {
+			if (!(command instanceof CommandOPL4Register && (command.address >> 8) == blockBank)) {
+				while (blockCommands.length) {
 					const space = Math.floor((data.free - data.jump.length - 1) / 2);
-					const count = Math.min(registerBlock.length, 0x80, space > 0 ? space : Infinity);
-					data.add(0x80 | count, ...registerBlock.splice(0, count).flatMap(c => [c.address, c.value]));
+					const count = Math.min(blockCommands.length, 0x40, space > 0 ? space : Infinity);
+					data.add([0x00, 0x40, 0x80][blockBank] + count - 1,
+						...blockCommands.splice(0, count).flatMap(c => [c.address & 0xFF, c.value]));
 				}
 			}
 
-			if (command instanceof CommandOPL4WaitLoad) {
-				data.add(0x00);
+			if (command instanceof CommandOPL4Register) {
+				blockBank = command.address >> 8;
+				blockCommands.push(command);
+			} else if (command instanceof CommandOPL4WaitLoad) {
+				data.add(0xC0);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
-				data.add(0x01, 0, 0, 0);
+				data.add(0xC1, 0, 0, 0);
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandCall) {
-				data.add(0x02, 0, 0, 0);
+				data.add(0xC2, 0, 0, 0);
 				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0x03);
+				data.add(0xC3);
 			} else if (command instanceof CommandWait) {
 				let ticks = command.ticks;
 				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0x7F - 0x03);
-					data.add(0x03 + waitTicks);
+					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0xC3);
+					data.add(0xC3 + waitTicks);
 					ticks -= waitTicks;
 				}
 			}

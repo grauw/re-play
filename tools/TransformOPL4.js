@@ -62,7 +62,9 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				if (command.address >= 0x208 && command.address < 0x2F8) {
 					channels[command.waveChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
 				} else {
-					opl4Input.set(command.address, command.value);
+					if (opl4Input.set(command.address, command.value)) {
+						writeRegisterIfSet(opl4Output, opl4Input.getRegister(command.address), emit);
+					}
 				}
 			} else if (command instanceof CommandOPL4WaveMemory) {
 				opl4Input.setMemory(command.memory, command.romSize, command.ramSize);
@@ -129,7 +131,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				break;
 			}
 		}
-		for (let address = 0x220; address < 0x2F8; address++) {
+		for (let address = 0x000; address < 0x300; address++) {
 			if (!opl4Output.getRegister(address).equals(opl4Loop.getRegister(address))) {
 				opl4Output.unset(address);
 			}

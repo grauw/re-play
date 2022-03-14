@@ -4,7 +4,7 @@ import { CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { rangeMap } from "./utils.js";
 
 export class ChipOPL4 extends Chip {
-	constructor(clockFrequency = 33868800) {
+	constructor(clockFrequency = 33868800, opl = 4) {
 		super(registerMasks);
 		this.clockFrequency = clockFrequency;
 		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
@@ -12,6 +12,29 @@ export class ChipOPL4 extends Chip {
 		this.memory.set(yrw801Headers);
 		this.romSize = 0x200000;
 		this.ramSize = 0x000000;
+
+		if (opl < 4) {
+			for (let address = 0x200; address < 0x300; address++) {
+				this.getRegister(address).mask &= 0x00;
+			}
+		}
+		if (opl < 3) {
+			for (let address = 0x0C0; address < 0x0C9; address++) {
+				this.getRegister(address).mask &= 0x0F;
+				this.getRegister(address).value = 0x30;
+			}
+			for (let address = 0x0E0; address < 0x100; address++) {
+				this.getRegister(address).mask &= 0x03;
+			}
+			for (let address = 0x100; address < 0x200; address++) {
+				this.getRegister(address).mask &= 0x00;
+			}
+		}
+		if (opl < 2) {
+			for (let address = 0x0E0; address < 0x100; address++) {
+				this.getRegister(address).mask &= 0x00;
+			}
+		}
 	}
 
 	set(address, value) {
@@ -86,6 +109,7 @@ export class ChipOPL4 extends Chip {
 
 	writeRegister(address, value, emit) {
 		if (this.set(address, value)) {
+			value = address == 0x004 && value & 0x80 ? value : this.get(address);
 			emit(CommandOPL4Register.of(address, value));
 		}
 	}

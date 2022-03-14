@@ -72,17 +72,23 @@ Data format `0`: `opn` (OPM / OPNA / OPNB FM) consists of these events:
 
 Data format `1`: `opl4` consists of these events:
 
-  * 00:    Wait for OPL4 wave load.
-  * 01:    Relative jump.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * 02:    Relative call.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * 03:    Return.
-  * 04-7F: Wait.
-           n - 03H: nr. of ticks.
-  * 80-FF: OPL4 WAVE register write block.
-           Bit 0-6: count n.
+  * 00-3F: OPL4 FM1 register write block.
+           Bit 0-5: count n - 1.
            Bytes 1-2n: address, value sequence.
+  * 40-7F: OPL4 FM2 register write block.
+           Bit 0-5: count n - 1.
+           Bytes 1-2n: address, value sequence.
+  * 80-BF: OPL4 WAVE register write block.
+           Bit 0-5: count n - 1.
+           Bytes 1-2n: address, value sequence.
+  * C0:    Wait for OPL4 WAVE load.
+  * C1:    Relative jump.
+           Byte 1: bank offset, byte 2-3: address offset.
+  * C2:    Relative call.
+           Byte 1: bank offset, byte 2-3: address offset.
+  * C3:    Return.
+  * C4-FF: Wait.
+           n - C3H: nr. of ticks.
 
 
 Additional notes
