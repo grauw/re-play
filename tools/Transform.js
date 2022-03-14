@@ -79,9 +79,9 @@ export class TransformMapChannels extends Transform {
 					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
 				}
 			} else if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
-				const newChannel = this.mapping[command.channel];
+				const newChannel = this.mapping[command.waveChannel];
 				if (newChannel >= 0) {
-					output.addCommand(CommandOPL4Register.of(command.address - command.channel + newChannel, command.value));
+					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
 				}
 			} else {
 				output.addCommand(command);

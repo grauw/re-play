@@ -18,16 +18,16 @@ export class TransformOPL4InsertWaitLoads extends Transform {
 			if (!(command instanceof CommandOPL4WaitLoad)) {
 				if (command instanceof CommandOPL4Register) {
 					if (command.address >= 0x208 && command.address < 0x220) {
-						if (loadChannels & 1 << command.channel) {
+						if (loadChannels & 1 << command.waveChannel) {
 							emitWaitLoad();
 						}
-						loadChannels |= 1 << command.channel;
+						loadChannels |= 1 << command.waveChannel;
 					} else if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-						if (loadChannels & 1 << command.channel) {
+						if (loadChannels & 1 << command.waveChannel) {
 							emitWaitLoad();
 						}
 					} else if (command.address >= 0x280 && command.address < 0x2F8) {
-						if (loadChannels & 1 << command.channel) {
+						if (loadChannels & 1 << command.waveChannel) {
 							emitWaitLoad();
 						}
 					}
@@ -60,7 +60,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register) {
 				if (command.address >= 0x208 && command.address < 0x2F8) {
-					channels[command.channel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
+					channels[command.waveChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
 				} else {
 					opl4Input.set(command.address, command.value);
 				}
@@ -120,8 +120,8 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			if (command instanceof CommandOPL4Register) {
 				opl4Loop.set(command.address, command.value);
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-					channels[command.channel].firstKeyOn = true;
-					channels[command.channel].firstKeyOnOutput = true;
+					channels[command.waveChannel].firstKeyOn = true;
+					channels[command.waveChannel].firstKeyOnOutput = true;
 				}
 			} else if (command instanceof CommandOPL4WaveMemory) {
 				opl4Loop.setMemory(command.memory, command.romSize, command.ramSize);
