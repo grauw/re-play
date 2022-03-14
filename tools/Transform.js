@@ -59,7 +59,7 @@ export class TransformRemoveWaitsUnder extends Transform {
 }
 
 export class TransformMapChannels extends Transform {
-	constructor(mapping = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]) {
+	constructor(mapping = []) {
 		super();
 		this.mapping = mapping;
 	}
@@ -68,7 +68,7 @@ export class TransformMapChannels extends Transform {
 		const output = new Track(input.name, input.tickFrequency);
 		for (const command of input.commands) {
 			if (command instanceof CommandFMChannel) {
-				const newChannel = this.mapping[command.channel];
+				const newChannel = this.mapping[command.channel] ?? command.channel;
 				if (newChannel < 0) {
 					// skip
 				} else if (command instanceof CommandFMKey) {
@@ -79,7 +79,7 @@ export class TransformMapChannels extends Transform {
 					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
 				}
 			} else if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
-				const newChannel = this.mapping[command.waveChannel];
+				const newChannel = this.mapping[command.waveChannel] ?? command.waveChannel;
 				if (newChannel >= 0) {
 					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
 				}
