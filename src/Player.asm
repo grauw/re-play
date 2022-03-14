@@ -2,7 +2,7 @@
 ;
 ;
 	INCLUDE "FormatOPN.asm"
-	INCLUDE "FormatOPL4Wave.asm"
+	INCLUDE "FormatOPL4.asm"
 
 Player_STACK_CAPACITY: equ 128
 
@@ -18,8 +18,8 @@ Player_Detect:
 Player_Detect_Format:
 	cp FormatOPN_ID
 	jp z,FormatOPN_Detect
-	cp FormatOPL4Wave_ID
-	jp z,FormatOPL4Wave_Detect
+	cp FormatOPL4_ID
+	jp z,FormatOPL4_Detect
 	and a
 	ret
 

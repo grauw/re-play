@@ -4,9 +4,9 @@ import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } fr
 import { CommandOPL4Register, CommandOPL4WaitLoad } from "./CommandOPL4.js";
 import { BankedData } from "./BankedData.js";
 
-export const FORMAT_OPL4_WAVE_ID = 0x01;
+export const FORMAT_OPL4_ID = 0x01;
 
-export class FormatOPL4Wave extends Format {
+export class FormatOPL4 extends Format {
 	constructor(bankSize, opl4Frequency = 33868800) {
 		super();
 		this.bankSize = bankSize;
@@ -20,7 +20,7 @@ export class FormatOPL4Wave extends Format {
 
 	writeTrack(track) {
 		const data = new BankedData(this.bankSize, [0x01, 0, 0, 0]);
-		data.add(FORMAT_OPL4_WAVE_ID);
+		data.add(FORMAT_OPL4_ID);
 		const registerBlock = [];
 		for (const command of track.commands) {
 			if (command instanceof CommandOPL4Register && command.address >= 0x200) {

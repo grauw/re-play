@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
-import { FormatOPL4Wave } from "./FormatOPL4Wave.js";
+import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 import { TransformAttenuateVolume, TransformMapChannels, TransformMoveWaitAfterLoop,
@@ -29,7 +29,7 @@ export class Resources {
 			const track = this.getCombinedTracks();
 			return await this.format.saveTrack(track, path);
 		}
-		if (this.format instanceof FormatOPL4Wave) {
+		if (this.format instanceof FormatOPL4) {
 			const track = this.getCombinedTracks();
 			return await this.format.saveTrack(track, path);
 		}
@@ -94,8 +94,8 @@ export class ResourcesLoader {
 		switch (json.format) {
 			case "opn":
 				return new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency);
-			case "opl4-wave":
-				return new FormatOPL4Wave(json.bankSize, json.opl4Frequency);
+			case "opl4":
+				return new FormatOPL4(json.bankSize, json.opl4Frequency);
 			case "text":
 				return new FormatText();
 			case "vgm-opm":

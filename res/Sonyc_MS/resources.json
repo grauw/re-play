@@ -1,7 +1,6 @@
 {
-	"format": "opl4-wave",
+	"format": "opl4",
 	"tickFrequency": 50.158980081630157,
-	"opl4Frequency": 33868800,
 	"waitThreshold": 100,
 	"tracks": [
 		{

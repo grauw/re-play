@@ -70,7 +70,7 @@ Data format `0`: `opn` (OPM / OPNA / OPNB FM) consists of these events:
   * 93-FF: Wait.
            n - 92H: nr. of ticks.
 
-Data format `1`: `opl4-wave` (OPL4 Wave) consists of these events:
+Data format `1`: `opl4` consists of these events:
 
   * 00:    Wait for OPL4 wave load.
   * 01:    Relative jump.
