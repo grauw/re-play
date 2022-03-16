@@ -66,7 +66,7 @@ export class FormatVGM extends Format {
 				break;
 			} else if (type == 0x67) {
 				if (getByte(address++) != 0x66)
-					throw new Error(`Invalid data block sequence at address ${(address - 1).toString(16)}`);
+					throw new Error(`Invalid data block sequence at address 0x${(address - 1).toString(16).toUpperCase()}`);
 				const dataType = getByte(address++);
 				const dataSize = getDoubleWord(address);
 				address += 4;
@@ -82,7 +82,7 @@ export class FormatVGM extends Format {
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1));
 			} else {
-				throw new Error(`Unsupported command ${type.toString(16)} at address ${(address - 1).toString(16)}`);
+				throw new Error(`Unsupported command ${type.toString(16)} at address 0x${(address - 1).toString(16).toUpperCase()}`);
 			}
 		}
 		return track;
