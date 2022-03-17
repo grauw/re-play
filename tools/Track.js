@@ -1,5 +1,5 @@
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandFMChannel, CommandFMKey, CommandFMInstrument } from "./CommandFM.js";
+import { CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
 export class Track {
@@ -83,26 +83,6 @@ export class Track {
 			}
 		}
 		return track;
-	}
-
-	getUnusedChannels() {
-		const usedChannels = new Array(8).fill(false);
-		const keyOnChannels = new Array(8).fill(false);
-		for (const command of this.commands) {
-			if (command instanceof CommandFMChannel) {
-				usedChannels[command.channel] = true;
-				if (command instanceof CommandFMKey && command.slots) {
-					keyOnChannels[command.channel] = true;
-				}
-			}
-		}
-		const unusedChannels = [];
-		for (let i = 0; i < 8; ++i) {
-			if (usedChannels[i] && !keyOnChannels[i]) {
-				unusedChannels.push(i);
-			}
-		}
-		return unusedChannels;
 	}
 }
 

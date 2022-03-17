@@ -1,5 +1,5 @@
 import fs from "fs";
-import { Format } from "./Format.js";
+import { Format, FormatStats } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandOPL4Register, CommandOPL4WaitLoad } from "./CommandOPL4.js";
 import { BankedData } from "./BankedData.js";
@@ -59,5 +59,15 @@ export class FormatOPL4 extends Format {
 		}
 
 		return data.getData();
+	}
+
+	getStats(track) {
+		return new FormatOPL4Stats(track);
+	}
+}
+
+class FormatOPL4Stats extends FormatStats {
+	constructor(track) {
+		super(track);
 	}
 }

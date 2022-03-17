@@ -48,6 +48,11 @@ export class Resources {
 			}));
 		}
 	}
+
+	getStats() {
+		const tracks = [...this.tracks, this.getCombinedTracks()];
+		return tracks.map(track => this.format.getStats(track)).join("\n");
+	}
 }
 
 export class ResourcesLoader {

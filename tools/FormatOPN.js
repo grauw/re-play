@@ -1,7 +1,7 @@
 import fs from "fs";
-import { Format } from "./Format.js";
+import { Format, FormatStats } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { BankedData } from "./BankedData.js";
 
 const FORMAT_OPN_ID = 0x00;
@@ -53,5 +53,44 @@ export class FormatOPN extends Format {
 			}
 		}
 		return data.getData();
+	}
+
+	getStats(track) {
+		return new FormatOPNStats(track);
+	}
+}
+
+class FormatOPNStats extends FormatStats {
+	constructor(track) {
+		super(track);
+		this.unusedChannels = FormatOPNStats.getUnusedChannels(track);
+	}
+
+	static getUnusedChannels(track) {
+		const usedChannels = new Array(8).fill(false);
+		const keyOnChannels = new Array(8).fill(false);
+		for (const command of track.commands) {
+			if (command instanceof CommandFMChannel) {
+				usedChannels[command.channel] = true;
+				if (command instanceof CommandFMKey && command.slots) {
+					keyOnChannels[command.channel] = true;
+				}
+			}
+		}
+		const unusedChannels = [];
+		for (let i = 0; i < 8; ++i) {
+			if (usedChannels[i] && !keyOnChannels[i]) {
+				unusedChannels.push(i);
+			}
+		}
+		return unusedChannels;
+	}
+
+	toString() {
+		const lines = [super.toString()];
+		if (this.unusedChannels.length > 0) {
+			lines.push(`  Unused channels: ${this.unusedChannels.join(", ")}`);
+		}
+		return lines.join("\n");
 	}
 }
