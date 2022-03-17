@@ -122,7 +122,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			if (command instanceof CommandOPL4Register) {
 				opl4Loop.set(command.address, command.value);
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-					channels[command.waveChannel].firstKeyOnOutput = true;
+					channels[command.waveChannel].firstKeyOn = true;
 				}
 			} else if (command instanceof CommandOPL4WaveMemory) {
 				opl4Loop.setMemory(command.memory, command.romSize, command.ramSize);
@@ -140,7 +140,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				opl4Output.unset(0x208 + channel);
 			}
 			if (opl4Loop.isSet(0x268 + channel) && opl4Loop.get(0x268 + channel) & 0x80) {
-				channels[channel].firstKeyOn = true;
+				channels[channel].audible = true;
 			}
 		}
 	}
@@ -149,8 +149,8 @@ export class TransformOPL4FrameSanitizer extends Transform {
 class OPL4FrameSanitizerChannel {
 	constructor(channel) {
 		this.channel = channel;
+		this.audible = false;
 		this.firstKeyOn = false;
-		this.firstKeyOnOutput = false;
 		this.waveTableChanged = false;
 		this.keyOff = new Register(0x268 + channel);
 		this.totalLevelDirect = new Register(0x250 + channel);
@@ -163,10 +163,10 @@ class OPL4FrameSanitizerChannel {
 				value = value & 0xE0 | 0x08;  // Use pan -8 to mute instead of CH DO2.
 			}
 			if (value & 0x80) {
-				this.firstKeyOn = true;
+				this.audible = true;
 			} else {
 				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | value : value);
-				this.firstKeyOn &&= (value & 0x0F) != 0x08;
+				this.audible &&= (value & 0x0F) != 0x08;
 			}
 		} else if (address >= 0x250 && address < 0x268) {
 			if (value & 1) {
@@ -185,7 +185,7 @@ class OPL4FrameSanitizerChannel {
 			opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
 			opl4Input.unset(0x208 + this.channel);
 		}
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
 			if (this.waveTableChanged) {
 				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
@@ -194,7 +194,7 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitKeyOff(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOnOutput) {
+		if (this.firstKeyOn) {
 			writeRegisterIfSet(opl4Output, this.keyOff, emit);
 		} else {
 			this.keyOff.unset();
@@ -202,7 +202,7 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitWaveTable(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			if (!opl4Output.isSet(0x220 + this.channel) || (opl4Output.get(0x220 + this.channel) & 1) != (this.waveTableHigh.get() & 1)) {
 				writeRegisterIfSet(opl4Output, this.waveTableHigh, emit);
 			}
@@ -211,14 +211,14 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitFrequency(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x220 + this.channel), emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x238 + this.channel), emit);
 		}
 	}
 
 	emitTotalLevel(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			writeRegisterIfSet(opl4Output, this.totalLevelDirect, emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x250 + this.channel), emit);
 		} else {
@@ -227,7 +227,7 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitLFOADSR(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x280 + this.channel), emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x298 + this.channel), emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x2B0 + this.channel), emit);
@@ -237,9 +237,9 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	emitKeyOn(opl4Input, opl4Output, emit) {
-		if (this.firstKeyOn) {
+		if (this.audible) {
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x268 + this.channel), emit);
-			this.firstKeyOnOutput = true;
+			this.firstKeyOn = true;
 		}
 	}
 }
