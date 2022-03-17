@@ -178,8 +178,11 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	processFrame(opl4Input, opl4Output) {
-		this.waveTableChanged = opl4Input.isSet(0x208 + this.channel) && (!opl4Output.isSet(0x208 + this.channel) ||
-			!opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel)));
+		if (opl4Input.isSet(0x208 + this.channel) && opl4Output.isSet(0x208 + this.channel) &&
+			opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
+			opl4Input.unset(0x208 + this.channel);
+		}
+		this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
 		if (this.waveTableChanged) {
 			this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
 		}
