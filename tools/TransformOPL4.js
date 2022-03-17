@@ -122,7 +122,6 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			if (command instanceof CommandOPL4Register) {
 				opl4Loop.set(command.address, command.value);
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-					channels[command.waveChannel].firstKeyOn = true;
 					channels[command.waveChannel].firstKeyOnOutput = true;
 				}
 			} else if (command instanceof CommandOPL4WaveMemory) {
@@ -139,6 +138,9 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		for (let channel = 0; channel < 24; channel++) {
 			if (!opl4Output.getWaveTable(channel).equals(opl4Loop.getWaveTable(channel))) {
 				opl4Output.unset(0x208 + channel);
+			}
+			if (opl4Loop.isSet(0x268 + channel) && opl4Loop.get(0x268 + channel) & 0x80) {
+				channels[channel].firstKeyOn = true;
 			}
 		}
 	}
@@ -164,6 +166,7 @@ class OPL4FrameSanitizerChannel {
 				this.firstKeyOn = true;
 			} else {
 				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | value : value);
+				this.firstKeyOn &&= (value & 0x0F) != 0x08;
 			}
 		} else if (address >= 0x250 && address < 0x268) {
 			if (value & 1) {
@@ -182,9 +185,11 @@ class OPL4FrameSanitizerChannel {
 			opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
 			opl4Input.unset(0x208 + this.channel);
 		}
-		this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
-		if (this.waveTableChanged) {
-			this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
+		if (this.firstKeyOn) {
+			this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
+			if (this.waveTableChanged) {
+				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
+			}
 		}
 	}
 
@@ -216,6 +221,8 @@ class OPL4FrameSanitizerChannel {
 		if (this.firstKeyOn) {
 			writeRegisterIfSet(opl4Output, this.totalLevelDirect, emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x250 + this.channel), emit);
+		} else {
+			this.totalLevelDirect.unset();
 		}
 	}
 
