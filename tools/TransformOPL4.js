@@ -185,9 +185,9 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	processFrame(opl4Input, opl4Output) {
-		if (opl4Input.isSet(0x208 + this.channel) && opl4Output.isSet(0x208 + this.channel) &&
-			opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
+		if (opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
 			opl4Input.unset(0x208 + this.channel);
+			opl4Input.unset(0x220 + this.channel, 0x01);
 		}
 		if (this.audible) {
 			this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
