@@ -6,41 +6,6 @@ import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
 import { rangeMap } from "./utils.js";
 
-export class TransformOPL4InsertWaitLoads extends Transform {
-	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
-		let loadChannels = 0;
-		const emitWaitLoad = () => {
-			output.addCommand(CommandOPL4WaitLoad.of());
-			loadChannels = 0;
-		};
-		for (const command of input.commands) {
-			if (!(command instanceof CommandOPL4WaitLoad)) {
-				if (command instanceof CommandOPL4Register) {
-					if (command.address >= 0x208 && command.address < 0x220) {
-						if (loadChannels & 1 << command.waveChannel) {
-							emitWaitLoad();
-						}
-						loadChannels |= 1 << command.waveChannel;
-					} else if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-						if (loadChannels & 1 << command.waveChannel) {
-							emitWaitLoad();
-						}
-					} else if (command.address >= 0x280 && command.address < 0x2F8) {
-						if (loadChannels & 1 << command.waveChannel) {
-							emitWaitLoad();
-						}
-					}
-				} else if (loadChannels && command instanceof CommandControlFlow) {
-					emitWaitLoad();
-				}
-				output.addCommand(command);
-			}
-		}
-		return output;
-	}
-}
-
 const ignoreAddresses = [
 	0x000, 0x001, 0x002, 0x003, 0x004, 0x100, 0x101, 0x105,
 	0x200, 0x201, 0x203, 0x204, 0x205, 0x206, 0x2F8, 0x2F9
@@ -98,6 +63,9 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				for (const channel of channels) {
 					if (!channel.waveTableChanged)
 						channel.emitKeyOn(opl4Input, opl4Output, emit);
+				}
+				if (channels.some(channel => channel.waveTableChanged)) {
+					emit(CommandOPL4WaitLoad.of());
 				}
 				for (const channel of channels) {
 					channel.emitLFOADSR(opl4Input, opl4Output, emit);

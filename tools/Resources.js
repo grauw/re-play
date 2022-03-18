@@ -8,7 +8,7 @@ import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 import { TransformAttenuateVolume, TransformMapChannels, TransformMoveWaitAfterLoop,
 	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence, TransformEndLoop } from "./Transform.js";
 import { TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
-import { TransformOPL4InsertWaitLoads, TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
+import { TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
 
 export class Resources {
 	constructor(format) {
@@ -82,7 +82,6 @@ export class ResourcesLoader {
 				new TransformTrimLeadingSilence(),
 				new TransformQuantize(json.tickFrequency),
 				new TransformOPL4FrameSanitizer(),
-				new TransformOPL4InsertWaitLoads(),
 				new TransformEndLoop()
 			];
 
