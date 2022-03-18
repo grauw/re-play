@@ -132,12 +132,16 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		}
 		for (let address = 0x000; address < 0x300; address++) {
 			if (!opl4Output.getRegister(address).equals(opl4Loop.getRegister(address))) {
-				opl4Output.unset(address);
+				const mask = address < 0x208 || address >= 0x238 ? 0xFF : address < 0x220 ? 0x00 : 0xFE;
+				opl4Output.unset(address, mask);
 			}
 		}
 		for (let channel = 0; channel < 24; channel++) {
 			if (!opl4Output.getWaveTable(channel).equals(opl4Loop.getWaveTable(channel))) {
 				opl4Output.unset(0x208 + channel);
+				if (!opl4Output.getRegister(0x220 + channel).equals(opl4Loop.getRegister(0x220 + channel), 0x01)) {
+					opl4Output.unset(0x220 + channel, 0x01);
+				}
 			}
 			if (opl4Loop.isSet(0x268 + channel, 0x80) && opl4Loop.get(0x268 + channel, 0x80)) {
 				channels[channel].audible = true;
