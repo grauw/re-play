@@ -36,43 +36,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				opl4Output.setMemory(command.memory, command.romSize, command.ramSize);
 				output.addCommand(command);
 			} else if (command instanceof CommandWait || command instanceof CommandControlFlow) {
-				for (const channel of channels) {
-					channel.processFrame(opl4Input, opl4Output);
-				}
-				for (const channel of channels) {
-					if (channel.waveTableChanged)
-						channel.emitKeyOff(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					if (channel.waveTableChanged)
-						channel.emitWaveTable(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					channel.emitKeyOff(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					channel.emitFrequency(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					channel.emitTotalLevel(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					if (!channel.waveTableChanged)
-						channel.emitLFOADSR(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					if (!channel.waveTableChanged)
-						channel.emitKeyOn(opl4Input, opl4Output, emit);
-				}
-				if (channels.some(channel => channel.waveTableChanged)) {
-					emit(CommandOPL4WaitLoad.of());
-				}
-				for (const channel of channels) {
-					channel.emitLFOADSR(opl4Input, opl4Output, emit);
-				}
-				for (const channel of channels) {
-					channel.emitKeyOn(opl4Input, opl4Output, emit);
-				}
+				this.emitFrame(opl4Input, opl4Output, channels, emit);
 				if (command instanceof CommandLabel && command.name == "loop") {
 					this.unsetLoopChanges(input, opl4Output, channels, "loop");
 				}
@@ -82,6 +46,46 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			}
 		}
 		return output;
+	}
+
+	emitFrame(opl4Input, opl4Output, channels, emit) {
+		for (const channel of channels) {
+			channel.processFrame(opl4Input, opl4Output);
+		}
+		for (const channel of channels) {
+			if (channel.waveTableChanged)
+				channel.emitKeyOff(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			if (channel.waveTableChanged)
+				channel.emitWaveTable(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			channel.emitKeyOff(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			channel.emitFrequency(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			channel.emitTotalLevel(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			if (!channel.waveTableChanged)
+				channel.emitLFOADSR(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			if (!channel.waveTableChanged)
+				channel.emitKeyOn(opl4Input, opl4Output, emit);
+		}
+		if (channels.some(channel => channel.waveTableChanged)) {
+			emit(CommandOPL4WaitLoad.of());
+		}
+		for (const channel of channels) {
+			channel.emitLFOADSR(opl4Input, opl4Output, emit);
+		}
+		for (const channel of channels) {
+			channel.emitKeyOn(opl4Input, opl4Output, emit);
+		}
 	}
 
 	unsetLoopChanges(input, opl4Output, channels, target) {
