@@ -9,61 +9,58 @@ export class Chip {
 		return this.registers[address];
 	}
 
-	get(address) {
-		return this.getRegister(address).get();
+	get(address, mask) {
+		return this.getRegister(address).get(mask);
 	}
 
-	isSet(address) {
-		return this.getRegister(address).isSet();
+	isSet(address, mask) {
+		return this.getRegister(address).isSet(mask);
 	}
 
-	set(address, value) {
-		return this.getRegister(address).set(value);
+	set(address, value, mask) {
+		return this.getRegister(address).set(value, mask);
 	}
 
-	unset(address) {
-		this.getRegister(address).unset();
+	unset(address, mask) {
+		this.getRegister(address).unset(mask);
 	}
 
-	unsetAll() {
+	unsetAll(mask) {
 		for (let address = 0; address < this.registers.length; address++) {
-			this.unset(address);
+			this.unset(address, mask);
 		}
 	}
 }
 
 export class Register {
 	constructor(address, mask = 0xFF, value = 0x00) {
-		this.initialized = false;
+		this.initialized = 0x00;
 		this.address = address;
 		this.mask = mask;
 		this.value = value;
 	}
 
-	get() {
-		return this.value;
+	get(mask = 0xFF) {
+		return this.value & mask;
 	}
 
-	isSet() {
-		return this.initialized;
+	isSet(mask = 0xFF) {
+		return (this.initialized & mask) != 0;
 	}
 
-	set(value) {
-		if (value < 0 || value >= 0x100)
-			throw new Error("Register value out of range.");
-		const initialized = this.mask != 0;
-		const changed = this.initialized != initialized || (this.value & this.mask) != (value & this.mask);
-		this.initialized = initialized;
-		this.value = this.value & ~this.mask | value & this.mask;
-		return changed;
+	set(value, mask = 0xFF) {
+		mask &= this.mask;
+		const changed = (~this.initialized | this.value ^ value) & mask;
+		this.initialized |= mask;
+		this.value = this.value & ~mask | value & mask;
+		return changed != 0;
 	}
 
-	unset() {
-		this.initialized = false;
+	unset(mask = 0xFF) {
+		this.initialized &= ~mask;
 	}
 
-	equals(other) {
-		return !this.initialized && !other.initialized || this.initialized == other.initialized &&
-			(this.value & this.mask) == (other.value & other.mask);
+	equals(other, mask = 0xFF) {
+		return ((this.initialized ^ other.initialized | this.value & this.mask ^ other.value & other.mask) & mask) == 0;
 	}
 }

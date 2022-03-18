@@ -139,7 +139,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			if (!opl4Output.getWaveTable(channel).equals(opl4Loop.getWaveTable(channel))) {
 				opl4Output.unset(0x208 + channel);
 			}
-			if (opl4Loop.isSet(0x268 + channel) && opl4Loop.get(0x268 + channel) & 0x80) {
+			if (opl4Loop.isSet(0x268 + channel, 0x80) && opl4Loop.get(0x268 + channel, 0x80)) {
 				channels[channel].audible = true;
 			}
 		}
@@ -165,7 +165,7 @@ class OPL4FrameSanitizerChannel {
 			if (value & 0x80) {
 				this.audible = true;
 			} else {
-				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | value : value);
+				this.keyOff.set(this.keyOff.isSet(0x20) ? this.keyOff.get(0x20) | value : value);
 				this.audible &&= (value & 0x0F) != 0x08;
 			}
 		} else if (address >= 0x250 && address < 0x268) {
@@ -175,7 +175,7 @@ class OPL4FrameSanitizerChannel {
 		} else if (address >= 0x208 && address < 0x220) {
 			this.waveTableHigh.set(opl4Input.get(address + 24));
 		} else if (address >= 0x220 && address < 0x238) {
-			this.waveTableHigh.set(value & 0xFE | this.waveTableHigh.get() & 1);
+			this.waveTableHigh.set(value, 0xFE);
 		}
 		opl4Input.set(address, value);
 	}
@@ -188,7 +188,7 @@ class OPL4FrameSanitizerChannel {
 		if (this.audible) {
 			this.waveTableChanged = opl4Input.isSet(0x208 + this.channel);
 			if (this.waveTableChanged) {
-				this.keyOff.set(this.keyOff.isSet() ? this.keyOff.get() & 0x20 | 0x48 : 0x48);  // Force mute
+				this.keyOff.set(0x48, 0xDF);  // Force mute
 			}
 		}
 	}
@@ -203,7 +203,7 @@ class OPL4FrameSanitizerChannel {
 
 	emitWaveTable(opl4Input, opl4Output, emit) {
 		if (this.audible) {
-			if (!opl4Output.isSet(0x220 + this.channel) || (opl4Output.get(0x220 + this.channel) & 1) != (this.waveTableHigh.get() & 1)) {
+			if (!this.waveTableHigh.equals(opl4Output.getRegister(0x220 + this.channel), 0x01)) {
 				writeRegisterIfSet(opl4Output, this.waveTableHigh, emit);
 			}
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x208 + this.channel), emit);
