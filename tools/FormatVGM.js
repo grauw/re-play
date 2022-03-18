@@ -5,8 +5,8 @@ import { Format } from "./Format.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
-import { CommandOPL4Config } from "./CommandOPL4.js";
-import { ChipOPL4 } from "./ChipOPL4.js";
+import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { yrw801Headers } from "./YRW801Headers.js";
 
 export class FormatVGM extends Format {
 	async loadTrack(path, name) {
@@ -29,32 +29,26 @@ export class FormatVGM extends Format {
 		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
 
 		const track = new Track(name, 44100);
-		const opl4 = new ChipOPL4();
+		const opl4Memory = new FormatVGMOPL4Memory();
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
 		} else if (getChipFrequency(0x60)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x60), "ymf278b"));
-			opl4.writeCommand(track.commands[0]);
 		} else if (getChipFrequency(0x5C)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x5C), "ymf262"));
-			opl4.writeCommand(track.commands[0]);
 		} else if (getChipFrequency(0x50)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x50), "ym3812"));
-			opl4.writeCommand(track.commands[0]);
 		} else if (getChipFrequency(0x54)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x54), "ym3526"));
-			opl4.writeCommand(track.commands[0]);
 		} else if (getChipFrequency(0x58)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x58), "y8950"));
-			opl4.writeCommand(track.commands[0]);
 		}
 
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop) {
 				track.addCommand(CommandLabel.of("loop"));
-				opl4.unsetAll();
 			}
 			const type = getByte(address++);
 			if (type == 0x55) {
@@ -68,28 +62,28 @@ export class FormatVGM extends Format {
 			} else if (type == 0x5A) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5B) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5C) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5E) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5F) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(0x100 | register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(0x100 | register, value));
 			} else if (type == 0xD0) {
 				const port = getByte(address++);
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opl4.writeRegister(port << 8 | register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPL4Register.of(port << 8 | register, value));
 			} else if (type == 0x61) {
 				track.addCommand(CommandWait.of(getWord(address)));
 				address += 2;
@@ -111,12 +105,16 @@ export class FormatVGM extends Format {
 				const dataSize = getDoubleWord(address);
 				address += 4;
 				if (dataType == 0x84) {
-					opl4.writeROMData(getDoubleWord(address), getDoubleWord(address + 4),
-						vgm.subarray(address + 8, address + dataSize), command => track.addCommand(command));
+					const romSize = getDoubleWord(address);
+					const dataStart = getDoubleWord(address + 4);
+					opl4Memory.writeROMData(romSize, dataStart, vgm.subarray(address + 8, address + dataSize));
+					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data), opl4Memory.romSize, opl4Memory.ramSize));
 				}
 				if (dataType == 0x87) {
-					opl4.writeRAMData(getDoubleWord(address), getDoubleWord(address + 4),
-						vgm.subarray(address + 8, address + dataSize), command => track.addCommand(command));
+					const ramSize = getDoubleWord(address);
+					const dataStart = getDoubleWord(address + 4);
+					opl4Memory.writeRAMData(ramSize, dataStart, vgm.subarray(address + 8, address + dataSize));
+					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data), opl4Memory.romSize, opl4Memory.ramSize));
 				}
 				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {
@@ -126,6 +124,28 @@ export class FormatVGM extends Format {
 			}
 		}
 		return track;
+	}
+}
+
+class FormatVGMOPL4Memory {
+	constructor() {
+		this.data = new Uint8Array(0x400000);
+		this.data.set(yrw801Headers);
+		this.romSize = 0x200000;
+		this.ramSize = 0x000000;
+	}
+
+	writeROMData(romSize, dataStart, data) {
+		if (romSize != this.romSize) {
+			this.memory.copyWithin(romSize, this.romSize);
+		}
+		this.memory.set(data, dataStart);
+		this.romSize = romSize;
+	}
+
+	writeRAMData(ramSize, dataStart, data) {
+		this.memory.set(data, this.romSize + dataStart);
+		this.ramSize = ramSize;
 	}
 }
 

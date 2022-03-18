@@ -75,12 +75,6 @@ export class ChipOPL4 extends Chip {
 		}
 	}
 
-	setMemory(memory, romSize, ramSize) {
-		this.memory = memory;
-		this.romSize = romSize;
-		this.ramSize = ramSize;
-	}
-
 	getWaveTable(channel) {
 		return this.waveTables[channel];
 	}
@@ -96,35 +90,13 @@ export class ChipOPL4 extends Chip {
 		return area == 0 || index < 0x180 ? index * 12 : area * 0x80000 + (index - 0x180) * 12;
 	}
 
-	writeROMData(romSize, dataStart, data, emit) {
-		const memory = Uint8Array.from(this.memory);
-		if (romSize != this.romSize) {
-			memory.copyWithin(romSize, this.romSize);
-		}
-		memory.set(data, dataStart);
-		this.setMemory(memory, romSize, this.ramSize);
-		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
-	}
-
-	writeRAMData(ramSize, dataStart, data, emit) {
-		const memory = Uint8Array.from(this.memory);
-		memory.set(data, this.romSize + dataStart);
-		this.setMemory(memory, this.romSize, ramSize);
-		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
-	}
-
-	writeRegister(address, value, emit) {
-		if (this.set(address, value)) {
-			value = address == 0x004 && value & 0x80 ? value : this.get(address);
-			emit(CommandOPL4Register.of(address, value));
-		}
-	}
-
 	writeCommand(command) {
 		if (command instanceof CommandOPL4Config) {
 			this.config(command.clockFrequency, command.version);
 		} else if (command instanceof CommandOPL4WaveMemory) {
-			this.setMemory(command.memory, command.romSize, command.ramSize);
+			this.memory.set(command.memory);
+			this.romSize = command.romSize;
+			this.ramSize = command.ramSize;
 		}
 	}
 }
