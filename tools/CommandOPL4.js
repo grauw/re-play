@@ -7,6 +7,24 @@ export class CommandOPL4 extends Command {
 	}
 }
 
+export class CommandOPL4Config extends CommandOPL4 {
+	constructor(clockFrequency, type) {
+		super();
+		this.clockFrequency = clockFrequency;
+		this.type = type;
+	}
+
+	static of(clockFrequency, type) {
+		return commandOPL4ConfigMemo.get(clockFrequency, type);
+	}
+
+	toString() {
+		return `OPL4Config Clock: ${this.clockFrequency}, Type: ${this.type}`;
+	}
+}
+
+const commandOPL4ConfigMemo = new MemoConstructor(CommandOPL4Config);
+
 export class CommandOPL4WaitLoad extends CommandOPL4 {
 	static of() {
 		return commandOPL4WaitLoadMemo;

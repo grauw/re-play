@@ -1,7 +1,7 @@
 import { Track } from "./Track.js";
 import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn } from "./Command.js";
-import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
-import { CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandOPNConfig, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
 export class Transform {
 	apply(input) {
@@ -122,7 +122,8 @@ export class TransformTrimLeadingSilence extends Transform {
 			const command = input.commands[index];
 			if (command instanceof CommandWait) {
 				// skip
-			} else if (command instanceof CommandOPL4WaveMemory ||
+			} else if (command instanceof CommandOPNConfig ||
+				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
 				(command instanceof CommandOPL4Register && command.address == 0x202)) {
 				output.addCommand(command);
 			} else {

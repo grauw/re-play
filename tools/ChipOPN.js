@@ -1,12 +1,16 @@
 import { Chip } from "./Chip.js";
-import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class ChipOPN extends Chip {
-	constructor(clockFrequency) {
+	constructor() {
 		super(registerMasks);
 		this.getRegister(0x007).value = 0x80;
-		this.clockFrequency = clockFrequency * 2;
+		this.clockFrequency = 8000000;
 		this.clockDividers = [6, 6];
+	}
+
+	config(clockFrequency, type) {
+		this.clockFrequency = type == "ym2203" ? clockFrequency * 2 : clockFrequency;
 	}
 
 	writeRegister(address, value, emit) {
@@ -41,6 +45,12 @@ export class ChipOPN extends Chip {
 			));
 		} else if (addressLow >= 0x2D && addressLow < 0x30) {
 			this.clockDividers[addressHigh] = [6, 3, 2][addressLow - 0x2D];
+		}
+	}
+
+	writeCommand(command) {
+		if (command instanceof CommandOPNConfig) {
+			this.config(command.clockFrequency, command.type);
 		}
 	}
 }

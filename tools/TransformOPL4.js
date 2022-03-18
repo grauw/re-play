@@ -1,7 +1,7 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandWait, CommandControlFlow, CommandLabel, CommandJump } from "./Command.js";
-import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
 import { rangeMap } from "./utils.js";
@@ -31,9 +31,9 @@ export class TransformOPL4FrameSanitizer extends Transform {
 						writeRegisterIfSet(opl4Output, opl4Input.getRegister(command.address), emit);
 					}
 				}
-			} else if (command instanceof CommandOPL4WaveMemory) {
-				opl4Input.setMemory(command.memory, command.romSize, command.ramSize);
-				opl4Output.setMemory(command.memory, command.romSize, command.ramSize);
+			} else if (command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory) {
+				opl4Input.writeCommand(command);
+				opl4Output.writeCommand(command);
 				output.addCommand(command);
 			} else if (command instanceof CommandWait || command instanceof CommandControlFlow) {
 				this.emitFrame(opl4Input, opl4Output, channels, emit);
@@ -96,8 +96,8 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
 					channels[command.waveChannel].firstKeyOn = true;
 				}
-			} else if (command instanceof CommandOPL4WaveMemory) {
-				opl4Loop.setMemory(command.memory, command.romSize, command.ramSize);
+			} else if (command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory) {
+				opl4Loop.writeCommand(command);
 			} else if (command instanceof CommandJump && command.target == target) {
 				break;
 			}

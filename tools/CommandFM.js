@@ -1,6 +1,30 @@
 import { MemoConstructor } from "./utils.js";
 import { Command } from "./Command.js";
 
+export class CommandOPN extends Command {
+	toString() {
+		return `OPN`;
+	}
+}
+
+export class CommandOPNConfig extends CommandOPN {
+	constructor(clockFrequency, type) {
+		super();
+		this.clockFrequency = clockFrequency;
+		this.type = type;
+	}
+
+	static of(clockFrequency, type) {
+		return commandOPNConfigMemo.get(clockFrequency, type);
+	}
+
+	toString() {
+		return `OPNConfig Clock: ${this.clockFrequency}, Type: ${this.type}`;
+	}
+}
+
+const commandOPNConfigMemo = new MemoConstructor(CommandOPNConfig);
+
 export class CommandFM extends Command {
 	toString() {
 		return `FM`;

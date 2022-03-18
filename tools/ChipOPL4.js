@@ -1,24 +1,28 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
-import { CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { rangeMap } from "./utils.js";
 
 export class ChipOPL4 extends Chip {
-	constructor(clockFrequency = 33868800, opl = 4) {
+	constructor() {
 		super(registerMasks);
-		this.clockFrequency = clockFrequency;
+		this.clockFrequency = 33868800;
 		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
 		this.memory = new Uint8Array(0x400000);
 		this.memory.set(yrw801Headers);
 		this.romSize = 0x200000;
 		this.ramSize = 0x000000;
+	}
 
-		if (opl < 4) {
+	config(clockFrequency, type) {
+		this.clockFrequency = clockFrequency * 33868800 / (type == "ymf278b" ? 33868800 : 315000000 / (type == "ymf262" ? 22 : 88));
+
+		if (type == "ymf262" || type == "ym3812" || type == "ym3526" || type == "y8950") {
 			for (let address = 0x200; address < 0x300; address++) {
 				this.getRegister(address).mask &= 0x00;
 			}
 		}
-		if (opl < 3) {
+		if (type == "ym3812" || type == "ym3526" || type == "y8950") {
 			for (let address = 0x0C0; address < 0x0C9; address++) {
 				this.getRegister(address).mask &= 0x0F;
 				this.getRegister(address).value = 0x30;
@@ -30,7 +34,7 @@ export class ChipOPL4 extends Chip {
 				this.getRegister(address).mask &= 0x00;
 			}
 		}
-		if (opl < 2) {
+		if (type == "ym3526" || type == "y8950") {
 			for (let address = 0x0E0; address < 0x100; address++) {
 				this.getRegister(address).mask &= 0x00;
 			}
@@ -113,6 +117,14 @@ export class ChipOPL4 extends Chip {
 		if (this.set(address, value)) {
 			value = address == 0x004 && value & 0x80 ? value : this.get(address);
 			emit(CommandOPL4Register.of(address, value));
+		}
+	}
+
+	writeCommand(command) {
+		if (command instanceof CommandOPL4Config) {
+			this.config(command.clockFrequency, command.version);
+		} else if (command instanceof CommandOPL4WaveMemory) {
+			this.setMemory(command.memory, command.romSize, command.ramSize);
 		}
 	}
 }

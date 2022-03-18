@@ -4,7 +4,8 @@ import util from "util";
 import { Format } from "./Format.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
-import { CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPL4Config } from "./CommandOPL4.js";
 import { ChipOPN } from "./ChipOPN.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 
@@ -27,11 +28,31 @@ export class FormatVGM extends Format {
 		const headerSize = version >= 0x150 ? getDoubleWord(0x34) + 0x34 : 0x40;
 		const getHeaderWord = address => version >= 0x150 && headerSize >= address + 4 ? getDoubleWord(address) : 0;
 		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
-		const opn = new ChipOPN(getChipFrequency(0x44));
-		const opl4 = new ChipOPL4(getChipFrequency(0x60), getChipFrequency(0x60) ? 4 : getChipFrequency(0x5C) ? 3 :
-			getChipFrequency(0x50) ? 2 : getChipFrequency(0x54) || getChipFrequency(0x58) ? 1 : undefined);
-		const tickFrequency = 44100;
-		const track = new Track(name, tickFrequency);
+
+		const track = new Track(name, 44100);
+		const opn = new ChipOPN();
+		const opl4 = new ChipOPL4();
+
+		if (getChipFrequency(0x44)) {
+			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
+			opn.writeCommand(track.commands[0]);
+		} else if (getChipFrequency(0x60)) {
+			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x60), "ymf278b"));
+			opl4.writeCommand(track.commands[0]);
+		} else if (getChipFrequency(0x5C)) {
+			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x5C), "ymf262"));
+			opl4.writeCommand(track.commands[0]);
+		} else if (getChipFrequency(0x50)) {
+			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x50), "ym3812"));
+			opl4.writeCommand(track.commands[0]);
+		} else if (getChipFrequency(0x54)) {
+			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x54), "ym3526"));
+			opl4.writeCommand(track.commands[0]);
+		} else if (getChipFrequency(0x58)) {
+			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x58), "y8950"));
+			opl4.writeCommand(track.commands[0]);
+		}
+
 		let address = headerSize;
 		while (address < vgm.length) {
 			if (address == loop) {
