@@ -93,19 +93,19 @@ export class ChipOPL4 extends Chip {
 	}
 
 	writeROMData(romSize, dataStart, data, emit) {
-		this.memory = Uint8Array.from(this.memory);
+		const memory = Uint8Array.from(this.memory);
 		if (romSize != this.romSize) {
-			this.memory.copyWithin(romSize, this.romSize);
+			memory.copyWithin(romSize, this.romSize);
 		}
-		this.romSize = romSize;
-		this.memory.set(data, dataStart);
+		memory.set(data, dataStart);
+		this.setMemory(memory, romSize, this.ramSize);
 		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
 	}
 
 	writeRAMData(ramSize, dataStart, data, emit) {
-		this.memory = Uint8Array.from(this.memory);
-		this.ramSize = ramSize;
-		this.memory.set(data, this.romSize + dataStart);
+		const memory = Uint8Array.from(this.memory);
+		memory.set(data, this.romSize + dataStart);
+		this.setMemory(memory, this.romSize, ramSize);
 		emit(CommandOPL4WaveMemory.of(this.memory, this.romSize, this.ramSize));
 	}
 
