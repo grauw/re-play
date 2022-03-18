@@ -4,9 +4,8 @@ import util from "util";
 import { Format } from "./Format.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
-import { CommandOPNConfig, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config } from "./CommandOPL4.js";
-import { ChipOPN } from "./ChipOPN.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 
 export class FormatVGM extends Format {
@@ -30,12 +29,10 @@ export class FormatVGM extends Format {
 		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
 
 		const track = new Track(name, 44100);
-		const opn = new ChipOPN();
 		const opl4 = new ChipOPL4();
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
-			opn.writeCommand(track.commands[0]);
 		} else if (getChipFrequency(0x60)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x60), "ymf278b"));
 			opl4.writeCommand(track.commands[0]);
@@ -57,18 +54,17 @@ export class FormatVGM extends Format {
 		while (address < vgm.length) {
 			if (address == loop) {
 				track.addCommand(CommandLabel.of("loop"));
-				opn.unsetAll();
 				opl4.unsetAll();
 			}
 			const type = getByte(address++);
 			if (type == 0x55) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opn.writeRegister(register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPNRegister.of(register, value));
 			} else if (type == 0xA5) {
 				const register = getByte(address++);
 				const value = getByte(address++);
-				opn.writeRegister(0x100 | register, value, command => track.addCommand(command));
+				track.addCommand(CommandOPNRegister.of(0x100 | register, value));
 			} else if (type == 0x5A) {
 				const register = getByte(address++);
 				const value = getByte(address++);

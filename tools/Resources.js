@@ -7,7 +7,7 @@ import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
 import { TransformAttenuateVolume, TransformMapChannels, TransformMoveWaitAfterLoop,
 	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence, TransformEndLoop } from "./Transform.js";
-import { TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
+import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
 
 export class Resources {
@@ -74,6 +74,7 @@ export class ResourcesLoader {
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name || `${index + 1}`);
 
 			const transforms = [
+				new TransformOPNToGenericFM(),
 				new TransformMoveWaitAfterLoop(),
 				new TransformRemoveWaitsUnder(jsonTrack.waitThreshold ?? json.waitThreshold),
 				new TransformMapChannels(jsonTrack.channelMapping ?? json.channelMapping),

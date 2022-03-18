@@ -25,6 +25,25 @@ export class CommandOPNConfig extends CommandOPN {
 
 const commandOPNConfigMemo = new MemoConstructor(CommandOPNConfig);
 
+export class CommandOPNRegister extends CommandOPN {
+	constructor(address, value) {
+		super();
+		this.address = address;
+		this.value = value;
+	}
+
+	static of(address, value) {
+		return commandOPNRegisterMemo.get(address, value);
+	}
+
+	toString() {
+		const hex = value => value.toString(16).toUpperCase();
+		return `OPNRegister ${`00${hex(this.address)}`.slice(-3)}: ${`0${hex(this.value)}`.slice(-2)}`;
+	}
+}
+
+const commandOPNRegisterMemo = new MemoConstructor(CommandOPNRegister);
+
 export class CommandFM extends Command {
 	toString() {
 		return `FM`;
