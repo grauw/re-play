@@ -104,17 +104,17 @@ export class FormatVGM extends Format {
 				const dataType = getByte(address++);
 				const dataSize = getDoubleWord(address);
 				address += 4;
-				if (dataType == 0x84) {
-					const romSize = getDoubleWord(address);
+				if (dataType >= 0x80 && dataType < 0xC0) {
+					const memorySize = getDoubleWord(address);
 					const dataStart = getDoubleWord(address + 4);
-					opl4Memory.writeROMData(romSize, dataStart, vgm.subarray(address + 8, address + dataSize));
-					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
-				}
-				if (dataType == 0x87) {
-					const ramSize = getDoubleWord(address);
-					const dataStart = getDoubleWord(address + 4);
-					opl4Memory.writeRAMData(ramSize, dataStart, vgm.subarray(address + 8, address + dataSize));
-					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
+					const data = vgm.subarray(address + 8, address + dataSize);
+					if (dataType == 0x84) {
+						opl4Memory.writeROMData(memorySize, dataStart, data);
+						track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
+					} else if (dataType == 0x87) {
+						opl4Memory.writeRAMData(memorySize, dataStart, data);
+						track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
+					}
 				}
 				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {
