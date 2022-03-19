@@ -108,13 +108,13 @@ export class FormatVGM extends Format {
 					const romSize = getDoubleWord(address);
 					const dataStart = getDoubleWord(address + 4);
 					opl4Memory.writeROMData(romSize, dataStart, vgm.subarray(address + 8, address + dataSize));
-					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data), opl4Memory.romSize, opl4Memory.ramSize));
+					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
 				}
 				if (dataType == 0x87) {
 					const ramSize = getDoubleWord(address);
 					const dataStart = getDoubleWord(address + 4);
 					opl4Memory.writeRAMData(ramSize, dataStart, vgm.subarray(address + 8, address + dataSize));
-					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data), opl4Memory.romSize, opl4Memory.ramSize));
+					track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
 				}
 				address += dataSize;  // skip
 			} else if (type >= 0x70 && type < 0x80) {

@@ -232,20 +232,17 @@ export class CommandOPL4Register extends CommandOPL4 {
 const commandOPL4RegisterMemo = new MemoConstructor(CommandOPL4Register);
 
 export class CommandOPL4WaveMemory extends CommandOPL4 {
-	constructor(memory, romSize, ramSize) {
+	constructor(memory) {
 		super();
 		this.memory = memory instanceof HashTypedArray ? memory.array : memory;
-		this.romSize = romSize;
-		this.ramSize = ramSize;
 	}
 
-	static of(memory, romSize, ramSize) {
-		return commandOPL4WaveMemoryMemo.get(new HashTypedArray(memory), romSize, ramSize);
+	static of(memory) {
+		return commandOPL4WaveMemoryMemo.get(new HashTypedArray(memory));
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		return `OPL4WaveMemory ROM Size: 0x${hex(this.romSize)}, RAM Size: 0x${hex(this.ramSize)}`;
+		return `OPL4WaveMemory`;
 	}
 }
 

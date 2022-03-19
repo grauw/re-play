@@ -10,8 +10,6 @@ export class ChipOPL4 extends Chip {
 		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
 		this.memory = new Uint8Array(0x400000);
 		this.memory.set(yrw801Headers);
-		this.romSize = 0x200000;
-		this.ramSize = 0x000000;
 	}
 
 	config(clockFrequency, type) {
@@ -95,8 +93,6 @@ export class ChipOPL4 extends Chip {
 			this.config(command.clockFrequency, command.version);
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			this.memory.set(command.memory);
-			this.romSize = command.romSize;
-			this.ramSize = command.ramSize;
 		}
 	}
 }
