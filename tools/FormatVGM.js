@@ -110,10 +110,10 @@ export class FormatVGM extends Format {
 					const data = vgm.subarray(address + 8, address + dataSize);
 					if (dataType == 0x84) {
 						opl4Memory.writeROMData(memorySize, dataStart, data);
-						track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
+						track.addCommand(CommandOPL4WaveMemory.of(opl4Memory.getData()));
 					} else if (dataType == 0x87) {
 						opl4Memory.writeRAMData(memorySize, dataStart, data);
-						track.addCommand(CommandOPL4WaveMemory.of(Uint8Array.from(opl4Memory.data)));
+						track.addCommand(CommandOPL4WaveMemory.of(opl4Memory.getData()));
 					}
 				}
 				address += dataSize;  // skip
@@ -129,23 +129,34 @@ export class FormatVGM extends Format {
 
 class FormatVGMOPL4Memory {
 	constructor() {
-		this.data = new Uint8Array(0x400000);
-		this.data.set(yrw801Headers);
-		this.romSize = 0x200000;
-		this.ramSize = 0x000000;
+		this.rom = new Uint8Array(0x200000);
+		this.ram = new Uint8Array(0x000000);
+		this.rom.set(yrw801Headers);
+	}
+
+	getData() {
+		const data = new Uint8Array(this.rom.length + this.ram.length);
+		data.set(this.rom);
+		data.set(this.ram, this.rom.length);
+		return data;
 	}
 
 	writeROMData(romSize, dataStart, data) {
-		if (romSize != this.romSize) {
-			this.memory.copyWithin(romSize, this.romSize);
-		}
-		this.memory.set(data, dataStart);
-		this.romSize = romSize;
+		this.rom = this.writeData(this.rom, romSize, dataStart, data);
 	}
 
 	writeRAMData(ramSize, dataStart, data) {
-		this.memory.set(data, this.romSize + dataStart);
-		this.ramSize = ramSize;
+		this.ram = this.writeData(this.ram, ramSize, dataStart, data);
+	}
+
+	writeData(memory, size, dataStart, data) {
+		if (size != memory.length) {
+			const oldMemory = memory;
+			memory = new Uint8Array(size);
+			memory.set(oldMemory);
+		}
+		memory.set(data, dataStart);
+		return memory;
 	}
 }
 
