@@ -1,5 +1,5 @@
 import { Chip } from "./Chip.js";
-import { CommandOPNConfig, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 
 export class ChipOPN extends Chip {
 	constructor() {
@@ -49,7 +49,9 @@ export class ChipOPN extends Chip {
 	}
 
 	writeCommand(command) {
-		if (command instanceof CommandOPNConfig) {
+		if (command instanceof CommandOPNRegister) {
+			this.set(command.address, command.value);
+		} else if (command instanceof CommandOPNConfig) {
 			this.config(command.clockFrequency, command.type);
 		}
 	}

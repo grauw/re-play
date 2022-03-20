@@ -89,7 +89,9 @@ export class ChipOPL4 extends Chip {
 	}
 
 	writeCommand(command) {
-		if (command instanceof CommandOPL4Config) {
+		if (command instanceof CommandOPL4Register) {
+			this.set(command.address, command.value);
+		} else if (command instanceof CommandOPL4Config) {
 			this.config(command.clockFrequency, command.version);
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			this.memory.set(command.memory);

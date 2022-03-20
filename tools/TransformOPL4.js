@@ -91,13 +91,11 @@ export class TransformOPL4FrameSanitizer extends Transform {
 	unsetLoopChanges(input, opl4Output, channels, target) {
 		const opl4Loop = new ChipOPL4();
 		for (const command of input.commands) {
+			opl4Loop.writeCommand(command);
 			if (command instanceof CommandOPL4Register) {
-				opl4Loop.set(command.address, command.value);
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
 					channels[command.waveChannel].firstKeyOn = true;
 				}
-			} else if (command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory) {
-				opl4Loop.writeCommand(command);
 			} else if (command instanceof CommandJump && command.target == target) {
 				break;
 			}
