@@ -5,12 +5,43 @@ export class ChipOPN extends Chip {
 	constructor() {
 		super(registerMasks);
 		this.getRegister(0x007).value = 0x80;
+		this.getRegister(0x028).mask = 0xFFFFFFFF;
+		this.getRegister(0x02D).set(0);
 		this.clockFrequency = 8000000;
-		this.clockDividers = 6;
+		this.lastClockDividerSet = 0x2D;
+		this.frequencies = Array(12).fill(-1);
 	}
 
 	config(clockFrequency, type) {
 		this.clockFrequency = type == "ym2203" ? clockFrequency * 2 : clockFrequency;
+	}
+
+	set(address, value, mask) {
+		if (address == 0x028 && mask & 0x7) {
+			const channelX4 = (value & 7) << 2;
+			return super.set(address, value >> 4 << channelX4, (mask & 0xF0) >> 4 << channelX4);
+		} else if (address >= 0x02D && address < 0x030) {
+			super.set(address, value, mask);
+			const changed = address != this.lastClockDividerSet;
+			this.lastClockDividerSet = address;
+			return changed;
+		} else if (address >= 0x0A0 && address < 0x0A4 || address >= 0x1A0 && address < 0x1A4 || address >= 0x0A8 && address < 0x0AC) {
+			const changed = super.set(address, value, mask);
+			const channel = address & 0x0B | address >> 8 << 2;
+			const frequency = this.get(address + 4) << 8 | this.get(address);
+			const frequencyChanged = this.frequencies[channel] != frequency;
+			this.frequencies[channel] = frequency;
+			return changed || frequencyChanged;
+		}
+		return super.set(address, value, mask);
+	}
+
+	getFMClockFrequency() {
+		return this.clockFrequency / [6, 3, 2][this.lastClockDividerSet - 0x2D];
+	}
+
+	getPSGClockFrequency() {
+		return this.clockFrequency / [4, 2, 1][this.lastClockDividerSet - 0x2D];
 	}
 
 	writeRegister(address, value, emit) {
@@ -23,15 +54,15 @@ export class ChipOPN extends Chip {
 		if (addressLow == 0x27 && value & 0xC0)
 			throw new Error("CSM or 3ch modes not supported.");
 
-		this.set(address, value);
+		if (!this.set(address, value))
+			return;
+
 		const channel = addressHigh << 2 | addressLow & 3;
 		if (address == 0x028) {
 			emit(CommandFMKey.of(value & 7, value >> 4));
 		} else if (addressLow >= 0xA0 && addressLow < 0xA4) {
 			const value = this.get(address + 4) << 8 | this.get(address);
-			emit(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), this.clockFrequency / this.clockDivider));
-		} else if (addressLow >= 0xA4 && addressLow < 0xA8) {
-			// just store
+			emit(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), this.getFMClockFrequency()));
 		} else if (addressLow >= 0x30 && addressLow < 0x90 || addressLow >= 0xB0 && addressLow < 0xB4) {
 			const offset = channel >> 2 << 8 | channel & 3;
 			emit(CommandFMInstrument.of(channel,
@@ -43,8 +74,6 @@ export class ChipOPN extends Chip {
 				this.get(0x80 + offset), this.get(0x84 + offset), this.get(0x88 + offset), this.get(0x8C + offset),
 				this.get(0xB0 + offset) | 0xC0
 			));
-		} else if (address >= 0x02D && address < 0x030) {
-			this.clockDivider = [6, 3, 2][address - 0x02D];
 		}
 	}
 

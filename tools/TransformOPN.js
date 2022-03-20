@@ -17,7 +17,7 @@ export class TransformOPNToGenericFM extends Transform {
 			} else if (command instanceof CommandOPNConfig) {
 				opn.writeCommand(command);
 			} else if (command instanceof CommandLabel && command.name == "loop") {
-				opn.unsetAll();
+				opn.unsetAll(~0);
 			}
 			output.addCommand(command);
 		}
