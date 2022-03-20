@@ -42,14 +42,11 @@ export class ChipOPL4 extends Chip {
 	set(address, value, mask = 0xFF) {
 		if (address == 0x004 && value & mask & 0x80) {
 			return true;
-		}
-
-		let changed = super.set(address, value, mask);
-
-		if (address >= 0x208 && address < 0x220 && mask) {
+		} else if (address >= 0x208 && address < 0x220 && mask) {
+			super.set(address, value, mask);
 			const channel = address - 0x208;
 			const wtAddress = this.getWaveTableAddress(this.getWaveTableNumber(channel));
-			changed = this.waveTables[channel].set(
+			let changed = this.waveTables[channel].set(
 				this.memory[wtAddress + 0] << 16 | this.memory[wtAddress + 1] << 8 | this.memory[wtAddress + 2],
 				this.memory[wtAddress + 3] << 8 | this.memory[wtAddress + 4],
 				this.memory[wtAddress + 5] << 8 | this.memory[wtAddress + 6]
@@ -59,9 +56,9 @@ export class ChipOPL4 extends Chip {
 			changed = this.set(0x2B0 + channel, this.memory[wtAddress + 9]) || changed;
 			changed = this.set(0x2C8 + channel, this.memory[wtAddress + 10]) || changed;
 			changed = this.set(0x2E0 + channel, this.memory[wtAddress + 11]) || changed;
+			return changed;
 		}
-
-		return changed;
+		return super.set(address, value, mask);
 	}
 
 	unset(address, mask = 0xFF) {
