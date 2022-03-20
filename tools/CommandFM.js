@@ -32,6 +32,10 @@ export class CommandOPNRegister extends CommandOPN {
 		this.value = value;
 	}
 
+	get channel() {
+		return this.address == 0x028 ? this.value & 0x7 : this.address >> 8 << 2 | this.address & 0x3;
+	}
+
 	static of(address, value) {
 		return commandOPNRegisterMemo.get(address, value);
 	}
