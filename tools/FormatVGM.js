@@ -33,6 +33,10 @@ export class FormatVGM extends Format {
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
+		} else if (getChipFrequency(0x2C)) {
+			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x2C), "ym2612"));
+		} else if (getChipFrequency(0x48)) {
+			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x48), "ym2608"));
 		} else if (getChipFrequency(0x60)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x60), "ymf278b"));
 		} else if (getChipFrequency(0x5C)) {
@@ -56,6 +60,28 @@ export class FormatVGM extends Format {
 				const value = getByte(address++);
 				track.addCommand(CommandOPNRegister.of(register, value));
 			} else if (type == 0xA5) {
+				const register = getByte(address++);
+				let value = getByte(address++);
+				if (register == 0x28) {
+					track.addCommand(CommandOPNRegister.of(register, value | 0x04));
+				} else if (register >= 0x2D && register < 0x30) {
+					track.addCommand(CommandOPNRegister.of(register, value));
+				} else {
+					track.addCommand(CommandOPNRegister.of(0x100 | register, value));
+				}
+			} else if (type == 0x52) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				track.addCommand(CommandOPNRegister.of(register, value));
+			} else if (type == 0x53) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				track.addCommand(CommandOPNRegister.of(0x100 | register, value));
+			} else if (type == 0x56) {
+				const register = getByte(address++);
+				const value = getByte(address++);
+				track.addCommand(CommandOPNRegister.of(register, value));
+			} else if (type == 0x57) {
 				const register = getByte(address++);
 				const value = getByte(address++);
 				track.addCommand(CommandOPNRegister.of(0x100 | register, value));

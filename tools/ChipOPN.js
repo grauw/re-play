@@ -6,7 +6,7 @@ export class ChipOPN extends Chip {
 		super(registerMasks);
 		this.getRegister(0x007).value = 0x80;
 		this.clockFrequency = 8000000;
-		this.clockDividers = [6, 6];
+		this.clockDividers = 6;
 	}
 
 	config(clockFrequency, type) {
@@ -18,18 +18,18 @@ export class ChipOPN extends Chip {
 		const addressHigh = address >>> 8;
 		if (addressHigh >= 2 || addressLow >= 0xC0)
 			throw new Error("Invalid register.");
-		if (addressLow >= 0x90 && addressLow < 0xA0)
+		if (addressLow >= 0x90 && addressLow < 0xA0 && value & 0x08)
 			throw new Error("SSG-EG not supported.");
 		if (addressLow == 0x27 && value & 0xC0)
 			throw new Error("CSM or 3ch modes not supported.");
 
 		this.set(address, value);
 		const channel = addressHigh << 2 | addressLow & 3;
-		if (addressLow == 0x28) {
-			emit(CommandFMKey.of(value & 3 | addressHigh << 2, value >> 4));
+		if (address == 0x028) {
+			emit(CommandFMKey.of(value & 7, value >> 4));
 		} else if (addressLow >= 0xA0 && addressLow < 0xA4) {
 			const value = this.get(address + 4) << 8 | this.get(address);
-			emit(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), this.clockFrequency / this.clockDividers[addressHigh]));
+			emit(CommandFMFrequency.ofFNum(channel, (value & 0x7FF) << (value >> 11), this.clockFrequency / this.clockDivider));
 		} else if (addressLow >= 0xA4 && addressLow < 0xA8) {
 			// just store
 		} else if (addressLow >= 0x30 && addressLow < 0x90 || addressLow >= 0xB0 && addressLow < 0xB4) {
@@ -43,8 +43,8 @@ export class ChipOPN extends Chip {
 				this.get(0x80 + offset), this.get(0x84 + offset), this.get(0x88 + offset), this.get(0x8C + offset),
 				this.get(0xB0 + offset) | 0xC0
 			));
-		} else if (addressLow >= 0x2D && addressLow < 0x30) {
-			this.clockDividers[addressHigh] = [6, 3, 2][addressLow - 0x2D];
+		} else if (address >= 0x02D && address < 0x030) {
+			this.clockDivider = [6, 3, 2][address - 0x02D];
 		}
 	}
 
