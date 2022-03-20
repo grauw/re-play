@@ -13,6 +13,8 @@ const ignoreAddresses = [
 
 export class TransformOPL4FrameSanitizer extends Transform {
 	apply(input) {
+		if (!(input.commands[0] instanceof CommandOPL4Config))
+			return input;
 		const output = new Track(input.name, input.tickFrequency);
 		const emit = command => output.addCommand(command);
 		const opl4Input = new ChipOPL4();
