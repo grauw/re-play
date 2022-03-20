@@ -99,7 +99,7 @@ export class CommandFMFrequency extends CommandFMChannel {
 	}
 
 	getKeyCodeFraction(opmFrequency) {
-		const logarithm = Math.log2(this.frequency / 440 * (3579545 / opmFrequency)) + 4 + 8 / 12;
+		const logarithm = Math.log2(this.frequency / 440 * ((315000000 / 88) / opmFrequency)) + 4 + 8 / 12;
 		const keyFraction = Math.min(Math.max(Math.round(logarithm * 12 * 64), 0), 8 * 12 * 64 - 1);
 		const note = Math.floor(keyFraction / 64);
 		const octave = Math.floor(note / 12);

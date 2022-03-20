@@ -1,8 +1,6 @@
 {
 	"format": "opn",
 	"tickFrequency": 59.922743404312307,
-	"opnbFrequency": 8000000,
-	"opmFrequency": 3579545,
 	"waitThreshold": 50,
 	"attenuation": -6,
 	"tracks": [
