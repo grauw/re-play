@@ -221,7 +221,7 @@ export class FormatVGMOPNB extends Format {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof CommandLabel && command.name == "loop") {
+			} else if (command instanceof CommandLabel && track.isLoopLabel(command)) {
 				loopOffset = commandData.length;
 				loopSamples = samples;
 			}
@@ -303,7 +303,7 @@ export class FormatVGMOPM extends Format {
 					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
 					ticks -= ticksCapped;
 				}
-			} else if (command instanceof CommandLabel && command.name == "loop") {
+			} else if (command instanceof CommandLabel && track.isLoopLabel(command)) {
 				loopOffset = commandData.length;
 				loopSamples = samples;
 			}

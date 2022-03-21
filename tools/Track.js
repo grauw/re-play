@@ -84,6 +84,11 @@ export class Track {
 		}
 		return track;
 	}
+
+	isLoopLabel(command) {
+		return command instanceof CommandLabel && this.commands.at(-1) instanceof CommandJump &&
+			command.name == this.commands.at(-1).target;
+	}
 }
 
 export class Symbol {

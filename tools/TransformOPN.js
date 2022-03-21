@@ -39,7 +39,7 @@ export class TransformOPNToGenericFM extends Transform {
 				continue;
 			} else if (command instanceof CommandOPNConfig) {
 				opn.writeCommand(command);
-			} else if (command instanceof CommandLabel && command.name == "loop") {
+			} else if (command instanceof CommandLabel && input.isLoopLabel(command)) {
 				opn.unsetAll(~0);
 			}
 			output.addCommand(command);

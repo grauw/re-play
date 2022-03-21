@@ -39,8 +39,8 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				output.addCommand(command);
 			} else if (command instanceof CommandWait || command instanceof CommandControlFlow) {
 				this.emitFrame(opl4Input, opl4Output, channels, emit);
-				if (command instanceof CommandLabel && command.name == "loop") {
-					this.unsetLoopChanges(input, opl4Output, channels, "loop");
+				if (command instanceof CommandLabel && input.isLoopLabel(command)) {
+					this.unsetLoopChanges(input, opl4Output, channels, command.name);
 				}
 				output.addCommand(command);
 			} else {
