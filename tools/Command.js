@@ -15,6 +15,7 @@ export class CommandWait extends Command {
 		if (!Number.isInteger(ticks))
 			throw new Error("Non-integer ticks count.");
 		this.ticks = ticks;
+		Object.freeze(this);
 	}
 
 	static of(ticks) {
@@ -42,6 +43,7 @@ export class CommandLabel extends CommandControlFlow {
 	constructor(name) {
 		super();
 		this.name = name;
+		Object.freeze(this);
 	}
 
 	static of(name) {
@@ -59,6 +61,7 @@ export class CommandJump extends CommandControlFlow {
 	constructor(target) {
 		super();
 		this.target = target;
+		Object.freeze(this);
 	}
 
 	static of(target) {
@@ -76,6 +79,7 @@ export class CommandCall extends CommandControlFlow {
 	constructor(target) {
 		super();
 		this.target = target;
+		Object.freeze(this);
 	}
 
 	static of(target) {
@@ -99,4 +103,4 @@ export class CommandReturn extends CommandControlFlow {
 	}
 }
 
-const commandReturnMemo = new CommandReturn();
+const commandReturnMemo = Object.freeze(new CommandReturn());

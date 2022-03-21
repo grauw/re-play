@@ -12,6 +12,7 @@ export class CommandOPL4Config extends CommandOPL4 {
 		super();
 		this.clockFrequency = clockFrequency;
 		this.type = type;
+		Object.freeze(this);
 	}
 
 	static of(clockFrequency, type) {
@@ -35,13 +36,14 @@ export class CommandOPL4WaitLoad extends CommandOPL4 {
 	}
 }
 
-const commandOPL4WaitLoadMemo = new CommandOPL4WaitLoad();
+const commandOPL4WaitLoadMemo = Object.freeze(new CommandOPL4WaitLoad());
 
 export class CommandOPL4Register extends CommandOPL4 {
 	constructor(address, value) {
 		super();
 		this.address = address;
 		this.value = value;
+		Object.freeze(this);
 	}
 
 	static of(address, value) {
@@ -235,6 +237,8 @@ export class CommandOPL4WaveMemory extends CommandOPL4 {
 	constructor(memory) {
 		super();
 		this.memory = memory instanceof HashTypedArray ? memory.array : memory;
+		Object.freeze(this.memory.buffer);
+		Object.freeze(this);
 	}
 
 	static of(memory) {
