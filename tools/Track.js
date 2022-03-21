@@ -7,24 +7,15 @@ export class Track {
 		this.name = name;
 		this.tickFrequency = tickFrequency;
 		this.commands = [];
-		this.symbols = new Map();
-	}
-
-	getSymbol(name) {
-		return this.symbols.get(name);
 	}
 
 	addCommand(command) {
 		if (command instanceof CommandWait && this.commands.at(-1) instanceof CommandWait) {
 			command = command.add(this.commands.pop());
 		} else if (command instanceof CommandLabel) {
-			if (this.symbols.has(command.name)) {
-				throw new Error(`Symbol already exists: ${command.name}`);
-			}
 			if (this.commands.at(-1) instanceof CommandJump && this.commands.at(-1).target == command.name) {
 				this.commands.pop();
 			}
-			this.symbols.set(command.name, new Symbol(command.name, this.commands.length, command));
 		} else if (command instanceof CommandFMInstrument) {
 			let tail = [];
 			while (this.commands.at(-1) instanceof CommandFMInstrument) {
@@ -88,13 +79,5 @@ export class Track {
 	isLoopLabel(command) {
 		return command instanceof CommandLabel && this.commands.at(-1) instanceof CommandJump &&
 			command.name == this.commands.at(-1).target;
-	}
-}
-
-export class Symbol {
-	constructor(name, position, command) {
-		this.name = name;
-		this.position = position;
-		this.command = command;
 	}
 }

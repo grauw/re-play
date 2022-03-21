@@ -11,19 +11,20 @@ export class Transform {
 
 export class TransformMoveWaitAfterLoop extends Transform {
 	apply(input) {
-		const loop = input.getSymbol("loop");
-		if (loop && input.commands[loop.position + 1] instanceof CommandWait) {
-			const output = new Track(input.name, input.tickFrequency);
-			output.addCommands(input.commands.slice(0, loop.position));
-			output.addCommand(input.commands[loop.position + 1]);
-			output.addCommand(input.commands[loop.position]);
-			output.addCommands(input.commands.slice(loop.position + 2, input.commands.length - 1));
-			output.addCommand(input.commands[loop.position + 1]);
-			output.addCommand(input.commands[input.commands.length - 1]);
-			return output;
-		} else {
-			return input;
+		if (input.commands.at(-1) instanceof CommandJump) {
+			const loop = input.commands.findIndex(command => command instanceof CommandLabel && input.isLoopLabel(command));
+			if (loop >= 0 && input.commands[loop + 1] instanceof CommandWait) {
+				const output = new Track(input.name, input.tickFrequency);
+				output.addCommands(input.commands.slice(0, loop));
+				output.addCommand(input.commands[loop + 1]);
+				output.addCommand(input.commands[loop]);
+				output.addCommands(input.commands.slice(loop + 2, input.commands.length - 1));
+				output.addCommand(input.commands[loop + 1]);
+				output.addCommand(input.commands[input.commands.length - 1]);
+				return output;
+			}
 		}
+		return input;
 	}
 }
 
