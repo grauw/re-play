@@ -1,5 +1,5 @@
 import { Track } from "./Track.js";
-import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn } from "./Command.js";
+import { CommandWait, CommandLabel, CommandJump, CommandReturn } from "./Command.js";
 import { CommandOPNConfig, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
@@ -25,37 +25,6 @@ export class TransformMoveWaitAfterLoop extends Transform {
 			}
 		}
 		return input;
-	}
-}
-
-export class TransformRemoveWaitsUnder extends Transform {
-	constructor(threshold = 0) {
-		super();
-		this.threshold = threshold;
-	}
-
-	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
-		let accumulator = 0;
-		for (const command of input.commands) {
-			if (command instanceof CommandWait) {
-				if (command.ticks >= this.threshold) {
-					output.addCommand(CommandWait.of(command.ticks + accumulator));
-					accumulator = 0;
-				} else {
-					accumulator += command.ticks;
-				}
-			} else if (command instanceof CommandControlFlow) {
-				if (accumulator > 0) {
-					output.addCommand(CommandWait.of(accumulator));
-					accumulator = 0;
-				}
-				output.addCommand(command);
-			} else {
-				output.addCommand(command);
-			}
-		}
-		return output;
 	}
 }
 
@@ -137,9 +106,10 @@ export class TransformTrimLeadingSilence extends Transform {
 }
 
 export class TransformQuantize extends Transform {
-	constructor(tickFrequency = 315000000 / 5256768) {
+	constructor(tickFrequency = 315000000 / 5256768, waitThreshold = 0) {
 		super();
 		this.tickFrequency = tickFrequency;
+		this.waitThreshold = waitThreshold;
 	}
 
 	apply(input) {
@@ -156,7 +126,7 @@ export class TransformQuantize extends Transform {
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
 				accumulator += command.ticks * this.tickFrequency;
-				if (accumulator >= input.tickFrequency) {
+				if (command.ticks >= this.waitThreshold && accumulator >= input.tickFrequency) {
 					const newTicks = Math.floor(accumulator / input.tickFrequency);
 					output.addCommand(CommandWait.of(newTicks));
 					accumulator -= newTicks * input.tickFrequency;

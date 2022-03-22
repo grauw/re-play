@@ -5,8 +5,8 @@ import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
-import { TransformAttenuateVolume, TransformMapChannels, TransformMoveWaitAfterLoop,
-	TransformQuantize, TransformRemoveWaitsUnder, TransformTrimLeadingSilence, TransformEndLoop } from "./Transform.js";
+import { TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
+	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
 
@@ -74,15 +74,17 @@ export class ResourcesLoader {
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name || `${index + 1}`);
 
 			const transforms = [
-				new TransformOPNToGenericFM(),
 				new TransformMoveWaitAfterLoop(),
-				new TransformRemoveWaitsUnder(jsonTrack.waitThreshold ?? json.waitThreshold),
+				new TransformQuantize(
+					jsonTrack.tickFrequency ?? json.tickFrequency,
+					jsonTrack.waitThreshold ?? json.waitThreshold
+				),
+				new TransformOPNToGenericFM(),
+				new TransformOPNFrequencyBeforeKeyOn(),
+				new TransformOPL4FrameSanitizer(),
 				new TransformMapChannels(jsonTrack.channelMapping ?? json.channelMapping),
 				new TransformAttenuateVolume(jsonTrack.attenuation ?? json.attenuation),
-				new TransformOPNFrequencyBeforeKeyOn(),
 				new TransformTrimLeadingSilence(),
-				new TransformQuantize(json.tickFrequency),
-				new TransformOPL4FrameSanitizer(),
 				new TransformEndLoop()
 			];
 
