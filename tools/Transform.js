@@ -5,7 +5,7 @@ import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from ".
 
 export class Transform {
 	apply(input) {
-		throw new Error("Not implemented.");
+		return input;
 	}
 }
 
