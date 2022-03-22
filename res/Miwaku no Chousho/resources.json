@@ -1,6 +1,8 @@
 {
 	"format": "opl4",
-	"tickFrequency": 50,
+	"tickFrequency": 100,
+	"tolerance": 0.1,
+	"targetTickFrequency": 50,
 	"tracks": [
 		{
 			"path": "01 Painful Sigh.vgz"

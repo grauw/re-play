@@ -5,7 +5,7 @@ import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
-import { TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
+import { Transform, TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
 	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4FrameSanitizer } from "./TransformOPL4.js";
@@ -77,8 +77,12 @@ export class ResourcesLoader {
 				new TransformMoveWaitAfterLoop(),
 				new TransformQuantize(
 					jsonTrack.tickFrequency ?? json.tickFrequency,
-					jsonTrack.waitThreshold ?? json.waitThreshold
+					jsonTrack.waitThreshold ?? json.waitThreshold,
+					jsonTrack.tolerance ?? json.tolerance
 				),
+				jsonTrack.targetTickFrequency ?? json.targetTickFrequency ? new TransformQuantize(
+					jsonTrack.targetTickFrequency ?? json.targetTickFrequency
+				) : new Transform(),
 				new TransformOPNToGenericFM(),
 				new TransformOPNFrequencyBeforeKeyOn(),
 				new TransformOPL4FrameSanitizer(),

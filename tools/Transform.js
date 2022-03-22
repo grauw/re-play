@@ -106,10 +106,13 @@ export class TransformTrimLeadingSilence extends Transform {
 }
 
 export class TransformQuantize extends Transform {
-	constructor(tickFrequency = 315000000 / 5256768, waitThreshold = 0) {
+	constructor(tickFrequency = 315000000 / 5256768, waitThreshold = 0, tolerance = 0) {
 		super();
+		if (tolerance < 0 || tolerance > 0.5)
+			throw new Error("Tolerance must not exceed 0.5.");
 		this.tickFrequency = tickFrequency;
 		this.waitThreshold = waitThreshold;
+		this.tolerance = tolerance;
 	}
 
 	apply(input) {
@@ -122,18 +125,42 @@ export class TransformQuantize extends Transform {
 
 	applyHertz(input) {
 		const output = new Track(input.name, this.tickFrequency);
+		let inputTicks = 0;
+		let outputTicks = 0;
 		let accumulator = 0;
+		let resetNextAccumulator = this.tolerance != 0;
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
 				accumulator += command.ticks * this.tickFrequency;
-				if (command.ticks >= this.waitThreshold && accumulator >= input.tickFrequency) {
-					const newTicks = Math.floor(accumulator / input.tickFrequency);
-					output.addCommand(CommandWait.of(newTicks));
-					accumulator -= newTicks * input.tickFrequency;
+				if (command.ticks >= this.waitThreshold) {
+					const ticks = Math.floor((accumulator + this.tolerance * input.tickFrequency) / input.tickFrequency);
+					if (ticks >= 1) {
+						accumulator -= ticks * input.tickFrequency;
+						if (resetNextAccumulator) {
+							outputTicks += accumulator / input.tickFrequency;
+							accumulator = 0;
+							resetNextAccumulator = false;
+						}
+						if (this.tolerance) {
+							if (accumulator >= this.tolerance * input.tickFrequency) {
+								const remainingTicks = accumulator / input.tickFrequency;
+								const deviation = remainingTicks < 0.5 ? remainingTicks : remainingTicks - 1;
+								throw new Error(`Tolerance exceeded in track ${input.name} at tick ${inputTicks}: ${deviation}`);
+							}
+							accumulator *= (1 - this.tolerance) ** ticks;
+						}
+						output.addCommand(CommandWait.of(ticks));
+						outputTicks += ticks;
+					}
 				}
+				inputTicks += command.ticks;
 			} else {
 				output.addCommand(command);
 			}
+		}
+		outputTicks += accumulator / input.tickFrequency;
+		if (this.tolerance) {
+			output.tickFrequency = input.tickFrequency * outputTicks / inputTicks;
 		}
 		return output;
 	}

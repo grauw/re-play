@@ -1,7 +1,7 @@
 {
 	"format": "opl4",
-	"tickFrequency": 50.158980081630157,
-	"waitThreshold": 100,
+	"tickFrequency": 50,
+	"tolerance": 0.1,
 	"tracks": [
 		{
 			"path": "01_Title.vgm"
