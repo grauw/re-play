@@ -153,7 +153,7 @@ export class FormatVGM extends Format {
 
 export class FormatVGMOPNB extends Format {
 	constructor(opnbFrequency = 8000000) {
-		super();
+		super(false);
 		this.opnbFrequency = opnbFrequency;
 	}
 
@@ -235,7 +235,7 @@ export class FormatVGMOPNB extends Format {
 
 export class FormatVGMOPM extends Format {
 	constructor(opmFrequency = 315000000 / 88) {
-		super();
+		super(false);
 		this.opmFrequency = opmFrequency;
 	}
 
@@ -300,7 +300,7 @@ export class FormatVGMOPM extends Format {
 
 export class FormatVGMOPL4 extends Format {
 	constructor(opl4Frequency = 33868800) {
-		super();
+		super(false);
 		this.opl4Frequency = opl4Frequency;
 	}
 

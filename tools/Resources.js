@@ -25,29 +25,10 @@ export class Resources {
 	}
 
 	async write(path) {
-		if (this.format instanceof FormatOPN) {
+		if (this.format.combine) {
 			const track = this.getCombinedTracks();
 			return await this.format.saveTrack(track, path);
-		}
-		if (this.format instanceof FormatOPL4) {
-			const track = this.getCombinedTracks();
-			return await this.format.saveTrack(track, path);
-		}
-		if (this.format instanceof FormatText) {
-			const track = this.getCombinedTracks();
-			return await this.format.saveTrack(track, path);
-		}
-		if (this.format instanceof FormatVGMOPM) {
-			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
-			}));
-		}
-		if (this.format instanceof FormatVGMOPNB) {
-			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
-			}));
-		}
-		if (this.format instanceof FormatVGMOPL4) {
+		} else {
 			return Promise.all(this.tracks.map(async track => {
 				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
 			}));

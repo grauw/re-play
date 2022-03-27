@@ -1,6 +1,10 @@
 import { CommandLabel, CommandJump, CommandWait, Command } from "./Command.js";
 
 export class Format {
+	constructor(combine = true) {
+		this.combine = combine;
+	}
+
 	async loadTrack(path, name) {
 		throw new Error("Not implemented.");
 	}
