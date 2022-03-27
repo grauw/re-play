@@ -59,26 +59,17 @@ export class ResourcesLoader {
 			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name || `${index + 1}`);
 
+			const j = { ...json, ...jsonTrack };
 			const transforms = [
 				new TransformMoveWaitAfterLoop(),
-				new TransformQuantize(
-					jsonTrack.tickFrequency ?? json.tickFrequency,
-					jsonTrack.waitThreshold ?? json.waitThreshold,
-					jsonTrack.tolerance ?? json.tolerance
-				),
-				jsonTrack.targetTickFrequency ?? json.targetTickFrequency ? new TransformQuantize(
-					jsonTrack.targetTickFrequency ?? json.targetTickFrequency
-				) : new Transform(),
+				new TransformQuantize(j.tickFrequency, j.waitThreshold, j.tolerance),
+				j.targetTickFrequency ? new TransformQuantize(j.targetTickFrequency) : new Transform(),
 				new TransformOPNToGenericFM(),
 				new TransformOPNFrequencyBeforeKeyOn(),
 				new TransformOPL4FrameSanitizer(),
-				new TransformMapChannels(jsonTrack.channelMapping ?? json.channelMapping),
-				new TransformAttenuateVolume(jsonTrack.attenuation ?? json.attenuation),
-				new TransformOPL4StripMemory(
-					jsonTrack.stripMode ?? json.stripMode,
-					jsonTrack.stripMargin ?? json.stripMargin,
-					jsonTrack.stripPadding ?? json.stripPadding,
-				),
+				new TransformMapChannels(j.channelMapping),
+				new TransformAttenuateVolume(j.attenuation),
+				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
 				new TransformTrimLeadingSilence(),
 				new TransformEndLoop()
 			];
