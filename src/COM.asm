@@ -176,6 +176,8 @@ Main_Tick_Loop:
 	jr z,Main_Next
 	cp "b"
 	jr z,Main_Previous
+	cp "r"
+	jr z,Main_Play
 	cp "f"
 	jr z,Main_ToggleFrequency
 	jr Main_End
@@ -231,6 +233,7 @@ Main_message:
 	db "Re-play",13,10,10
 	db "N - Next track",13,10
 	db "B - Previous track",13,10
+	db "R - Restart track",13,10
 	db "P - Toggle pause",13,10
 	db "F - Toggle frequency",13,10,"$"
 
