@@ -7,6 +7,7 @@ JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
 _INNOE: equ 08H
+_STROUT: equ 09H
 _CONST: equ 0BH
 _OPEN: equ 43H
 _CLOSE: equ 45H
@@ -35,6 +36,9 @@ Main:
 	call DOS_IsDOS2
 	ret c
 	call DOS2Mapper_Initialize
+	ld de,Main_message
+	ld c,_STROUT
+	call BDOS
 
 	ld a,(PARAMETERS)
 	cp 2
@@ -222,6 +226,13 @@ DOS_IsDOS2:
 	ld a,b
 	cp 2
 	ret
+
+Main_message:
+	db "Re-play",13,10,10
+	db "N - Next track",13,10
+	db "B - Previous track",13,10
+	db "P - Toggle pause",13,10
+	db "F - Toggle frequency",13,10,"$"
 
 ; Data in RAM
 Main_currentTrack:
