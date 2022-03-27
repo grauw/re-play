@@ -6,7 +6,7 @@ import { ChipOPN } from "./ChipOPN.js";
 
 export class TransformOPNToGenericFM extends Transform {
 	apply(input) {
-		if (!(input.commands[0] instanceof CommandOPNConfig))
+		if (!input.hasSetupCommand(command => command instanceof CommandOPNConfig))
 			return input;
 		const output = new Track(input.name, input.tickFrequency);
 		const opn = new ChipOPN();
@@ -50,7 +50,7 @@ export class TransformOPNToGenericFM extends Transform {
 
 export class TransformOPNFrequencyBeforeKeyOn extends Transform {
 	apply(input) {
-		if (!(input.commands[0] instanceof CommandOPNConfig))
+		if (!input.hasSetupCommand(command => command instanceof CommandOPNConfig))
 			return input;
 		const output = new Track(input.name, input.tickFrequency);
 		let lastCommand = null;

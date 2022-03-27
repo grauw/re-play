@@ -41,6 +41,17 @@ export class Track {
 			this.addCommand(command);
 	}
 
+	hasSetupCommand(predicate) {
+		for (const command of this.commands) {
+			if (command instanceof CommandWait) {
+				return false;
+			} else if (predicate(command)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static ofTracksWithIndex(name, tracks) {
 		const tickFrequency = tracks.length / tracks.reduce((sum, track) => sum + 1 / track.tickFrequency, 0);
 		const track = new Track(name, tickFrequency);

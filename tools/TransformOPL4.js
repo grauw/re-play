@@ -13,7 +13,7 @@ const ignoreAddresses = [
 
 export class TransformOPL4FrameSanitizer extends Transform {
 	apply(input) {
-		if (!(input.commands[0] instanceof CommandOPL4Config))
+		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
 		const output = new Track(input.name, input.tickFrequency);
 		const emit = command => output.addCommand(command);
@@ -240,7 +240,9 @@ export class TransformOPL4StripMemory extends Transform {
 	}
 
 	apply(input) {
-		if (this.mode == "none" || !(input.commands[0] instanceof CommandOPL4Config))
+		if (this.mode == "none" || 
+			!input.hasSetupCommand(command => command instanceof CommandOPL4Config) ||
+			!input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
 			return input;
 		const ranges = new Ranges();
 		if (this.mode == "unused") {
