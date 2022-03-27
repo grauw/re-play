@@ -4,7 +4,7 @@ import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatText } from "./FormatText.js";
-import { FormatVGM, FormatVGMOPM, FormatVGMOPNB } from "./FormatVGM.js";
+import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4 } from "./FormatVGM.js";
 import { Transform, TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
 	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
@@ -43,6 +43,11 @@ export class Resources {
 			}));
 		}
 		if (this.format instanceof FormatVGMOPNB) {
+			return Promise.all(this.tracks.map(async track => {
+				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
+			}));
+		}
+		if (this.format instanceof FormatVGMOPL4) {
 			return Promise.all(this.tracks.map(async track => {
 				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
 			}));
@@ -118,6 +123,8 @@ export class ResourcesLoader {
 				return new FormatVGMOPM(json.opmFrequency);
 			case "vgm-opnb":
 				return new FormatVGMOPNB(json.opnbFrequency);
+			case "vgm-opl4":
+				return new FormatVGMOPL4(json.opl4Frequency);
 			default:
 				throw new Error("Unrecognised format.");
 		}

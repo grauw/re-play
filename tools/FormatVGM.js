@@ -297,3 +297,77 @@ export class FormatVGMOPM extends Format {
 		return data;
 	}
 }
+
+export class FormatVGMOPL4 extends Format {
+	constructor(opl4Frequency = 33868800) {
+		super();
+		this.opl4Frequency = opl4Frequency;
+	}
+
+	async saveTrack(track, path) {
+		const data = this.writeTrack(track);
+		await fs.promises.writeFile(path, Buffer.from(data));
+	}
+
+	writeTrack(track) {
+		let samples = 0;
+		let loopOffset = -1;
+		let loopSamples = -1;
+		const commandData = [0xD0, 0x01, 0x05, 0x03, 0xD0, 0x02, 0x02, 0x10];
+		for (const command of track.commands) {
+			if (command instanceof CommandOPL4Register) {
+				commandData.push(0xD0, command.address >> 8, command.address & 0xFF, command.value);
+			} else if (command instanceof CommandOPL4WaveMemory) {
+				const size = command.memory.length + 8;
+				const start = command.address - 0x200000;
+				commandData.push(0x67, 0x66, 0x87, size & 0xFF, size >> 8 & 0xFF, size >> 16 & 0xFF, size >> 24,
+					0x00, 0x00, 0x20, 0x00, start & 0xFF, start >> 8 & 0xFF, start >> 16 & 0xFF, start >> 24);
+				for (const value of command.memory)
+					commandData.push(value);
+			} else if (command instanceof CommandWait) {
+				let ticks = Math.round(command.ticks * 44100 / track.tickFrequency);
+				samples += ticks;
+				while (ticks > 0) {
+					const ticksCapped = Math.min(ticks, 65535);
+					commandData.push(0x61, ticksCapped & 0xFF, ticksCapped >> 8);
+					ticks -= ticksCapped;
+				}
+			} else if (command instanceof CommandLabel && track.isLoopLabel(command)) {
+				loopOffset = commandData.length;
+				loopSamples = samples;
+			}
+		}
+		commandData.push(0x66);
+
+		const data = [];
+		const doubleWord = value => [value & 0xFF, (value >> 8) & 0xFF, (value >> 16) & 0xFF, (value >> 24) & 0xFF];
+		data.push(0x56, 0x67, 0x6d, 0x20);  // 00 VGM ID
+		data.push(...doubleWord(0x40 + commandData.length - 0x04));  // 04 EOF offset
+		data.push(...doubleWord(0x151));  // 08 version number
+		data.push(0x00, 0x00, 0x00, 0x00);  // 0C SN76489 clock
+		data.push(0x00, 0x00, 0x00, 0x00);  // 10 YM2413 clock
+		data.push(0x00, 0x00, 0x00, 0x00);  // 14 GD3 offset
+		data.push(...doubleWord(samples));  // 18 Total # samples
+		data.push(...doubleWord(loopOffset >= 0 ? 0x40 + loopOffset - 0x1C : 0));  // 1C Loop offset
+		data.push(...doubleWord(loopSamples >= 0 ? samples - loopSamples : 0));  // 20 Loop # samples
+		data.push(0x00, 0x00, 0x00, 0x00);  // 24 Rate
+		data.push(0x00, 0x00, 0x00, 0x00);  // 28 SN76489 flags
+		data.push(0x00, 0x00, 0x00, 0x00);  // 2C YM2612 / YM3438 clock
+		data.push(0x00, 0x00, 0x00, 0x00);  // 30 YM2151 / YM2164 clock
+		data.push(...doubleWord(0x64 - 0x34));  // 34 VGM data offset
+		data.push(0x00, 0x00, 0x00, 0x00);  // 38 Sega PCM clock
+		data.push(0x00, 0x00, 0x00, 0x00);  // 3C Sega PCM interface register
+		data.push(0x00, 0x00, 0x00, 0x00);  // 40
+		data.push(0x00, 0x00, 0x00, 0x00);  // 44
+		data.push(0x00, 0x00, 0x00, 0x00);  // 48
+		data.push(0x00, 0x00, 0x00, 0x00);  // 4C
+		data.push(0x00, 0x00, 0x00, 0x00);  // 50
+		data.push(0x00, 0x00, 0x00, 0x00);  // 54
+		data.push(0x00, 0x00, 0x00, 0x00);  // 58
+		data.push(0x00, 0x00, 0x00, 0x00);  // 5C
+		data.push(...doubleWord(this.opl4Frequency));  // 60
+		for (const value of commandData)
+			data.push(value);
+		return data;
+	}
+}
