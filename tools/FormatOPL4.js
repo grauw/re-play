@@ -1,7 +1,7 @@
 import fs from "fs";
 import { Format, FormatStats } from "./Format.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
-import { CommandOPL4Register, CommandOPL4WaitLoad } from "./CommandOPL4.js";
+import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { BankedData } from "./BankedData.js";
 
 export const FORMAT_OPL4_ID = 0x01;
@@ -19,7 +19,7 @@ export class FormatOPL4 extends Format {
 	}
 
 	writeTrack(track) {
-		const data = new BankedData(this.bankSize, [0xC1, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0xC2, 0, 0, 0]);
 		data.add(FORMAT_OPL4_ID);
 		let blockBank = -1;
 		let blockCommands = [];
@@ -38,21 +38,31 @@ export class FormatOPL4 extends Format {
 				blockCommands.push(command);
 			} else if (command instanceof CommandOPL4WaitLoad) {
 				data.add(0xC0);
+			} else if (command instanceof CommandOPL4WaveMemory) {
+				let index = 0;
+				while (index < command.memory.length) {
+					const address = command.address + index;
+					const space = Math.floor(data.free - data.jump.length - 6);
+					const count = Math.min(command.memory.length - index, data.bankSize - data.jump.length - 6, space > 0 ? space : Infinity);
+					data.addArray([0xC1, address & 0xFF, address >> 8 & 0xFF, address >> 16 & 0xFF,
+						count & 0xFF, count >> 8 & 0xFF, ...command.memory.subarray(index, index + count)]);
+					index += count;
+				}
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
-				data.add(0xC1, 0, 0, 0);
-				data.addRewrite(command.target);
-			} else if (command instanceof CommandCall) {
 				data.add(0xC2, 0, 0, 0);
 				data.addRewrite(command.target);
+			} else if (command instanceof CommandCall) {
+				data.add(0xC3, 0, 0, 0);
+				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0xC3);
+				data.add(0xC4);
 			} else if (command instanceof CommandWait) {
 				let ticks = command.ticks;
 				while (ticks >= 1) {
-					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0xC3);
-					data.add(0xC3 + waitTicks);
+					const waitTicks = Math.min(Math.floor(ticks), 0xFF - 0xC4);
+					data.add(0xC4 + waitTicks);
 					ticks -= waitTicks;
 				}
 			}

@@ -25,6 +25,10 @@ export class BankedData {
 	}
 
 	add(...values) {
+		this.addArray(values);
+	}
+
+	addArray(values) {
 		if (this.free - values.length < this.jump.length) {
 			const target = `bank${this.bank + 1}`;
 			this.data.push(...this.jump);
@@ -32,7 +36,9 @@ export class BankedData {
 			this.data.push(...Array(this.free % this.bankSize).fill(0));
 			this.addSymbol(target);
 		}
-		this.data.push(...values);
+		for (const value of values) {
+			this.data.push(value);
+		}
 	}
 
 	addRewrite(target) {

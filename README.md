@@ -82,13 +82,15 @@ Data format `1`: `opl4` consists of these events:
            Bit 0-5: count n - 1.
            Bytes 1-2n: address, value sequence.
   * C0:    Wait for OPL4 WAVE load.
-  * C1:    Relative jump.
+  * C1:    OPL4 WAVE memory write block.
+           Bytes 1-3: address, bytes 4-5: length.
+  * C2:    Relative jump.
            Byte 1: bank offset, byte 2-3: address offset.
-  * C2:    Relative call.
+  * C3:    Relative call.
            Byte 1: bank offset, byte 2-3: address offset.
-  * C3:    Return.
-  * C4-FF: Wait.
-           n - C3H: nr. of ticks.
+  * C4:    Return.
+  * C5-FF: Wait.
+           n - C4H: nr. of ticks.
 
 
 Additional notes

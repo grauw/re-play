@@ -46,8 +46,10 @@ MoonSound_Process_Loop:
 	jp p,MoonSound_WriteWave
 	cp 0C1H << 1
 	jr c,MoonSound_WaitLoad
+	jr z,MoonSound_WriteMemory
+	cp 0C2H << 1
 	jr z,MoonSound_Jump
-	sub 0C3H << 1
+	sub 0C4H << 1
 	jr c,MoonSound_Call
 	jr z,MoonSound_Return
 	rrca
@@ -123,6 +125,21 @@ MoonSound_WaitLoad:
 	in a,(MoonSound_STATUS)
 	and 00000010B
 	jr nz,MoonSound_WaitLoad
+	jp MoonSound_Process_Loop
+
+; hl = sound data
+MoonSound_WriteMemory:
+	ld e,(hl)
+	inc hl
+	ld d,(hl)
+	inc hl
+	ld a,(hl)
+	inc hl
+	ld c,(hl)
+	inc hl
+	ld b,(hl)
+	inc hl
+	call MoonSound_WriteWaveMemory
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:
@@ -229,3 +246,40 @@ MoonSound_ReadWaveRegister:
 MoonSound_ReadStatusRegister:
 	in a,(MoonSound_STATUS)
 	ret
+
+; bc = byte count
+; ade = destination address
+; hl = source address
+MoonSound_WriteWaveMemory:
+	push af
+	push de
+	ld de,0211H
+	call MoonSound_WriteWaveRegister  ; set standard memory layout
+	pop de
+	pop af
+	push de
+	ld e,a
+	ld d,03H
+	call MoonSound_WriteWaveRegister
+	pop de
+	push de
+	ld e,d
+	ld d,04H
+	call MoonSound_WriteWaveRegister
+	pop de
+	ld d,05H
+	call MoonSound_WriteWaveRegister
+	ld a,06H
+	out (MoonSound_WAVE_ADDRESS),a
+	dec bc
+	inc b
+	inc c
+	ld a,b
+	ld b,c
+	ld c,MoonSound_WAVE_DATA
+MoonSound_WriteMemory_Loop:
+	otir
+	dec a
+	jr nz,MoonSound_WriteMemory_Loop
+	ld de,0210H
+	jp MoonSound_WriteWaveRegister  ; set standard memory layout
