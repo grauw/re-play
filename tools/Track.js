@@ -1,6 +1,5 @@
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMInstrument } from "./CommandFM.js";
-import { CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
 export class Track {
 	constructor(name, tickFrequency) {
@@ -28,10 +27,6 @@ export class Track {
 			}
 			while (tail.length > 0) {
 				this.commands.push(tail.pop());
-			}
-		} else if (command instanceof CommandOPL4WaveMemory) {
-			if (this.commands.at(-1) instanceof CommandOPL4WaveMemory) {
-				this.commands.pop();
 			}
 		} else if (command instanceof CommandReturn) {
 			if (this.commands.at(-1) instanceof CommandCall) {

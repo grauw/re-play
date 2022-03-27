@@ -234,19 +234,21 @@ export class CommandOPL4Register extends CommandOPL4 {
 const commandOPL4RegisterMemo = new MemoConstructor(CommandOPL4Register);
 
 export class CommandOPL4WaveMemory extends CommandOPL4 {
-	constructor(memory) {
+	constructor(address, memory) {
 		super();
+		this.address = address;
 		this.memory = memory instanceof HashTypedArray ? memory.array : memory;
 		Object.freeze(this.memory.buffer);
 		Object.freeze(this);
 	}
 
-	static of(memory) {
-		return commandOPL4WaveMemoryMemo.get(new HashTypedArray(memory));
+	static of(address, memory) {
+		return commandOPL4WaveMemoryMemo.get(address, new HashTypedArray(memory));
 	}
 
 	toString() {
-		return `OPL4WaveMemory`;
+		const hex = value => value.toString(16).toUpperCase();
+		return `OPL4WaveMemory Address: 0x${hex(this.address)}, Size: 0x${hex(this.memory.length)}`;
 	}
 }
 

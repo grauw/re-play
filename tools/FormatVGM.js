@@ -6,7 +6,6 @@ import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
-import { yrw801Headers } from "./YRW801Headers.js";
 
 export class FormatVGM extends Format {
 	async loadTrack(path, name) {
@@ -29,7 +28,7 @@ export class FormatVGM extends Format {
 		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
 
 		const track = new Track(name, 44100);
-		const opl4Memory = new FormatVGMOPL4Memory();
+		let opl4ROMSize = 0x200000;
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
@@ -135,11 +134,10 @@ export class FormatVGM extends Format {
 					const dataStart = getDoubleWord(address + 4);
 					const data = vgm.subarray(address + 8, address + dataSize);
 					if (dataType == 0x84) {
-						opl4Memory.writeROMData(memorySize, dataStart, data);
-						track.addCommand(CommandOPL4WaveMemory.of(opl4Memory.getData()));
+						opl4ROMSize = memorySize;
+						track.addCommand(CommandOPL4WaveMemory.of(dataStart, data));
 					} else if (dataType == 0x87) {
-						opl4Memory.writeRAMData(memorySize, dataStart, data);
-						track.addCommand(CommandOPL4WaveMemory.of(opl4Memory.getData()));
+						track.addCommand(CommandOPL4WaveMemory.of(opl4ROMSize + dataStart, data));
 					}
 				}
 				address += dataSize;  // skip
@@ -150,39 +148,6 @@ export class FormatVGM extends Format {
 			}
 		}
 		return track;
-	}
-}
-
-class FormatVGMOPL4Memory {
-	constructor() {
-		this.rom = new Uint8Array(0x200000);
-		this.ram = new Uint8Array(0x000000);
-		this.rom.set(yrw801Headers);
-	}
-
-	getData() {
-		const data = new Uint8Array(this.rom.length + this.ram.length);
-		data.set(this.rom);
-		data.set(this.ram, this.rom.length);
-		return data;
-	}
-
-	writeROMData(romSize, dataStart, data) {
-		this.rom = this.writeData(this.rom, romSize, dataStart, data);
-	}
-
-	writeRAMData(ramSize, dataStart, data) {
-		this.ram = this.writeData(this.ram, ramSize, dataStart, data);
-	}
-
-	writeData(memory, size, dataStart, data) {
-		if (size != memory.length) {
-			const oldMemory = memory;
-			memory = new Uint8Array(size);
-			memory.set(oldMemory);
-		}
-		memory.set(data, dataStart);
-		return memory;
 	}
 }
 
