@@ -69,5 +69,44 @@ export class FormatOPL4 extends Format {
 class FormatOPL4Stats extends FormatStats {
 	constructor(track) {
 		super(track);
+		this.registerCounts = FormatOPL4Stats.getRegisterCounts(track);
+	}
+
+	static getRegisterCounts(track) {
+		const counts = Array(0x300).fill(0);
+		for (const command of track.commands) {
+			if (command instanceof CommandOPL4Register) {
+				counts[command.address]++;
+			}
+		}
+		return {
+			total: counts.reduce((sum, value) => sum + value, 0),
+			waveTable: counts.slice(0x208, 0x220).reduce((sum, value) => sum + value, 0),
+			frequencyLow: counts.slice(0x220, 0x238).reduce((sum, value) => sum + value, 0),
+			frequencyHigh: counts.slice(0x238, 0x250).reduce((sum, value) => sum + value, 0),
+			level: counts.slice(0x250, 0x268).reduce((sum, value) => sum + value, 0),
+			key: counts.slice(0x268, 0x280).reduce((sum, value) => sum + value, 0),
+			lfoVIB: counts.slice(0x280, 0x298).reduce((sum, value) => sum + value, 0),
+			adsrARD1R: counts.slice(0x298, 0x2B0).reduce((sum, value) => sum + value, 0),
+			adsrDLD2R: counts.slice(0x2B0, 0x2C8).reduce((sum, value) => sum + value, 0),
+			adsrRCRR: counts.slice(0x2C8, 0x2E0).reduce((sum, value) => sum + value, 0),
+			lfoAM: counts.slice(0x2E0, 0x2F8).reduce((sum, value) => sum + value, 0),
+		};
+	}
+
+	toString() {
+		const lines = [super.toString()];
+		lines.push(`  Total OPL4 register writes: ${this.registerCounts.total}`);
+		lines.push(`    Wave Table: ${this.registerCounts.waveTable}`);
+		lines.push(`    Frequency Low: ${this.registerCounts.frequencyLow}`);
+		lines.push(`    Frequency High: ${this.registerCounts.frequencyHigh}`);
+		lines.push(`    Level: ${this.registerCounts.level}`);
+		lines.push(`    Key: ${this.registerCounts.key}`);
+		lines.push(`    LFO VIB: ${this.registerCounts.lfoVIB}`);
+		lines.push(`    ADSR AR D1R: ${this.registerCounts.adsrARD1R}`);
+		lines.push(`    ADSR DL D2R: ${this.registerCounts.adsrDLD2R}`);
+		lines.push(`    ADSR RC RR: ${this.registerCounts.adsrRCRR}`);
+		lines.push(`    LFO AM: ${this.registerCounts.lfoAM}`);
+		return lines.join("\n");
 	}
 }
