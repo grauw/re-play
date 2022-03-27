@@ -228,3 +228,108 @@ function writeRegisterIfSet(opl4Output, register, emit) {
 		register.unset();
 	}
 }
+
+export class TransformOPL4StripMemory extends Transform {
+	constructor(mode = "unused", margin = 8, padding = 4) {
+		super();
+		if (mode != "none" && mode != "unused" && mode != "all")
+			throw new Error("Unsupported strip mode.");
+		this.mode = mode;
+		this.margin = margin;
+		this.padding = padding;
+	}
+
+	apply(input) {
+		if (this.mode == "none" || !(input.commands[0] instanceof CommandOPL4Config))
+			return input;
+		const ranges = new Ranges();
+		if (this.mode == "unused") {
+			const chip = new ChipOPL4();
+			for (const command of input.commands) {
+				chip.writeCommand(command);
+				if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x220) {
+					const waveTableAddress = chip.getWaveTableAddress(chip.getWaveTableNumber(command.waveChannel));
+					const waveTable = chip.getWaveTable(command.waveChannel);
+					ranges.add(waveTableAddress, waveTableAddress + 12);
+					ranges.add(waveTable.getStart(),
+						waveTable.getStart() + Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8));
+				}
+			}
+		}
+		ranges.removeGaps(this.margin);
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPL4WaveMemory) {
+				for (const range of ranges.ranges) {
+					const start = command.address;
+					const end = command.address + command.memory.length;
+					if (start < range.end && end > range.start) {
+						output.addCommand(CommandOPL4WaveMemory.of(
+							Math.max(start, range.start),
+							command.memory.subarray(Math.max(range.start - start, 0), range.end - start)
+						));
+					}
+				}
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}
+
+class Ranges {
+	constructor() {
+		this.ranges = [];
+	}
+
+	add(start, end) {
+		let startIndex = 0;
+		let endIndex = this.ranges.length - 1;
+		for (let index = 0; index < this.ranges.length; index++) {
+			if (start > this.ranges[index].end) {
+				startIndex = index + 1;
+			} else {
+				break;
+			}
+		}
+		for (let index = this.ranges.length - 1; index >= 0; index--) {
+			if (end < this.ranges[index].start) {
+				endIndex = index - 1;
+			} else {
+				break;
+			}
+		}
+		this.ranges.splice(startIndex, endIndex - startIndex + 1, new Range(
+			Math.min(start, startIndex >= 0 && startIndex < this.ranges.length ? this.ranges[startIndex].start : 0x400000),
+			Math.max(end, endIndex >= 0 && endIndex < this.ranges.length ? this.ranges[endIndex].end : 0)
+		));
+	}
+
+	removeGaps(size) {
+		let index = 0;
+		while (index < this.ranges.length - 1) {
+			if (this.ranges[index + 1].start - this.ranges[index].end <= size) {
+				this.ranges.splice(index, 2, new Range(this.ranges[index].start, this.ranges[index + 1].end));
+			} else {
+				index++;
+			}
+		}
+	}
+
+	toString() {
+		return `[${this.ranges.join(", ")}]`;
+	}
+}
+
+class Range {
+	constructor(start, end) {
+		this.start = start;
+		this.end = end;
+	}
+
+	toString() {
+		const hex = value => value.toString(16).toUpperCase();
+		return `[${hex(this.start)}, ${hex(this.end)}]`;
+	}
+}
