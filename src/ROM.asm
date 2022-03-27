@@ -48,32 +48,18 @@ Main:
 	ld a,(SoundData)
 	call Player_Detect
 Main_Play:
+	call Player_Stop
+	call Main_WaitFrame
 	ld bc,(Main_currentTrack)
 	ld a,1
 	ld hl,SoundData + 1
 	call Player_Play
-	ld a,(JIFFY)
-	ld c,a
 Main_Loop:
-	halt
-	ld a,(JIFFY)
-	ld b,a
-	sub c
-	jr z,Main_Loop
-	ld c,b
-	ld b,a
-Main_Tick_Loop:
-	push bc
+	call Main_WaitFrame
 	call Player_Tick
-	pop bc
-	djnz Main_Tick_Loop
-	push bc
 	call CHSNS
-	pop bc
 	jr z,Main_Loop
-	push bc
 	call CHGET
-	pop bc
 	or 20H  ; lower-case
 	cp "p"
 	jr z,Main_Pause
@@ -87,9 +73,7 @@ Main_Tick_Loop:
 	jr z,Main_ToggleFrequency
 	jr Main_End
 Main_Pause:
-	push bc
 	call Player_TogglePause
-	pop bc
 	jr Main_Loop
 Main_Next:
 	call Player_Stop
@@ -104,17 +88,25 @@ Main_Previous:
 	ld (Main_currentTrack),bc
 	jp Main_Play
 Main_ToggleFrequency:
-	push bc
 	ld a,(RG9SAV)
 	xor 00000010B
 	ld (RG9SAV),a
 	ld b,a
 	ld c,9
 	call WRTVDP
-	pop bc
 	jp Main_Loop
 Main_End:
 	call Player_Stop
+	ret
+
+Main_WaitFrame:
+	ld a,(JIFFY)
+	ld c,a
+Main_WaitFrame_Loop:
+	halt
+	ld a,(JIFFY)
+	cp c
+	jr z,Main_WaitFrame_Loop
 	ret
 
 ; hl = string (0-terminated)
