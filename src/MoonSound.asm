@@ -44,13 +44,13 @@ MoonSound_Process_Loop:
 	add a,a
 	jr nc,MoonSound_Process_FM
 	jp p,MoonSound_WriteWave
-	rra
-	cp 0C1H
+	cp 0C1H << 1
 	jr c,MoonSound_WaitLoad
 	jr z,MoonSound_Jump
-	sub 0C3H
+	sub 0C3H << 1
 	jr c,MoonSound_Call
 	jr z,MoonSound_Return
+	rrca
 	ret
 MoonSound_Process_FM:
 	jp p,MoonSound_WriteFM1
