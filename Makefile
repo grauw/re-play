@@ -26,4 +26,4 @@ run: all
 	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
 
 run2: all
-	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -cart bin/re-play.rom -romtype ASCII8
+	openmsx -machine Panasonic_FS-A1GT -cart bin/re-play.rom -romtype ASCII8 -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
