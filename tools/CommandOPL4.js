@@ -168,7 +168,12 @@ export class CommandOPL4Register extends CommandOPL4 {
 			}
 		} else {
 			const channel = `0${this.waveChannel}`.slice(-2);
-			if (address >= 0x208 && address < 0x220) {
+			if (address == 0x202) {
+				const accessMode = value & 0x1 ? "CPU" : "OPL4";
+				const type = value & 0x2 ? "RAM" : "ROM";
+				const header = (value >> 2 & 0x7) * 0x80000;
+				description = `WAVE Memory Access Mode: ${accessMode}, Type: ${type}, Header: 0x${hex(header)}`;
+			} else if (address >= 0x208 && address < 0x220) {
 				const waveTableLow = value;
 				description = `WAVE Ch${channel} Wave Table Number Low: 0x${hexByte(waveTableLow)}`;
 			} else if (address >= 0x220 && address < 0x238) {
