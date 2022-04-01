@@ -244,9 +244,10 @@ export class TransformOPL4StripMemory extends Transform {
 			!input.hasSetupCommand(command => command instanceof CommandOPL4Config) ||
 			!input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
 			return input;
+		const inputRanges = new Ranges();
 		const ranges = new Ranges();
+		const chip = new ChipOPL4();
 		if (this.mode == "unused" || this.mode == "samples") {
-			const chip = new ChipOPL4();
 			for (const command of input.commands) {
 				chip.writeCommand(command);
 				if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x220) {
@@ -257,27 +258,21 @@ export class TransformOPL4StripMemory extends Transform {
 						const size = Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8);
 						ranges.add(waveTable.getStart(), waveTable.getStart() + size);
 					}
+				} else if (command instanceof CommandOPL4WaveMemory) {
+					inputRanges.add(command.address, command.address + command.memory.length);
 				}
 			}
 		}
 		ranges.removeGaps(this.margin);
+		ranges.intersect(inputRanges);
 		const output = new Track(input.name, input.tickFrequency);
-		for (const command of input.commands) {
-			if (command instanceof CommandOPL4WaveMemory) {
-				for (const range of ranges.ranges) {
-					const start = command.address;
-					const end = command.address + command.memory.length;
-					if (start < range.end && end > range.start) {
-						output.addCommand(CommandOPL4WaveMemory.of(
-							Math.max(start, range.start),
-							command.memory.subarray(Math.max(range.start - start, 0), range.end - start)
-						));
-					}
-				}
-			} else {
-				output.addCommand(command);
+		output.addCommands(input.commands.filter(command => command instanceof CommandOPL4Config));
+		for (const range of ranges.ranges) {
+			if (range.start >= 0x200000) {
+				output.addCommand(CommandOPL4WaveMemory.of(range.start, chip.memory.subarray(range.start, range.end)));
 			}
 		}
+		output.addCommands(input.commands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
 		return output;
 	}
 }
@@ -319,6 +314,25 @@ class Ranges {
 				index++;
 			}
 		}
+	}
+
+	intersect(other) {
+		const ranges = [];
+		let thisIndex = 0;
+		let otherIndex = 0;
+		while (thisIndex < this.ranges.length && otherIndex < other.ranges.length) {
+			const thisRange = this.ranges[thisIndex];
+			const otherRange = other.ranges[otherIndex];
+			const start = Math.max(thisRange.start, otherRange.start);
+			const end = Math.min(thisRange.end, otherRange.end);
+			if (end > start)
+				ranges.push(new Range(start, end));
+			if (end >= thisRange.end)
+				thisIndex++;
+			if (end >= otherRange.end)
+				otherIndex++;
+		}
+		this.ranges = ranges;
 	}
 
 	toString() {
