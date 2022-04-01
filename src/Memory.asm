@@ -143,3 +143,10 @@ Memory_CallBIOS:
 	call CALSLT
 	ei
 	ret
+
+; hl = address
+Memory_ReadBIOS:
+	ld a,(EXPTBL)
+	call RDSLT
+	ei
+	ret

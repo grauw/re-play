@@ -27,6 +27,7 @@ RAM: ds 200H
 	ENDS
 
 	INCLUDE "Player.asm"
+	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
 	INCLUDE "ASCII8Mapper.asm"
 

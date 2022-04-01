@@ -29,6 +29,7 @@ Mapper_SetBank: equ DOS2Mapper_SetBank
 RAM: ds 200H
 
 	INCLUDE "Player.asm"
+	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
 	INCLUDE "DOS2Mapper.asm"
 
