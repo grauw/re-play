@@ -8,7 +8,7 @@ import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4 } from "./FormatV
 import { Transform, TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
 	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
-import { TransformOPL4FrameSanitizer, TransformOPL4StripMemory } from "./TransformOPL4.js";
+import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory } from "./TransformOPL4.js";
 
 export class Resources {
 	constructor(format) {
@@ -66,6 +66,7 @@ export class ResourcesLoader {
 				j.targetTickFrequency ? new TransformQuantize(j.targetTickFrequency) : new Transform(),
 				new TransformOPNToGenericFM(),
 				new TransformOPNFrequencyBeforeKeyOn(),
+				j.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
 				new TransformOPL4FrameSanitizer(),
 				new TransformMapChannels(j.channelMapping),
 				new TransformAttenuateVolume(j.attenuation),

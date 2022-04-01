@@ -4,7 +4,7 @@ import { CommandWait, CommandControlFlow, CommandLabel, CommandJump } from "./Co
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
-import { rangeMap } from "./utils.js";
+import { rangeMap, MemoConstructor } from "./utils.js";
 
 const ignoreAddresses = [
 	0x000, 0x001, 0x002, 0x003, 0x004, 0x100, 0x101, 0x105,
@@ -226,6 +226,69 @@ function writeRegisterIfSet(opl4Output, register, emit) {
 			emit(CommandOPL4Register.of(register.address, register.value));
 		}
 		register.unset();
+	}
+}
+
+export class TransformOPL4EGToWaveTables {
+	apply(input) {
+		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
+			return input;
+		const chip = new ChipOPL4();
+		const instrumentMemo = new MemoConstructor(OPL4Instrument);
+		const instruments = [];
+		const outputCommands = [];
+		const queuedCommands = [];
+		const channelInstruments = Array(24).fill(null);
+		for (const command of input.commands) {
+			chip.writeCommand(command);
+			if (command instanceof CommandWait || command instanceof CommandControlFlow) {
+				for (let channel = 0; channel < 24; channel++) {
+					if (chip.isSet(0x208 + channel)) {
+						const instrument = instrumentMemo.get(
+							chip.getWaveTable(channel).start, chip.getWaveTable(channel).loop, chip.getWaveTable(channel).end,
+							chip.get(0x280 + channel), chip.get(0x298 + channel), chip.get(0x2B0 + channel),
+							chip.get(0x2C8 + channel), chip.get(0x2E0 + channel)
+						);
+						chip.unset(0x208 + channel);
+						if (instrument.number < 0) {
+							instrument.number = 0x180 + instruments.length;
+							instruments.push(instrument);
+						}
+						channelInstruments[channel] = instrument;
+					}
+				}
+				for (let command of queuedCommands) {
+					if (command instanceof CommandOPL4Register) {
+						if (command.address >= 0x208 && command.address < 0x220) {
+							const instrument = channelInstruments[command.waveChannel];
+							command = CommandOPL4Register.of(command.address, instrument.number & 0xFF);
+						} else if (command.address >= 0x220 && command.address < 0x238) {
+							command = CommandOPL4Register.of(command.address, command.value | 0x1);
+						}
+					}
+					outputCommands.push(command);
+				}
+				queuedCommands.length = 0;
+				outputCommands.push(command);
+			} else {
+				queuedCommands.push(command);
+			}
+		}
+		if (instruments.length >= 0x80)
+			throw new Error("Too many different instruments.");
+		const output = new Track(input.name, input.tickFrequency);
+		output.addCommands(outputCommands.filter(command => command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory));
+		output.addCommand(CommandOPL4WaveMemory.of(0x200000, Uint8Array.from(instruments.flatMap(instrument => instrument.header))));
+		output.addCommands(outputCommands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		return output;
+	}
+}
+
+class OPL4Instrument {
+	constructor(start, loop, end, lfoVIB, adsrARD1R, adsrDLD2R, adsrRCRR, lfoAM) {
+		this.header = [start >> 16, start >> 8 & 0xFF, start & 0xFF, loop >> 8, loop & 0xFF, end >> 8, end & 0xFF,
+			lfoVIB, adsrARD1R, adsrDLD2R, adsrRCRR, lfoAM];
+		this.number = -1;
 	}
 }
 
