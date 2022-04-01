@@ -232,7 +232,7 @@ function writeRegisterIfSet(opl4Output, register, emit) {
 export class TransformOPL4StripMemory extends Transform {
 	constructor(mode = "unused", margin = 8, padding = 4) {
 		super();
-		if (mode != "none" && mode != "unused" && mode != "all")
+		if (mode != "none" && mode != "unused" && mode != "samples" && mode != "all")
 			throw new Error("Unsupported strip mode.");
 		this.mode = mode;
 		this.margin = margin;
@@ -245,7 +245,7 @@ export class TransformOPL4StripMemory extends Transform {
 			!input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
 			return input;
 		const ranges = new Ranges();
-		if (this.mode == "unused") {
+		if (this.mode == "unused" || this.mode == "samples") {
 			const chip = new ChipOPL4();
 			for (const command of input.commands) {
 				chip.writeCommand(command);
@@ -253,8 +253,10 @@ export class TransformOPL4StripMemory extends Transform {
 					const waveTableAddress = chip.getWaveTableAddress(chip.getWaveTableNumber(command.waveChannel));
 					const waveTable = chip.getWaveTable(command.waveChannel);
 					ranges.add(waveTableAddress, waveTableAddress + 12);
-					ranges.add(waveTable.getStart(),
-						waveTable.getStart() + Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8));
+					if (this.mode != "samples") {
+						const size = Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8);
+						ranges.add(waveTable.getStart(), waveTable.getStart() + size);
+					}
 				}
 			}
 		}
