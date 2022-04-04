@@ -183,6 +183,8 @@ export class TransformStartConfigAndWait extends Transform {
 				// skip
 			} else if (command instanceof CommandOPNConfig ||
 				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
+				(command instanceof CommandOPL4Register && command.address == 0x0BD) ||
+				(command instanceof CommandOPL4Register && command.address == 0x104) ||
 				(command instanceof CommandOPL4Register && command.address == 0x202)) {
 				output.addCommand(command);
 			} else {
