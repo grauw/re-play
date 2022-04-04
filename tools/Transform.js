@@ -9,25 +9,6 @@ export class Transform {
 	}
 }
 
-export class TransformMoveWaitAfterLoop extends Transform {
-	apply(input) {
-		if (input.commands.at(-1) instanceof CommandJump) {
-			const loop = input.commands.findIndex(command => command instanceof CommandLabel && input.isLoopLabel(command));
-			if (loop >= 0 && input.commands[loop + 1] instanceof CommandWait) {
-				const output = new Track(input.name, input.tickFrequency);
-				output.addCommands(input.commands.slice(0, loop));
-				output.addCommand(input.commands[loop + 1]);
-				output.addCommand(input.commands[loop]);
-				output.addCommands(input.commands.slice(loop + 2, input.commands.length - 1));
-				output.addCommand(input.commands[loop + 1]);
-				output.addCommand(input.commands[input.commands.length - 1]);
-				return output;
-			}
-		}
-		return input;
-	}
-}
-
 export class TransformMapChannels extends Transform {
 	constructor(mapping = []) {
 		super();
@@ -85,23 +66,22 @@ export class TransformAttenuateVolume extends Transform {
 	}
 }
 
-export class TransformTrimLeadingSilence extends Transform {
+export class TransformMoveWaitAfterLoop extends Transform {
 	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
-		for (let index = 0; index < input.commands.length; ++index) {
-			const command = input.commands[index];
-			if (command instanceof CommandWait) {
-				// skip
-			} else if (command instanceof CommandOPNConfig ||
-				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
-				(command instanceof CommandOPL4Register && command.address == 0x202)) {
-				output.addCommand(command);
-			} else {
-				output.addCommands(input.commands.slice(index, input.commands.length));
-				break;
+		if (input.commands.at(-1) instanceof CommandJump) {
+			const loop = input.commands.findIndex(command => command instanceof CommandLabel && input.isLoopLabel(command));
+			if (loop >= 0 && input.commands[loop + 1] instanceof CommandWait) {
+				const output = new Track(input.name, input.tickFrequency);
+				output.addCommands(input.commands.slice(0, loop));
+				output.addCommand(input.commands[loop + 1]);
+				output.addCommand(input.commands[loop]);
+				output.addCommands(input.commands.slice(loop + 2, input.commands.length - 1));
+				output.addCommand(input.commands[loop + 1]);
+				output.addCommand(input.commands[input.commands.length - 1]);
+				return output;
 			}
 		}
-		return output;
+		return input;
 	}
 }
 
@@ -190,6 +170,26 @@ export class TransformQuantize extends Transform {
 			throw new Error(`No timer active in track ${input.name}.`);
 		}
 		output.tickFrequency = input.tickFrequency * outputTicks / inputTicks;
+		return output;
+	}
+}
+
+export class TransformTrimLeadingSilence extends Transform {
+	apply(input) {
+		const output = new Track(input.name, input.tickFrequency);
+		for (let index = 0; index < input.commands.length; ++index) {
+			const command = input.commands[index];
+			if (command instanceof CommandWait) {
+				// skip
+			} else if (command instanceof CommandOPNConfig ||
+				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
+				(command instanceof CommandOPL4Register && command.address == 0x202)) {
+				output.addCommand(command);
+			} else {
+				output.addCommands(input.commands.slice(index, input.commands.length));
+				break;
+			}
+		}
 		return output;
 	}
 }
