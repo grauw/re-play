@@ -23,14 +23,28 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			opl4Output.getRegister(address).mask &= 0x00;
 		}
 		opl4Output.getRegister(0x202).mask = 0x1C;
-		const channels = rangeMap(24, channel => new OPL4FrameSanitizerChannel(channel));
+		const fmChannels = rangeMap(18, channel => new OPL4FrameSanitizerFMChannel(channel));
+		const waveChannels = rangeMap(24, channel => new OPL4FrameSanitizerWAVEChannel(channel));
+		const rhythmOff = new Register(0x0BD);
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register) {
-				if (command.waveChannel != undefined) {
-					channels[command.waveChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
+				if (command.address < 0x200) {
+					if (command.fmChannel != undefined) {
+						fmChannels[command.fmChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
+					} else if (command.address == 0x0BD) {
+						const offBits = ~command.value & rhythmOff.get(0x1F) & 0x1F;
+						rhythmOff.set(0, offBits);
+						opl4Input.set(command.address, command.value);
+					} else {
+						opl4Input.set(command.address, command.value);
+					}
 				} else {
-					if (opl4Input.set(command.address, command.value)) {
-						writeRegisterIfSet(opl4Output, opl4Input.getRegister(command.address), emit);
+					if (command.waveChannel != undefined) {
+						waveChannels[command.waveChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
+					} else {
+						if (opl4Input.set(command.address, command.value)) {
+							writeRegisterIfSet(opl4Output, opl4Input.getRegister(command.address), emit);
+						}
 					}
 				}
 			} else if (command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory) {
@@ -38,9 +52,10 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				opl4Output.writeCommand(command);
 				output.addCommand(command);
 			} else if (command instanceof CommandWait || command instanceof CommandControlFlow) {
-				this.emitFrame(opl4Input, opl4Output, channels, emit);
+				this.emitFrameFM(opl4Input, opl4Output, fmChannels, rhythmOff, emit);
+				this.emitFrameWAVE(opl4Input, opl4Output, waveChannels, emit);
 				if (command instanceof CommandLabel && input.isLoopLabel(command)) {
-					this.unsetLoopChanges(input, opl4Output, channels, command.name);
+					this.unsetLoopChanges(input, opl4Output, fmChannels, waveChannels, command.name);
 				}
 				output.addCommand(command);
 			} else {
@@ -50,7 +65,50 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		return output;
 	}
 
-	emitFrame(opl4Input, opl4Output, channels, emit) {
+	emitFrameFM(opl4Input, opl4Output, channels, rhythmOff, emit) {
+		const connection = opl4Input.get(0x104);
+		for (let i = 0; i < 6; i++) {
+			if (connection >> i & 0x1) {
+				let channel1 = channels[i < 3 ? i : i + 6];
+				let channel2 = channels[i < 3 ? i + 3: i + 9];
+				channel2.audible = channel1.audible;
+				channel2.firstKeyOn = channel1.firstKeyOn;
+			}
+		}
+		for (let i = channels.length - 1; i >= 0; i--) {
+			channels[i].emitKeyOff(opl4Input, opl4Output, emit);
+		}
+		const rhythm = opl4Input.get(0x0BD);
+		if (rhythm & 0x20) {
+			if (rhythm & 0x10) {
+				channels[6].audible = true;
+				channels[6].firstKeyOn = true;
+			}
+			if (rhythm & 0x09) {
+				channels[7].audible = true;
+				channels[7].firstKeyOn = true;
+			}
+			if (rhythm & 0x06) {
+				channels[8].audible = true;
+				channels[8].firstKeyOn = true;
+			}
+		}
+		if (channels.some(channel => channel.audible)) {
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x008), emit);
+			writeRegisterIfSet(opl4Output, rhythmOff, emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x104), emit);
+		}
+		for (let i = channels.length - 1; i >= 0; i--) {
+			channels[i].emit(opl4Input, opl4Output, emit);
+		}
+		if (channels.some(channel => channel.audible)) {
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0BD), emit);
+			rhythmOff.set(rhythm);
+			rhythmOff.unset();
+		}
+	}
+
+	emitFrameWAVE(opl4Input, opl4Output, channels, emit) {
 		for (const channel of channels) {
 			channel.processFrame(opl4Input, opl4Output);
 		}
@@ -90,13 +148,17 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		}
 	}
 
-	unsetLoopChanges(input, opl4Output, channels, target) {
+	unsetLoopChanges(input, opl4Output, fmChannels, waveChannels, target) {
 		const opl4Loop = new ChipOPL4();
 		for (const command of input.commands) {
 			opl4Loop.writeCommand(command);
 			if (command instanceof CommandOPL4Register) {
+				if (command.address >= 0x0B0 && command.address < 0x0B9 && command.value & 0x20 ||
+					command.address >= 0x1B0 && command.address < 0x1B9 && command.value & 0x20) {
+					fmChannels[command.fmChannel].firstKeyOn = true;
+				}
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-					channels[command.waveChannel].firstKeyOn = true;
+					waveChannels[command.waveChannel].firstKeyOn = true;
 				}
 			} else if (command instanceof CommandJump && command.target == target) {
 				break;
@@ -116,13 +178,62 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				}
 			}
 			if (opl4Loop.isSet(0x268 + channel, 0x80) && opl4Loop.get(0x268 + channel, 0x80)) {
-				channels[channel].audible = true;
+				waveChannels[channel].audible = true;
 			}
 		}
 	}
 }
 
-class OPL4FrameSanitizerChannel {
+class OPL4FrameSanitizerFMChannel {
+	constructor(channel) {
+		const bank = Math.floor(channel / 9) << 8;
+		this.channel = bank | channel % 9;
+		this.operator = bank | Math.floor(channel % 9 / 3) << 3 | channel % 3;
+		this.audible = false;
+		this.firstKeyOn = false;
+		this.keyOff = new Register(0x0B0 + this.channel);
+	}
+
+	processRegisterWrite(opl4Input, opl4Output, address, value) {
+		if (address == (0x0B0 + this.channel)) {
+			if (value & 0x20) {
+				this.audible = true;
+			} else {
+				this.keyOff.set(value);
+			}
+		}
+		opl4Input.set(address, value);
+	}
+
+	emitKeyOff(opl4Input, opl4Output, emit) {
+		if (this.firstKeyOn) {
+			writeRegisterIfSet(opl4Output, this.keyOff, emit);
+		} else {
+			this.keyOff.unset();
+		}
+	}
+
+	emit(opl4Input, opl4Output, emit) {
+		if (this.audible) {
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x020 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x023 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x040 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x043 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x060 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x063 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x080 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x083 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0E0 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0E3 + this.operator), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0C0 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0A0 + this.channel), emit);
+			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x0B0 + this.channel), emit);
+			this.firstKeyOn = true;
+		}
+	}
+}
+
+class OPL4FrameSanitizerWAVEChannel {
 	constructor(channel) {
 		this.channel = channel;
 		this.audible = false;
