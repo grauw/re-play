@@ -26,7 +26,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		const channels = rangeMap(24, channel => new OPL4FrameSanitizerChannel(channel));
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register) {
-				if (command.address >= 0x208 && command.address < 0x2F8) {
+				if (command.waveChannel != undefined) {
 					channels[command.waveChannel].processRegisterWrite(opl4Input, opl4Output, command.address, command.value);
 				} else {
 					if (opl4Input.set(command.address, command.value)) {
@@ -134,7 +134,7 @@ class OPL4FrameSanitizerChannel {
 	}
 
 	processRegisterWrite(opl4Input, opl4Output, address, value) {
-		if (address >= 0x268 && address < 0x280) {
+		if (address == (0x268 + this.channel)) {
 			if (value & 0x10) {
 				value = value & 0xE0 | 0x08;  // Use pan -8 to mute instead of CH DO2.
 			}
@@ -144,13 +144,13 @@ class OPL4FrameSanitizerChannel {
 				this.keyOff.set(this.keyOff.isSet(0x20) ? this.keyOff.get(0x20) | value : value);
 				this.audible &&= (value & 0x0F) != 0x08;
 			}
-		} else if (address >= 0x250 && address < 0x268) {
+		} else if (address == (0x250 + this.channel)) {
 			if (value & 1) {
 				this.totalLevelDirect.set(value);
 			}
-		} else if (address >= 0x208 && address < 0x220) {
+		} else if (address == (0x208 + this.channel)) {
 			this.waveTableHigh.set(opl4Input.get(address + 24));
-		} else if (address >= 0x220 && address < 0x238) {
+		} else if (address == (0x220 + this.channel)) {
 			this.waveTableHigh.set(value, 0xFE);
 		}
 		opl4Input.set(address, value);
