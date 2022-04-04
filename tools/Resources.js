@@ -5,7 +5,7 @@ import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4 } from "./FormatVGM.js";
-import { Transform, TransformTrimLeadingSilence, TransformMoveWaitAfterLoop, TransformQuantize,
+import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize,
 	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory } from "./TransformOPL4.js";
@@ -71,7 +71,7 @@ export class ResourcesLoader {
 				new TransformMapChannels(j.channelMapping),
 				new TransformAttenuateVolume(j.attenuation),
 				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
-				new TransformTrimLeadingSilence(),
+				new TransformStartConfigAndWait(),
 				new TransformEndLoop()
 			];
 

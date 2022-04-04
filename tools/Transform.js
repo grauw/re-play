@@ -174,7 +174,7 @@ export class TransformQuantize extends Transform {
 	}
 }
 
-export class TransformTrimLeadingSilence extends Transform {
+export class TransformStartConfigAndWait extends Transform {
 	apply(input) {
 		const output = new Track(input.name, input.tickFrequency);
 		for (let index = 0; index < input.commands.length; ++index) {
@@ -186,6 +186,7 @@ export class TransformTrimLeadingSilence extends Transform {
 				(command instanceof CommandOPL4Register && command.address == 0x202)) {
 				output.addCommand(command);
 			} else {
+				output.addCommand(CommandWait.of(1));
 				output.addCommands(input.commands.slice(index, input.commands.length));
 				break;
 			}

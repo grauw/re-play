@@ -55,6 +55,7 @@ Main_Play:
 	ld a,1
 	ld hl,SoundData + 1
 	call Player_Play
+	call Player_Tick
 Main_Loop:
 	call Main_WaitFrame
 	call Player_Tick
