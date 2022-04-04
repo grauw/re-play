@@ -51,19 +51,34 @@ export class CommandOPL4Register extends CommandOPL4 {
 	}
 
 	get fmOperator() {
-		return (this.address & 0x100 ? 18 : 0) + (this.address >> 3 & 0x3) * 6 + (this.address & 0x7);
+		if (this.address < 0x200) {
+			const bank = this.address >> 8;
+			const addressLow = this.address & 0xFF;
+			if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (this.address >> 3 & 0x3) < 3) {
+				return bank * 18 + (this.address >> 3 & 0x3) * 6 + (this.address & 0x7);
+			}
+		}
+		return undefined;
 	}
 
 	get fmChannel() {
-		if (this.address >= 0x0A0 && this.address < 0x0E0 || this.address >= 0x1A0 && this.address < 0x1E0) {
-			return (this.address & 0x100 ? 9 : 0) + (this.address & 0xF) % 9;
-		} else {
-			return (this.address & 0x100 ? 9 : 0) + (this.address >> 3 & 0x3) * 3 + (this.address & 0x7) % 3;
+		if (this.address < 0x200) {
+			const bank = this.address >> 8;
+			const addressLow = this.address & 0xFF;
+			if (addressLow >= 0xA0 && addressLow < 0xD0 && (this.address & 0xF) < 9) {
+				return bank * 9 + (this.address & 0xF);
+			} else if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (this.address >> 3 & 0x3) < 3) {
+				return bank * 9 + (this.address >> 3 & 0x3) * 3 + (this.address & 0x7) % 3;
+			}
 		}
+		return undefined;
 	}
 
 	get waveChannel() {
-		return (this.address - 0x208) % 24;
+		if (this.address >= 0x208 && this.address < 0x2F8) {
+			return (this.address - 0x208) % 24;
+		}
+		return undefined;
 	}
 
 	get channel() {
