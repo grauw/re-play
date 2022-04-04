@@ -179,13 +179,13 @@ export class TransformStartConfigAndWait extends Transform {
 		const output = new Track(input.name, input.tickFrequency);
 		for (let index = 0; index < input.commands.length; ++index) {
 			const command = input.commands[index];
-			if (command instanceof CommandWait) {
+			if (command instanceof CommandWait ||
+				(command instanceof CommandOPL4Register && command.address == 0x202)) {
 				// skip
 			} else if (command instanceof CommandOPNConfig ||
 				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
 				(command instanceof CommandOPL4Register && command.address == 0x0BD) ||
-				(command instanceof CommandOPL4Register && command.address == 0x104) ||
-				(command instanceof CommandOPL4Register && command.address == 0x202)) {
+				(command instanceof CommandOPL4Register && command.address == 0x104)) {
 				output.addCommand(command);
 			} else {
 				output.addCommand(CommandWait.of(1));
