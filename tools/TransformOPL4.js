@@ -298,6 +298,7 @@ class OPL4FrameSanitizerWAVEChannel {
 
 	emitFrequency(opl4Input, opl4Output, emit) {
 		if (this.audible) {
+			unsetRegisterIfEqual(opl4Output, opl4Input.getRegister(0x220 + this.channel), 0xFE);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x220 + this.channel), emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x238 + this.channel), emit);
 		}
@@ -305,7 +306,9 @@ class OPL4FrameSanitizerWAVEChannel {
 
 	emitTotalLevel(opl4Input, opl4Output, emit) {
 		if (this.audible) {
+			unsetRegisterIfEqual(opl4Output, this.totalLevelDirect, 0xFE);
 			writeRegisterIfSet(opl4Output, this.totalLevelDirect, emit);
+			unsetRegisterIfEqual(opl4Output, opl4Input.getRegister(0x250 + this.channel), 0xFE);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x250 + this.channel), emit);
 		} else {
 			this.totalLevelDirect.unset();
