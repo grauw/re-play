@@ -290,9 +290,8 @@ class OPL4FrameSanitizerWAVEChannel {
 
 	emitWaveTable(opl4Input, opl4Output, emit) {
 		if (this.audible) {
-			if (!this.waveTableHigh.equals(opl4Output.getRegister(0x220 + this.channel), 0x01)) {
-				writeRegisterIfSet(opl4Output, this.waveTableHigh, emit);
-			}
+			unsetRegisterIfEqual(opl4Output, this.waveTableHigh, 0x01);
+			writeRegisterIfSet(opl4Output, this.waveTableHigh, emit);
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x208 + this.channel), emit);
 		}
 	}
@@ -328,6 +327,12 @@ class OPL4FrameSanitizerWAVEChannel {
 			writeRegisterIfSet(opl4Output, opl4Input.getRegister(0x268 + this.channel), emit);
 			this.firstKeyOn = true;
 		}
+	}
+}
+
+function unsetRegisterIfEqual(opl4Output, register, mask = 0xFF) {
+	if (register.isSet(mask) && opl4Output.getRegister(register.address).equals(register, mask)) {
+		register.unset();
 	}
 }
 
