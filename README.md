@@ -1,126 +1,213 @@
-Re-Play music converter & player
-================================
+# Re-Play music converter & player
 
 Copyright 2020 Laurens Holst
 
-Project information
--------------------
+## Project information
 
   * Author: Laurens Holst <laurens@grauw.nl>
   * Source: <https://hg.sr.ht/~grauw/re-play>
   * License: Simplified BSD License
 
-Converts music in VGM format to data streams suitable for play back on MSX
-sound chips. The formats aims to be both efficient for playback and small
-in size.
+Converts music in VGM format to a stream of register writes suitable for play
+back on MSX sound chips, and provides replayer code for MSX.
 
+Streams of register writes are efficient to play back, and flexible to author
+music for since almost any source or tool can be used as long as a VGM recording
+can be obtained. The weakness is the size of the data, which needs to be
+carefully optimised. It is most suitable for use in MegaROM software.
 
-System requirements
--------------------
+In addition to the currently supported sound chips, this project intends to
+provide a framework to support more sound chips and specialised formats for
+future projects, which will be implemented as needed.
+
+## System requirements
 
   * MSX, MSX2, MSX2+ or MSX turboR
-  * 64K main RAM
+  * 16K main RAM
   * 16K video RAM
-  * MSX-DOS
+  * MegaROM cartridge
 
-If the replayer core and music data is embedded in a ROM, the RAM requirement is
-lowered to 16K and the MSX-DOS requirement is dropped.
+The above requirements are for the MegaROM version of the player. An MSX-DOS2
+player is also provided, which additionally requires as much RAM as is needed to
+fit the music files in memory.
 
+# OPN format (OPM / OPNA / OPNB FM)
 
-Converter functions
--------------------
+Re-Play’s `opn` format was created to play the original arcade music of
+Ghosts n’ Goblins (Makaimura in Japanese) in ASM’s 2020 MSX remake, using either
+the Yamaha SFG (OPM), Neotron (OPNB) or Makoto (OPNA) sound cartridges. Since
+the original arcade game uses two OPNs clocked at 1.5 MHz, this involves
+converting the music data to different clock frequencies, as well as three
+similar but different sound chip architectures.
 
-The converter has the following functions:
+Although the player is not slow, the primary focus of this format is the
+reduction of the music data size, as well as the support of multiple sound
+chips. The total music data size is about 64K.
 
+Since the format is optimised for the structure of GnG’s music data, it
+currently does not work as well for other OPN music where the output sizes can
+become quite large as a result.
+
+## OPN format converter features
+
+  * Triple sound chip support (OPM, OPNA, OPNB)
   * Compact data format
-  * Simple playback on three sound chips
+  * Timing quantisation
+  * Clock frequency conversion
   * Coalescing instrument settings per channel
   * Grouping into five event types (key, frequency, instrument, wait, loop)
-  * Clock frequency conversion
-  * Channel remapping
-  * Small wait removal
-  * Timing quantisation
-  * Trimming of leading silence
   * Moving frequency events before key on
+  * Channel remapping
   * Volume adjustment
 
-It also outputs VGM files for the YM2151 OPM and YM2610 OPN for easy testing
-with VGMPlay and debugging with vgm2txt.
+Note: Ghosts n’ Goblins sets the frequency after it sets key on. Due to this you
+sometimes get a wrong note at the start of a track on real hardware, depending
+on the initial values. This was probably a bug in the original game’s replayer
+code which did not get exposed during normal play. A transform was added to put
+frequency in front of the key on commands.
 
+## OPN format specification
 
-Music data format
------------------
+Re-play `.rep` files start with a byte indicating the data format, followed by
+a command stream with events based on the data format.
 
-Re-play files start with a byte indicating the data format, followed by a
-command stream with events based on the data format.
+Format ID: `0`
 
-Data format `0`: `opn` (OPM / OPNA / OPNB FM) consists of these events:
+  * `00-7F`: Key on / off.
+             Bit 0-2: channel, bit 3-6: slots.
+  * `80-87`: Note frequency.
+             Bit 0-2: channel, byte 1-2: OPM frequency, byte 3-4: OPN frequency.
+  * `88-8F`: Instrument settings.
+             Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
+  * `90`:    Relative jump.
+             Byte 1: bank offset, byte 2-3: address offset.
+  * `91`:    Relative call.
+             Byte 1: bank offset, byte 2-3: address offset.
+  * `92`:    Return.
+  * `93-FF`: Wait.
+             n - 92H: nr. of ticks.
 
-  * 00-7F: Key on / off event.
-           Bit 0-2: channel, bit 3-6: slots.
-  * 80-87: Note frequency event.
-           Bit 0-2: channel, byte 1-2: OPM frequency, byte 3-4: OPN frequency.
-  * 88-8F: Instrument settings.
-           Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
-  * 90:    Relative jump.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * 91:    Relative call.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * 92:    Return.
-  * 93-FF: Wait.
-           n - 92H: nr. of ticks.
+# OPL4 format (MoonSound)
 
-Data format `1`: `opl4` consists of these events:
+Re-Play’s `opl4` format is created for an unannounced project which needed a
+fast OPL4 player. The focus for this format therefore is playback speed. It
+achieves this by aggressively optimising away register writes which can be
+avoided, reordering writes such that slow wave table loads rarely need to be
+awaited, and outputting in a fast unrolled loop. Nevertheless, the file sizes
+are quite respectable.
 
-  * 00-3F: OPL4 FM1 register write block.
-           Bit 0-5: count n - 1.
-           Bytes 1-2n: address, value sequence.
-  * 40-7F: OPL4 FM2 register write block.
-           Bit 0-5: count n - 1.
-           Bytes 1-2n: address, value sequence.
-  * 80-BF: OPL4 WAVE register write block.
-           Bit 0-5: count n - 1.
-           Bytes 1-2n: address, value sequence.
-  * C0:    Wait for OPL4 WAVE load.
-  * C1:    OPL4 WAVE memory write block.
-           Bytes 1-3: address, bytes 4-5: length.
-  * C2:    Relative jump.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * C3:    Relative call.
-           Byte 1: bank offset, byte 2-3: address offset.
-  * C4:    Return.
-  * C5-FF: Wait.
-           n - C4H: nr. of ticks.
+The format supports both FM and WAVE, and has options to either include samples
+in the data or to preload wavekits externally (which can then be compressed).
 
+## OPL4 format converter features
 
-Additional notes
-----------------
+  * FM and WAVE support
+  * Fast playback
+  * Compact data format
+  * Timing quantisation
+  * Aggressive optimisation of register writes
+  * Custom wave table generation
+  * Channel remapping (WAVE only)
+  * Volume adjustment (WAVE only)
 
-The arcade game music uses two OPNs clocked at 1.5 MHz. But because it sets the
-prescaler to a frequency divider of 3 instead of the usual 6, they act like OPNs
-clocked at 3 MHz with the default prescaling.
+## OPL4 format specification
 
-The game sets the frequency after it sets key on. Due to this you sometimes get
-a wrong note at the start of a track on real hardware, depending on the initial
-values. This was probably a bug in the original game’s replayer code which did
-not get exposed during normal play. A processing step was added to put frequency
-in front of the key on commands.
+Re-play `.rep` files start with a byte indicating the data format, followed by
+a command stream with events based on the data format.
 
-Track 01 is the same as Track 27, but with two channels muted. It is recommended
-to use track 27 instead of track 01.
+Format ID: `1`
 
+  * `00-3F`: OPL4 FM1 register write block.
+             Bit 0-5: count n - 1.
+             Bytes 1-2n: address, value sequence.
+  * `40-7F`: OPL4 FM2 register write block.
+             Bit 0-5: count n - 1.
+             Bytes 1-2n: address, value sequence.
+  * `80-BF`: OPL4 WAVE register write block.
+             Bit 0-5: count n - 1.
+             Bytes 1-2n: address, value sequence.
+  * `C0`:    Wait for OPL4 WAVE load.
+  * `C1`:    OPL4 WAVE memory write block.
+             Bytes 1-3: address, bytes 4-5: length.
+  * `C2`:    Relative jump.
+             Byte 1: bank offset, byte 2-3: address offset.
+  * `C3`:    Relative call.
+             Byte 1: bank offset, byte 2-3: address offset.
+  * `C4`:    Return.
+  * `C5-FF`: Wait.
+             n - C4H: nr. of ticks.
 
-Usage instructions
-------------------
+# Other formats
 
-Put VGM files in the `res/` directory, if they are .vgz files then extract them
-to .vgm with gunzip. Add the files to the `resources.json` manifest file in the
-`res` directory and set the various settings.
+Use the `text` format to generate a textual description of the command data
+output, similar to `vgm2txt`. Useful for analysis and debugging.
+
+Use the `vgm-opm`, `vgm-opnb` or `vgm-opl4` formats to generate VGM files for
+the specified chip, useful for testing optimisations with VGMPlay on PC.
+
+# Resource manifests
+
+The converter is instructed what to do by a resource manifest. For examples,
+see the resources.json manifests in the `res` directory.
+
+The top level object supports the following key / values:
+
+  * `format`:
+    Format identifier.
+    One of `opn`, `opl4`, `text`, `vgm-opm`, `vgm-opnb`, `vgm-opl4`.
+  * `bankSize`:
+    Player bank size.
+    Typically `16384` (16K) or `8192` (8K).
+  * `tracks`:
+    List of tracks to include.
+
+The following key / values must be set on a per-track basis:
+
+  * `path`:
+    VGM source file path.
+
+The following key / values can be set either globally or on a per-track basis:
+
+  * `tickFrequency`:
+    Native tick frequency of the original music in Hz, e.g. `50` or `60` Hz.
+    If the VGM data contains OPL4 timer I/O, can be set to `opl4-timer`.
+    Default: `60`.
+  * `targetTickFrequency`:
+    Override target tick frequency in case it is different from the native
+    tick frequency.
+  * `waitThreshold`:
+    Waits under this threshold are removed. Specified in ticks of 44100 Hz.
+    Default: `0`.
+  * `tolerance`:
+    Tick frequency matching tolerance, to improve quantisation synchronisation.
+    Only use when there is an exact tick frequency match.
+    Default: `0`.
+  * `channelMapping`:
+    A list of channels and their new channel assignments.
+    Specify -1 to remove a channel.
+  * `attenuation`:
+    A volume attenuation specified in dB. Use negative values.
+    Default: `0`.
+  * `stripMode`:
+    Whether OPL4 WAVE sample data should be stripped.
+    One of `none`, `unused`, `samples` or `all`.
+    Default: `unused`.
+
+Resource keys can be overridden from the command line with `--set key value`.
+
+# Usage instructions
+
+Put VGM or VGZ files in a project specific directory in `res/` directory. Create
+a `resources.json` manifest file in the same directory and configure it for your
+project. Lastly, modify the `Makefile` so that it builds your files. The default
+Makefile is set up for a couple of test soundtracks whose VGM files can be found
+on VGMRips.
 
 Then, on macOS and Linux execute the `make` command to convert the files and
-compile the replayer. Test by putting the MSX-DOS system files in the `bin/`
-directory and executing the `make run` command. OpenMSX 0.16.0 or later is
-required, it currently only supports the Yamaha SFG sound chip.
+compile the replayer. Test by putting the MSX-DOS2 system files in the `bin/`
+directory and executing the `make run` command to run the MSX-DOS2 player.
+Execute `make run2` to run the MegaROM player. OpenMSX 0.18.0 or later is
+recommended.
 
 On Windows, execute the build commands from the Makefile manually.
 
