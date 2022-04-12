@@ -181,7 +181,7 @@ The following key / values can be set either globally or on a per-track basis:
   * `tolerance`:
     Tick frequency matching tolerance, to improve quantisation synchronisation.
     Only use when there is an exact tick frequency match.
-    Default: `0`.
+    Default: `0`. Range: `0` to `0.5`.
   * `channelMapping`:
     A list of channels and their new channel assignments.
     Specify -1 to remove a channel.
