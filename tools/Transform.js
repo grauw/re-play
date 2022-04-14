@@ -86,7 +86,7 @@ export class TransformMoveWaitAfterLoop extends Transform {
 }
 
 export class TransformQuantize extends Transform {
-	constructor(tickFrequency = 315000000 / 5256768, waitThreshold = 0, tolerance = 0) {
+	constructor(tickFrequency = 44100, waitThreshold = 0, tolerance = 0) {
 		super();
 		if (tolerance < 0 || tolerance > 0.5)
 			throw new Error("Tolerance must not exceed 0.5.");
