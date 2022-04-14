@@ -1,0 +1,68 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Advertise.vgz",
+			"name": "01 Advertise"
+		},
+		{
+			"path": "02 Advertise (Short).vgz",
+			"name": "02 Advertise (Short)"
+		},
+		{
+			"path": "03 Coin Inserted.vgz",
+			"name": "03 Coin Inserted"
+		},
+		{
+			"path": "04 Mission Select.vgz",
+			"name": "04 Mission Select"
+		},
+		{
+			"path": "05 Stage Clear 1.vgz",
+			"name": "05 Stage Clear 1"
+		},
+		{
+			"path": "06 Stage Clear 2.vgz",
+			"name": "06 Stage Clear 2"
+		},
+		{
+			"path": "07 Stage Clear 3.vgz",
+			"name": "07 Stage Clear 3"
+		},
+		{
+			"path": "08 Boss.vgz",
+			"name": "08 Boss"
+		},
+		{
+			"path": "09 Stage Clear 4.vgz",
+			"name": "09 Stage Clear 4"
+		},
+		{
+			"path": "10 Missile Sequence.vgz",
+			"name": "10 Missile Sequence"
+		},
+		{
+			"path": "11 Victory.vgz",
+			"name": "11 Victory"
+		},
+		{
+			"path": "12 Credits.vgz",
+			"name": "12 Credits"
+		},
+		{
+			"path": "13 Time Over.vgz",
+			"name": "13 Time Over"
+		},
+		{
+			"path": "14 Game Over.vgz",
+			"name": "14 Game Over"
+		},
+		{
+			"path": "15 Name Entry.vgz",
+			"name": "15 Name Entry"
+		}
+	]
+}

@@ -6,6 +6,7 @@ import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandMultiPCMConfig, CommandMultiPCMRegister, CommandMultiPCMWaveMemory, CommandMultiPCMBankRegister } from "./CommandMultiPCM.js";
 
 const VGM_MAGIC_NUMBER = 0x206d6756;
 const GD3_MAGIC_NUMBER = 0x20336447;
@@ -33,6 +34,7 @@ export class FormatVGM extends Format {
 
 		const track = new Track(name, 44100);
 		let opl4ROMSize = 0x200000;
+		let multiPCMAddress = 0;
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
@@ -50,6 +52,8 @@ export class FormatVGM extends Format {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x54), "ym3526"));
 		} else if (getChipFrequency(0x58)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x58), "y8950"));
+		} else if (getChipFrequency(0x88)) {
+			track.addCommand(CommandMultiPCMConfig.of(getChipFrequency(0x88)));
 		}
 
 		if (getHeaderWord(0x14)) {
@@ -117,6 +121,31 @@ export class FormatVGM extends Format {
 				const register = vgm.getByte(address++);
 				const value = vgm.getByte(address++);
 				track.addCommand(CommandOPL4Register.of(0x100 | register, value));
+			} else if (type == 0xB5) {
+				const register = vgm.getByte(address++);
+				const value = vgm.getByte(address++);
+				if (register == 0) {
+					track.addCommand(CommandMultiPCMRegister.of(multiPCMAddress, value));
+				} else if (register == 1) {
+					if (value >= 0x20 || (value & 0x07) == 0x07)
+						throw new Error(`Unknown channel ${value} at address ${address - 2}`);
+					multiPCMAddress = multiPCMAddress & 0xE0 | value & 0x1F;
+				} else if (register == 2) {
+					if (value >= 8)
+						throw new Error(`Unknown register ${value} at address ${address - 2}`);
+					multiPCMAddress = multiPCMAddress & 0x1F | value << 5 & 0xE0;
+				}
+			} else if (type == 0xC3) {
+				const mask = vgm.getByte(address++) & 0x3;
+				const bank = vgm.getWord(address);
+				address += 2;
+				if (mask == 0x3 && !(bank & 0x8)) {
+					track.addCommand(CommandMultiPCMBankRegister.of(0x10, bank / 0x10));
+				} else if (mask & 0x2) {
+					track.addCommand(CommandMultiPCMBankRegister.of(0x11, bank / 0x8));
+				} else if (mask & 0x1) {
+					track.addCommand(CommandMultiPCMBankRegister.of(0x12, bank / 0x8));
+				}
 			} else if (type == 0xD0) {
 				const port = vgm.getByte(address++);
 				const register = vgm.getByte(address++);
@@ -151,6 +180,8 @@ export class FormatVGM extends Format {
 						track.addCommand(CommandOPL4WaveMemory.of(dataStart, data));
 					} else if (dataType == 0x87) {
 						track.addCommand(CommandOPL4WaveMemory.of(opl4ROMSize + dataStart, data));
+					} else if (dataType == 0x89) {
+						track.addCommand(CommandMultiPCMWaveMemory.of(dataStart, data));
 					}
 				}
 				address += dataSize;

@@ -102,6 +102,8 @@ in the data or to preload wavekits externally (which can then be compressed).
 ## OPL4 format converter features
 
   * FM and WAVE support
+    * FM input from OPL4, OPL3, OPL2 and OPL
+    * WAVE input from OPL4 and MultiPCM
   * Fast playback
   * Compact data format
   * Timing quantisation
@@ -192,6 +194,9 @@ The following key / values can be set either globally or on a per-track basis:
     Whether OPL4 WAVE sample data should be stripped.
     One of `none`, `unused`, `coalesce`, `samples` or `all`.
     Default: `unused`.
+  * `reduceChannels`:
+    Dynamically remaps channels to target amount. Only for MultiPCM input.
+    Default: `28`.
 
 Resource keys can be overridden from the command line with `--set key value`.
 

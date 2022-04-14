@@ -1,0 +1,44 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Credit.vgz",
+			"name": "01 Credit"
+		},
+		{
+			"path": "02 Game Mode Select.vgz",
+			"name": "02 Game Mode Select"
+		},
+		{
+			"path": "03 Character Select.vgz",
+			"name": "03 Character Select"
+		},
+		{
+			"path": "04 Next Opponent.vgz",
+			"name": "04 Next Opponent"
+		},
+		{
+			"path": "05 Ending.vgz",
+			"name": "05 Ending"
+		},
+		{
+			"path": "06 Staff.vgz",
+			"name": "06 Staff"
+		},
+		{
+			"path": "07 Continue.vgz",
+			"name": "07 Continue"
+		},
+		{
+			"path": "08 Game Over.vgz",
+			"name": "08 Game Over"
+		},
+		{
+			"path": "09 Unknown.vgz",
+			"name": "09 Unknown"
+		}
+	]
+}

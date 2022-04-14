@@ -1,0 +1,108 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Guns and Wings -Yak 141-.vgz",
+			"name": "01 Guns and Wings -Yak 141-"
+		},
+		{
+			"path": "02 Pick Up Your Wings.vgz",
+			"name": "02 Pick Up Your Wings"
+		},
+		{
+			"path": "03 Pull the Stick.vgz",
+			"name": "03 Pull the Stick"
+		},
+		{
+			"path": "04 Fokker Dr. I.vgz",
+			"name": "04 Fokker Dr. I"
+		},
+		{
+			"path": "05 P-38 Lightning.vgz",
+			"name": "05 P-38 Lightning"
+		},
+		{
+			"path": "06 Victory in the Sky.vgz",
+			"name": "06 Victory in the Sky"
+		},
+		{
+			"path": "07 To Fly and Fight.vgz",
+			"name": "07 To Fly and Fight"
+		},
+		{
+			"path": "08 P-51 Mustang.vgz",
+			"name": "08 P-51 Mustang"
+		},
+		{
+			"path": "09 Mitsubishi A6M Zero.vgz",
+			"name": "09 Mitsubishi A6M Zero"
+		},
+		{
+			"path": "10 Challenger.vgz",
+			"name": "10 Challenger"
+		},
+		{
+			"path": "11 Pick Up Your Wings (Short).vgz",
+			"name": "11 Pick Up Your Wings (Short)"
+		},
+		{
+			"path": "12 Werewolf Ka-50.vgz",
+			"name": "12 Werewolf Ka-50"
+		},
+		{
+			"path": "13 Aviator's Memories.vgz",
+			"name": "13 Aviator's Memories"
+		},
+		{
+			"path": "14 AH-64 Apache.vgz",
+			"name": "14 AH-64 Apache"
+		},
+		{
+			"path": "15 The Stall.vgz",
+			"name": "15 The Stall"
+		},
+		{
+			"path": "16 Run Away Girls.vgz",
+			"name": "16 Run Away Girls"
+		},
+		{
+			"path": "17 AV-8 Harrier.vgz",
+			"name": "17 AV-8 Harrier"
+		},
+		{
+			"path": "18 Wings High.vgz",
+			"name": "18 Wings High"
+		},
+		{
+			"path": "19 Unidentified Flying Object.vgz",
+			"name": "19 Unidentified Flying Object"
+		},
+		{
+			"path": "20 Show's Over.vgz",
+			"name": "20 Show's Over"
+		},
+		{
+			"path": "21 Barnstormer.vgz",
+			"name": "21 Barnstormer"
+		},
+		{
+			"path": "22 Keep Up Your Good Fight.vgz",
+			"name": "22 Keep Up Your Good Fight"
+		},
+		{
+			"path": "23 Wings High (Alternate).vgz",
+			"name": "23 Wings High (Alternate)"
+		},
+		{
+			"path": "24 Unused #1.vgz",
+			"name": "24 Unused #1"
+		},
+		{
+			"path": "25 Unused #2.vgz",
+			"name": "25 Unused #2"
+		}
+	]
+}

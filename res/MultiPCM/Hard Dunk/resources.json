@@ -1,0 +1,72 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Credit.vgz",
+			"name": "01 Credit"
+		},
+		{
+			"path": "02 Player Select.vgz",
+			"name": "02 Player Select"
+		},
+		{
+			"path": "03 VS Screen.vgz",
+			"name": "03 VS Screen"
+		},
+		{
+			"path": "04 Round 1.vgz",
+			"name": "04 Round 1"
+		},
+		{
+			"path": "05 Win.vgz",
+			"name": "05 Win"
+		},
+		{
+			"path": "06 Round 2.vgz",
+			"name": "06 Round 2"
+		},
+		{
+			"path": "07 Round 3.vgz",
+			"name": "07 Round 3"
+		},
+		{
+			"path": "08 Round 4.vgz",
+			"name": "08 Round 4"
+		},
+		{
+			"path": "09 Round 5.vgz",
+			"name": "09 Round 5"
+		},
+		{
+			"path": "10 Round 6.vgz",
+			"name": "10 Round 6"
+		},
+		{
+			"path": "11 Final Round.vgz",
+			"name": "11 Final Round"
+		},
+		{
+			"path": "12 Staff.vgz",
+			"name": "12 Staff"
+		},
+		{
+			"path": "13 Lose.vgz",
+			"name": "13 Lose"
+		},
+		{
+			"path": "14 Continue.vgz",
+			"name": "14 Continue"
+		},
+		{
+			"path": "15 Game Over.vgz",
+			"name": "15 Game Over"
+		},
+		{
+			"path": "16 Player Select (Variation).vgz",
+			"name": "16 Player Select (Variation)"
+		}
+	]
+}

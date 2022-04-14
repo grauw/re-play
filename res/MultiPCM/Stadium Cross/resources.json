@@ -1,0 +1,60 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Title.vgz",
+			"name": "01 Title"
+		},
+		{
+			"path": "02 Credit.vgz",
+			"name": "02 Credit"
+		},
+		{
+			"path": "03 Waiting for Competitors!.vgz",
+			"name": "03 Waiting for Competitors!"
+		},
+		{
+			"path": "04 Race Start.vgz",
+			"name": "04 Race Start"
+		},
+		{
+			"path": "05 Time Extend.vgz",
+			"name": "05 Time Extend"
+		},
+		{
+			"path": "06 Time Extend (Final Lap).vgz",
+			"name": "06 Time Extend (Final Lap)"
+		},
+		{
+			"path": "07 Finish.vgz",
+			"name": "07 Finish"
+		},
+		{
+			"path": "08 Name Entry.vgz",
+			"name": "08 Name Entry"
+		},
+		{
+			"path": "09 Game Over.vgz",
+			"name": "09 Game Over"
+		},
+		{
+			"path": "10 Unknown 1.vgz",
+			"name": "10 Unknown 1"
+		},
+		{
+			"path": "11 Unknown 2.vgz",
+			"name": "11 Unknown 2"
+		},
+		{
+			"path": "12 Unknown 3.vgz",
+			"name": "12 Unknown 3"
+		},
+		{
+			"path": "13 Unknown 4.vgz",
+			"name": "13 Unknown 4"
+		}
+	]
+}

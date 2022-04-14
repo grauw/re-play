@@ -1,0 +1,76 @@
+{
+	"format": "vgm-opl4",
+	"waitThreshold": 20,
+	"reduceChannels": 24,
+	"stripMode": "coalesce",
+	"tracks": [
+		{
+			"path": "01 Advertise.vgz",
+			"name": "01 Advertise"
+		},
+		{
+			"path": "02 Virtua Cop.vgz",
+			"name": "02 Virtua Cop"
+		},
+		{
+			"path": "03 Credit.vgz",
+			"name": "03 Credit"
+		},
+		{
+			"path": "04 Stage Select.vgz",
+			"name": "04 Stage Select"
+		},
+		{
+			"path": "05 Arms Black Market.vgz",
+			"name": "05 Arms Black Market"
+		},
+		{
+			"path": "06 Kong.vgz",
+			"name": "06 Kong"
+		},
+		{
+			"path": "07 Underground Weapon Storage.vgz",
+			"name": "07 Underground Weapon Storage"
+		},
+		{
+			"path": "08 King.vgz",
+			"name": "08 King"
+		},
+		{
+			"path": "09 Gang Headquarters.vgz",
+			"name": "09 Gang Headquarters"
+		},
+		{
+			"path": "10 President.vgz",
+			"name": "10 President"
+		},
+		{
+			"path": "11 Fang.vgz",
+			"name": "11 Fang"
+		},
+		{
+			"path": "12 Stage Clear.vgz",
+			"name": "12 Stage Clear"
+		},
+		{
+			"path": "13 F I N.vgz",
+			"name": "13 F I N"
+		},
+		{
+			"path": "14 Game Over.vgz",
+			"name": "14 Game Over"
+		},
+		{
+			"path": "15 Name Entry.vgz",
+			"name": "15 Name Entry"
+		},
+		{
+			"path": "16 Unknown BGM 1.vgz",
+			"name": "16 Unknown BGM 1"
+		},
+		{
+			"path": "17 Unknown BGM 2.vgz",
+			"name": "17 Unknown BGM 2"
+		}
+	]
+}

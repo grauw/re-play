@@ -1,4 +1,4 @@
-.PHONY: all com rom makaimura sonyc miwaku dist copy run run2
+.PHONY: all com rom makaimura sonyc miwaku multipcm dist copy run run2
 COPY_TARGET = /Volumes/MSXDOS2
 
 all: makaimura sonyc miwaku com rom
@@ -18,6 +18,16 @@ sonyc: bin
 
 miwaku: bin
 	node tools/cli.js res/Miwaku\ no\ Chousho/resources.json bin/miwaku.rep --set bankSize 16384
+
+multipcm: gen
+	mkdir -p gen/Daytona\ USA gen/Desert\ Tank gen/Hard\ Dunk gen/Stadium\ Cross gen/Title\ Fight gen/Virtua\ Cop gen/Wing\ War
+	node tools/cli.js res/MultiPCM/Daytona\ USA/resources.json gen/Daytona\ USA/
+	node tools/cli.js res/MultiPCM/Desert\ Tank/resources.json gen/Desert\ Tank/
+	node tools/cli.js res/MultiPCM/Hard\ Dunk/resources.json gen/Hard\ Dunk/
+	node tools/cli.js res/MultiPCM/Stadium\ Cross/resources.json gen/Stadium\ Cross/
+	node tools/cli.js res/MultiPCM/Title\ Fight/resources.json gen/Title\ Fight/
+	node tools/cli.js res/MultiPCM/Virtua\ Cop/resources.json gen/Virtua\ Cop/
+	node tools/cli.js res/MultiPCM/Wing\ War/resources.json gen/Wing\ War/
 
 bin:
 	mkdir -p bin
