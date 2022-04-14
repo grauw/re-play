@@ -72,7 +72,7 @@ export class ResourcesLoader {
 				new TransformAttenuateVolume(j.attenuation),
 				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
 				new TransformStartConfigAndWait(),
-				new TransformEndLoop()
+				json.format.startsWith("vgm") ? new Transform() : new TransformEndLoop()
 			];
 
 			return transforms.reduce((track, transform) => transform.apply(track), track);
