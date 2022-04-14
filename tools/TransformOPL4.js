@@ -348,7 +348,7 @@ function writeRegisterIfSet(opl4Output, register, emit) {
 	}
 }
 
-export class TransformOPL4EGToWaveTables {
+export class TransformOPL4EGToWaveTables extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
