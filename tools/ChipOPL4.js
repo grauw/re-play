@@ -1,6 +1,7 @@
 import { Chip } from "./Chip.js";
 import { yrw801Headers } from "./YRW801Headers.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { Memory } from "./Memory.js";
 import { rangeMap } from "./utils.js";
 
 export class ChipOPL4 extends Chip {
@@ -8,8 +9,9 @@ export class ChipOPL4 extends Chip {
 		super(registerMasks);
 		this.clockFrequency = 33868800;
 		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
-		this.memory = new Uint8Array(0x400000);
-		this.memory.set(yrw801Headers);
+		const memoryData = new Uint8Array(0x400000);
+		memoryData.set(yrw801Headers);
+		this.memory = new Memory(memoryData);
 	}
 
 	config(clockFrequency, type) {
@@ -47,15 +49,15 @@ export class ChipOPL4 extends Chip {
 			const channel = address - 0x208;
 			const wtAddress = this.getWaveTableAddress(this.getWaveTableNumber(channel));
 			let changed = this.waveTables[channel].set(
-				this.memory[wtAddress + 0] << 16 | this.memory[wtAddress + 1] << 8 | this.memory[wtAddress + 2],
-				this.memory[wtAddress + 3] << 8 | this.memory[wtAddress + 4],
-				this.memory[wtAddress + 5] << 8 | this.memory[wtAddress + 6]
+				this.memory.get(wtAddress + 0) << 16 | this.memory.get(wtAddress + 1) << 8 | this.memory.get(wtAddress + 2),
+				this.memory.get(wtAddress + 3) << 8 | this.memory.get(wtAddress + 4),
+				this.memory.get(wtAddress + 5) << 8 | this.memory.get(wtAddress + 6)
 			);
-			changed = this.set(0x280 + channel, this.memory[wtAddress + 7]) || changed;
-			changed = this.set(0x298 + channel, this.memory[wtAddress + 8]) || changed;
-			changed = this.set(0x2B0 + channel, this.memory[wtAddress + 9]) || changed;
-			changed = this.set(0x2C8 + channel, this.memory[wtAddress + 10]) || changed;
-			changed = this.set(0x2E0 + channel, this.memory[wtAddress + 11]) || changed;
+			changed = this.set(0x280 + channel, this.memory.get(wtAddress + 7)) || changed;
+			changed = this.set(0x298 + channel, this.memory.get(wtAddress + 8)) || changed;
+			changed = this.set(0x2B0 + channel, this.memory.get(wtAddress + 9)) || changed;
+			changed = this.set(0x2C8 + channel, this.memory.get(wtAddress + 10)) || changed;
+			changed = this.set(0x2E0 + channel, this.memory.get(wtAddress + 11)) || changed;
 			return changed;
 		}
 		return super.set(address, value, mask);
@@ -91,7 +93,7 @@ export class ChipOPL4 extends Chip {
 		} else if (command instanceof CommandOPL4Config) {
 			this.config(command.clockFrequency, command.version);
 		} else if (command instanceof CommandOPL4WaveMemory) {
-			this.memory.set(command.memory, command.address);
+			this.memory.setData(command.address, command.memory);
 		}
 	}
 }
