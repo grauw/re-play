@@ -266,10 +266,6 @@ export class FormatVGMOPL4 extends FormatVGM {
 		return vgm;
 	}
 
-	writeInitial(vgm) {
-		vgm.add(0xD0, 0x01, 0x05, 0x03);
-	}
-
 	writeCommand(vgm, command) {
 		if (command instanceof CommandOPL4Register) {
 			vgm.add(0xD0, command.address >> 8, command.address & 0xFF, command.value);

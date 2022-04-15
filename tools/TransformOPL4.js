@@ -16,6 +16,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
 		const output = new Track(input.name, input.tickFrequency);
+		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
 		const emit = command => output.addCommand(command);
 		const opl4Input = new ChipOPL4();
 		const opl4Output = new ChipOPL4();

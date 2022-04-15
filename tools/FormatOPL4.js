@@ -34,8 +34,10 @@ export class FormatOPL4 extends Format {
 			}
 
 			if (command instanceof CommandOPL4Register) {
-				blockBank = command.address >> 8;
-				blockCommands.push(command);
+				if (command.address != 0x105 && command.address != 0x202) {
+					blockBank = command.address >> 8;
+					blockCommands.push(command);
+				}
 			} else if (command instanceof CommandOPL4WaitLoad) {
 				data.add(0xC0);
 			} else if (command instanceof CommandOPL4WaveMemory) {
