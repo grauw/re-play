@@ -354,6 +354,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
+		const rom = input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
 		const chip = new ChipOPL4();
 		const instrumentMemo = new MemoConstructor(OPL4Instrument);
 		const instruments = [];
@@ -372,7 +373,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 						);
 						chip.unset(0x208 + channel);
 						if (instrument.number < 0) {
-							instrument.number = 0x180 + instruments.length;
+							instrument.number = instruments.length + (rom ? 0x0 : 0x180);
 							instruments.push(instrument);
 						}
 						channelInstruments[channel] = instrument;
@@ -384,7 +385,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 							const instrument = channelInstruments[command.waveChannel];
 							command = CommandOPL4Register.of(command.address, instrument.number & 0xFF);
 						} else if (command.address >= 0x220 && command.address < 0x238) {
-							command = CommandOPL4Register.of(command.address, command.value | 0x1);
+							command = CommandOPL4Register.of(command.address, command.value & 0xFE | (rom ? 0x0 : 0x1));
 						}
 					}
 					outputCommands.push(command);
@@ -395,11 +396,11 @@ export class TransformOPL4EGToWaveTables extends Transform {
 				queuedCommands.push(command);
 			}
 		}
-		if (instruments.length >= 0x80)
+		if (instruments.length >= (rom ? 0x100 : 0x80))
 			throw new Error("Too many different instruments.");
 		const output = new Track(input.name, input.tickFrequency);
 		output.addCommands(outputCommands.filter(command => command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory));
-		output.addCommand(CommandOPL4WaveMemory.of(0x200000, Uint8Array.from(instruments.flatMap(instrument => instrument.header))));
+		output.addCommand(CommandOPL4WaveMemory.of(rom ? 0x0 : 0x200000, Uint8Array.from(instruments.flatMap(instrument => instrument.header))));
 		output.addCommands(outputCommands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
 		return output;
 	}

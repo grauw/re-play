@@ -258,9 +258,11 @@ export class FormatVGMOPL4 extends FormatVGM {
 	constructor(opl4Frequency = 33868800) {
 		super();
 		this.opl4Frequency = opl4Frequency;
+		this.rom = false;
 	}
 
 	writeTrack(track) {
+		this.rom = track.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
 		const vgm = super.writeTrack(track);
 		vgm.setDoubleWord(0x60, this.opl4Frequency);  // 60 YMF278B clock
 		return vgm;
@@ -271,9 +273,9 @@ export class FormatVGMOPL4 extends FormatVGM {
 			vgm.add(0xD0, command.address >> 8, command.address & 0xFF, command.value);
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			const size = command.memory.length + 8;
-			const start = command.address - 0x200000;
-			vgm.add(0x67, 0x66, 0x87, size & 0xFF, size >> 8 & 0xFF, size >> 16 & 0xFF, size >> 24,
-				0x00, 0x00, 0x20, 0x00, start & 0xFF, start >> 8 & 0xFF, start >> 16 & 0xFF, start >> 24);
+			const start = this.rom ? command.address : command.address - 0x200000;
+			vgm.add(0x67, 0x66, this.rom ? 0x84 : 0x87, size & 0xFF, size >> 8 & 0xFF, size >> 16 & 0xFF, size >> 24,
+				0x00, 0x00, this.rom ? 0x40 : 0x20, 0x00, start & 0xFF, start >> 8 & 0xFF, start >> 16 & 0xFF, start >> 24);
 			vgm.addArray(command.memory);
 		}
 	}
