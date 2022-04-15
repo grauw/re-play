@@ -24,13 +24,13 @@ export class Resources {
 		return Track.ofTracksWithIndex("combined", this.tracks);
 	}
 
-	async write(path) {
+	async write(path_) {
 		if (this.format.combine) {
 			const track = this.getCombinedTracks();
-			return await this.format.saveTrack(track, path);
+			return await this.format.saveTrack(track, path_);
 		} else {
 			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, path.replace(/(\.[^\.]*)?$/, `-${track.name}$1`));
+				await this.format.saveTrack(track, path.join(path_, `${track.name}.vgm`));
 			}));
 		}
 	}
