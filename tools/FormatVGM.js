@@ -3,11 +3,12 @@ import zlib from "zlib";
 import util from "util";
 import { Format } from "./Format.js";
 import { Track } from "./Track.js";
-import { CommandLabel, CommandJump, CommandReturn, CommandWait } from "./Command.js";
+import { CommandLabel, CommandJump, CommandReturn, CommandWait, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
 const VGM_MAGIC_NUMBER = 0x206d6756;
+const GD3_MAGIC_NUMBER = 0x20336447;
 
 export class FormatVGM extends Format {
 	constructor() {
@@ -49,6 +50,15 @@ export class FormatVGM extends Format {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x54), "ym3526"));
 		} else if (getChipFrequency(0x58)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x58), "y8950"));
+		}
+
+		if (getHeaderWord(0x14)) {
+			const gd3Address = getHeaderWord(0x14) + 0x14;
+			if (vgm.getDoubleWord(gd3Address) == GD3_MAGIC_NUMBER && vgm.getDoubleWord(gd3Address + 4) == 0x0100) {
+				const length = vgm.getDoubleWord(gd3Address + 8);
+				const tag = vgm.data.subarray(gd3Address + 12, gd3Address + 12 + length).toString("utf16le");
+				track.addCommand(CommandGD3.of(tag));
+			}
 		}
 
 		let address = headerSize;
@@ -186,6 +196,16 @@ export class FormatVGM extends Format {
 		}
 		vgm.add(0x66);
 
+		const gd3Command = track.getSetupCommand(command => command instanceof CommandGD3);
+		if (gd3Command) {
+			vgm.setDoubleWord(0x14, vgm.length - 0x14);
+			vgm.addDoubleWord(GD3_MAGIC_NUMBER);
+			vgm.addDoubleWord(0x0100);
+			const tag = Buffer.from(gd3Command.tag, "utf16le");
+			vgm.addDoubleWord(tag.length);
+			vgm.addArray(tag);
+		}
+
 		vgm.setDoubleWord(0x04, vgm.length - 0x04);
 		vgm.setDoubleWord(0x18, samples);
 		vgm.setDoubleWord(0x1C, loopOffset >= 0 ? loopOffset - 0x1C : 0);
@@ -297,6 +317,20 @@ class VGMData {
 	addArray(values) {
 		for (const value of values)
 			this.data.push(value);
+	}
+
+	addByte(value) {
+		this.data.push(value & 0xFF);
+	}
+
+	addWord(value) {
+		this.addByte(value);
+		this.addByte(value >> 8);
+	}
+
+	addDoubleWord(value) {
+		this.addWord(value);
+		this.addWord(value >> 16);
 	}
 
 	getByte(address) {

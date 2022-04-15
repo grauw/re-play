@@ -42,14 +42,18 @@ export class Track {
 	}
 
 	hasSetupCommand(predicate) {
+		return this.getSetupCommand(predicate) != null;
+	}
+
+	getSetupCommand(predicate) {
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
-				return false;
+				return null;
 			} else if (predicate(command)) {
-				return true;
+				return command;
 			}
 		}
-		return false;
+		return null;
 	}
 
 	static ofTracksWithIndex(name, tracks) {

@@ -104,3 +104,21 @@ export class CommandReturn extends CommandControlFlow {
 }
 
 const commandReturnMemo = Object.freeze(new CommandReturn());
+
+export class CommandGD3 extends Command {
+	constructor(tag) {
+		super();
+		this.tag = tag;
+		Object.freeze(this);
+	}
+
+	static of(tag) {
+		return commandGD3Memo.get(tag);
+	}
+
+	toString() {
+		return `GD3 ${this.tag.split(/[\0\n]/).join("\n  | ")}`;
+	}
+}
+
+const commandGD3Memo = new MemoConstructor(CommandGD3);

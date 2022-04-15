@@ -1,5 +1,5 @@
 import { Track } from "./Track.js";
-import { CommandWait, CommandLabel, CommandJump, CommandReturn } from "./Command.js";
+import { CommandWait, CommandLabel, CommandJump, CommandReturn, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 
@@ -181,7 +181,7 @@ export class TransformStartConfigAndWait extends Transform {
 			const command = input.commands[index];
 			if (command instanceof CommandWait) {
 				// skip
-			} else if (command instanceof CommandOPNConfig ||
+			} else if (command instanceof CommandGD3 || command instanceof CommandOPNConfig ||
 				command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory ||
 				(command instanceof CommandOPL4Register && command.address == 0x0BD) ||
 				(command instanceof CommandOPL4Register && command.address == 0x104) ||
