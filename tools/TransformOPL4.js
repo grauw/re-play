@@ -4,7 +4,7 @@ import { CommandWait, CommandControlFlow, CommandLabel, CommandJump } from "./Co
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
-import { Ranges } from "./Memory.js";
+import { Memory, Ranges } from "./Memory.js";
 import { rangeMap, MemoConstructor } from "./utils.js";
 
 const ignoreAddresses = [
@@ -417,7 +417,7 @@ class OPL4Instrument {
 export class TransformOPL4StripMemory extends Transform {
 	constructor(mode = "unused", margin = 8, padding = 4) {
 		super();
-		if (mode != "none" && mode != "unused" && mode != "samples" && mode != "all")
+		if (mode != "none" && mode != "unused" && mode != "coalesce" && mode != "samples" && mode != "all")
 			throw new Error("Unsupported strip mode.");
 		this.mode = mode;
 		this.margin = margin;
@@ -429,6 +429,14 @@ export class TransformOPL4StripMemory extends Transform {
 			!input.hasSetupCommand(command => command instanceof CommandOPL4Config) ||
 			!input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
 			return input;
+		if (this.mode == "coalesce") {
+			return this.applyCoalesce(input);
+		} else {
+			return this.applyStrip(input);
+		}
+	}
+
+	applyStrip(input) {
 		const ranges = new Ranges();
 		const chip = new ChipOPL4();
 		if (this.mode == "unused" || this.mode == "samples") {
@@ -454,6 +462,73 @@ export class TransformOPL4StripMemory extends Transform {
 			output.addCommand(CommandOPL4WaveMemory.of(range.start, data));
 		}
 		output.addCommands(input.commands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		return output;
+	}
+
+	applyCoalesce(input) {
+		const commands = [];
+		const instruments = new Map();
+		const ranges = new Ranges();
+		const chip = new ChipOPL4();
+		for (const command of input.commands) {
+			chip.writeCommand(command);
+			if (command instanceof CommandOPL4Register) {
+				if (command.address >= 0x208 && command.address < 0x220) {
+					const waveTableNumber = chip.getWaveTableNumber(command.waveChannel);
+					const waveTable = chip.getWaveTable(command.waveChannel);
+					const size = Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8);
+					ranges.add(waveTable.getStart(), waveTable.getStart() + size);
+					if (!instruments.has(waveTableNumber)) {
+						if (instruments.size >= 0x80)
+							throw new Error("Too many instruments.");
+						instruments.set(waveTableNumber, 0x180 + instruments.size);
+					}
+					commands.push(CommandOPL4Register.of(command.address, instruments.get(waveTableNumber) & 0xFF));
+				} else if (command.address >= 0x220 && command.address < 0x238) {
+					commands.push(CommandOPL4Register.of(command.address, command.value | 0x1));
+				} else if (command.address != 0x202 && command.address != 0x105) {
+					commands.push(command);
+				}
+			} else {
+				commands.push(command);
+			}
+		}
+		chip.memory.ranges.intersect(ranges);
+		chip.memory.ranges.removeGaps(this.margin);
+
+		const output = new Track(input.name, input.tickFrequency);
+		output.addCommands(commands.filter(command => command instanceof CommandOPL4Config));
+		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
+		output.addCommand(CommandOPL4Register.of(0x202, 0x10));
+
+		let address = 0x200600;
+		const relocations = [];
+		const memory = new Memory(new Uint8Array(0x400000));
+		for (const [range, data] of chip.memory.getDataRanges()) {
+			if (address + data.length > 0x400000)
+				throw new Error("Too much sample data.");
+			memory.setData(address, data);
+			relocations.push({ range: range, offset: address - range.start });
+			address += data.length;
+		}
+		for (const [oldInstrument, newInstrument] of instruments) {
+			const oldAddress = chip.getWaveTableAddress(oldInstrument);
+			const newAddress = 0x200000 + (newInstrument - 0x180) * 12;
+			memory.setData(newAddress, chip.memory.getData(oldAddress, oldAddress + 12));
+			const start = memory.get(newAddress + 0, 0x3F) << 16 | memory.get(newAddress + 1) << 8 | memory.get(newAddress + 2);
+			const relocation = relocations.find(relocation => relocation.range.includes(start));
+			if (relocation) {
+				const newStart = start + relocation.offset;
+				memory.set(newAddress + 0, newStart >> 16, 0x3F);
+				memory.set(newAddress + 1, newStart >> 8);
+				memory.set(newAddress + 2, newStart);
+			}
+		}
+		for (const [range, data] of memory.getDataRanges()) {
+			output.addCommand(CommandOPL4WaveMemory.of(range.start, data));
+		}
+
+		output.addCommands(commands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
 		return output;
 	}
 }

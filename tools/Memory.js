@@ -105,6 +105,10 @@ export class Range {
 		this.end = end;
 	}
 
+	includes(address) {
+		return address >= this.start && address < this.end;
+	}
+
 	toString() {
 		const hex = value => value.toString(16).toUpperCase();
 		return `[${hex(this.start)}, ${hex(this.end)}]`;

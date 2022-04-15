@@ -190,7 +190,7 @@ The following key / values can be set either globally or on a per-track basis:
     Default: `0`.
   * `stripMode`:
     Whether OPL4 WAVE sample data should be stripped.
-    One of `none`, `unused`, `samples` or `all`.
+    One of `none`, `unused`, `coalesce`, `samples` or `all`.
     Default: `unused`.
 
 Resource keys can be overridden from the command line with `--set key value`.
