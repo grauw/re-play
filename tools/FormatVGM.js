@@ -153,7 +153,7 @@ export class FormatVGM extends Format {
 						track.addCommand(CommandOPL4WaveMemory.of(opl4ROMSize + dataStart, data));
 					}
 				}
-				address += dataSize;  // skip
+				address += dataSize;
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1));
 			} else {
