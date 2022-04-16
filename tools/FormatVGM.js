@@ -140,7 +140,7 @@ export class FormatVGM extends Format {
 				if (vgm.getByte(address++) != 0x66)
 					throw new Error(`Invalid data block sequence at address 0x${(address - 1).toString(16).toUpperCase()}`);
 				const dataType = vgm.getByte(address++);
-				const dataSize = vgm.getDoubleWord(address);
+				const dataSize = vgm.getDoubleWord(address) & 0x7fffffff;
 				address += 4;
 				if (dataType >= 0x80 && dataType < 0xC0) {
 					const memorySize = vgm.getDoubleWord(address);
