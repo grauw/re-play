@@ -18,7 +18,7 @@ Mapper_SetBank: equ ASCII8Mapper_SetBank
 	dw Main
 	dw 0, 0, 0, 0, 0, 0
 
-RAM: ds 200H
+RAM: ds 400H
 
 	SECTION RAM
 
