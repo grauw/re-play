@@ -22,6 +22,8 @@ export class ChipOPN extends Chip {
 			return super.set(address, value >> 4 << channelX4, (mask & 0xF0) >> 4 << channelX4);
 		} else if (address >= 0x02D && address < 0x030) {
 			super.set(address, value, mask);
+			if (address == 0x2E && this.lastClockDividerSet != 0x2D)
+				return false;
 			const changed = address != this.lastClockDividerSet;
 			this.lastClockDividerSet = address;
 			return changed;
