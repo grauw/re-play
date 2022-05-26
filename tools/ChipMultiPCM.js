@@ -95,7 +95,7 @@ class ChipMultiPCMWaveTable {
 	}
 
 	getBits() {
-		return [8, 12][this.start >> 23];
+		return [8, 12, 8, 12][this.start >> 22];
 	}
 
 	getStart() {
