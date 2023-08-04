@@ -6,6 +6,7 @@ Copyright 2020 Laurens Holst
 
   * Author: Laurens Holst <laurens@grauw.nl>
   * Source: <https://hg.sr.ht/~grauw/re-play>
+  * Support: <https://msx.org/forum/msx-talk/graphics-and-music/re-play-music-converter-player>
   * License: Simplified BSD License
 
 Converts music in VGM format to a stream of register writes suitable for play
