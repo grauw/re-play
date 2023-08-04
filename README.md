@@ -80,9 +80,9 @@ Format ID: `0`
   * `88-8F`: Instrument settings.
              Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
   * `90`:    Relative jump.
-             Byte 1: bank offset, byte 2-3: address offset.
+             Byte 1-2: address offset, byte 3: bank offset.
   * `91`:    Relative call.
-             Byte 1: bank offset, byte 2-3: address offset.
+             Byte 1-2: address offset, byte 3: bank offset.
   * `92`:    Return.
   * `93-FF`: Wait.
              n - 92H: nr. of ticks.
@@ -132,9 +132,9 @@ Format ID: `1`
   * `C1`:    OPL4 WAVE memory write block.
              Bytes 1-3: address, bytes 4-5: length.
   * `C2`:    Relative jump.
-             Byte 1: bank offset, byte 2-3: address offset.
+             Byte 1-2: address offset, byte 3: bank offset.
   * `C3`:    Relative call.
-             Byte 1: bank offset, byte 2-3: address offset.
+             Byte 1-2: address offset, byte 3: bank offset.
   * `C4`:    Return.
   * `C5-FF`: Wait.
              n - C4H: nr. of ticks.
