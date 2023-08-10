@@ -3,12 +3,12 @@ COPY_TARGET = /Volumes/MSXDOS2
 
 all: makaimura bubble ds6 yu-no sonyc miwaku com rom
 
-com: bin
-	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.com.sym
+com: bin gen
+	java -jar tools/glass.jar src/COM.asm bin/re-play.com gen/re-play.com.sym
 
 rom: bin gen
 	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 16384
-	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom bin/re-play.rom.sym
+	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom gen/re-play.rom.sym
 
 makaimura: bin
 	node tools/cli.js res/Makaimura/resources.json bin/makaimura.rep --set bankSize 16384

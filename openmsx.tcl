@@ -6,9 +6,9 @@ debug set_watchpoint read_io 0x2E
 variable rom [string match -nocase "*.rom" [carta]];
 
 if {$rom} {
-	symbols::load bin/re-play.rom.sym
+	symbols::load gen/re-play.rom.sym
 } else {
-	symbols::load bin/re-play.com.sym
+	symbols::load gen/re-play.com.sym
 }
 
 if {!$rom} {
