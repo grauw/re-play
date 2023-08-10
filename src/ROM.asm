@@ -6,6 +6,7 @@ INITXT: equ 006CH
 CHSNS: equ 009CH
 CHGET: equ 009FH
 CHPUT: equ 00A2H
+CLIKSW: equ 0F3DBH
 JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
@@ -43,6 +44,8 @@ Main:
 	ld bc,200H
 	ldir
 	call INITXT
+	ld a,0
+	ld (CLIKSW),a
 	ld hl,Main_message
 	call Main_PrintString
 
