@@ -10,8 +10,8 @@ CLIKSW: equ 0F3DBH
 JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
-Mapper_GetBank: equ ASCII8Mapper_GetBank
-Mapper_SetBank: equ ASCII8Mapper_SetBank
+Mapper_GetBank: equ ASCII16Mapper_GetBank
+Mapper_SetBank: equ ASCII16Mapper_SetBank
 
 RAM_ORG: equ 0C000H
 RAM_SIZE: equ 400H
@@ -33,7 +33,7 @@ RAM: ds RAM_SIZE
 	INCLUDE "Player.asm"
 	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
-	INCLUDE "ASCII8Mapper.asm"
+	INCLUDE "ASCII16Mapper.asm"
 
 Main:
 	ei
@@ -41,7 +41,7 @@ Main:
 	call Memory_GetSlot
 	ld h,80H
 	call Memory_SetSlot
-	call ASCII8Mapper_Initialize
+	call ASCII16Mapper_Initialize
 	ld hl,RAM
 	ld de,RAM_ORG
 	ld bc,RAM_SIZE
@@ -142,9 +142,9 @@ Main_currentTrack:
 
 	ENDS
 
-	ds 6000H - $
+	ds 8000H - $
 
 SoundData:
 	INCBIN "rom.rep"
 
-	ds -$ & 0x1FFF  ; pad
+	ds -$ & 0x3FFF  ; pad

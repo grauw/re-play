@@ -7,7 +7,7 @@ com: bin
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com bin/re-play.com.sym
 
 rom: bin gen
-	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 8192
+	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 16384
 	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom bin/re-play.rom.sym
 
 makaimura: bin
@@ -52,4 +52,4 @@ run:
 	openmsx -machine Panasonic_FS-A1GT -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
 
 run2:
-	openmsx -machine Panasonic_FS-A1GT -cart bin/re-play.rom -romtype ASCII8 -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
+	openmsx -machine Panasonic_FS-A1GT -cart bin/re-play.rom -romtype ASCII16 -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
