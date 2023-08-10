@@ -2,6 +2,8 @@ import { Track } from "./Track.js";
 import { CommandWait, CommandLabel, CommandJump, CommandReturn, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
+import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.js";
+import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
 
 export class Transform {
 	apply(input) {
@@ -34,6 +36,12 @@ export class TransformMapChannels extends Transform {
 				if (newChannel >= 0) {
 					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
 				}
+			} else if (command instanceof CommandOPLLRegister && command.address >= 0x10 && command.address < 0x40) {
+				const channel = command.address & 0x0F;
+				const newChannel = this.mapping[channel] ?? channel;
+				if (newChannel >= 0) {
+					output.addCommand(CommandOPLLRegister.of(command.address - channel + newChannel, command.value));
+				}
 			} else {
 				output.addCommand(command);
 			}
@@ -58,6 +66,16 @@ export class TransformAttenuateVolume extends Transform {
 				const direct = command.value & 1;
 				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0), 127);
 				output.addCommand(CommandOPL4Register.of(command.address, newLevel << 1 | direct));
+			} else if (command instanceof CommandOPLLRegister && command.address >= 0x30 && command.address < 0x40) {
+				const level = command.value & 0x0F;
+				const instrument = command.value >> 4;
+				const newLevel = Math.min(Math.max(Math.round(level + this.dB / -3), 0), 15);
+				output.addCommand(CommandOPLLRegister.of(command.address, instrument << 4 | newLevel));
+			} else if (command instanceof CommandPSGRegister && command.address >= 0x08 && command.address < 0x0B) {
+				const level = command.value & 0x0F;
+				const envelopeEnable = command.value >> 4 & 0x01;
+				const newLevel = level == 0x00 ? level : Math.min(Math.max(Math.round(level + this.dB / 3), 0), 15);
+				output.addCommand(CommandPSGRegister.of(command.address, envelopeEnable << 4 | newLevel));
 			} else {
 				output.addCommand(command);
 			}
@@ -186,7 +204,8 @@ export class TransformStartConfigAndWait extends Transform {
 				(command instanceof CommandOPL4Register && command.address == 0x0BD) ||
 				(command instanceof CommandOPL4Register && command.address == 0x104) ||
 				(command instanceof CommandOPL4Register && command.address == 0x105) ||
-				(command instanceof CommandOPL4Register && command.address == 0x202)) {
+				(command instanceof CommandOPL4Register && command.address == 0x202) ||
+				command instanceof CommandOPLLConfig || command instanceof CommandPSGConfig) {
 				output.addCommand(command);
 			} else {
 				output.addCommand(CommandWait.of(1));

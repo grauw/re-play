@@ -140,6 +140,44 @@ Format ID: `1`
   * `C5-FF`: Wait.
              n - C4H: nr. of ticks.
 
+# OPLL-PSG format (MSX-MUSIC + PSG)
+
+Re-Play’s `opll-psg` format is created for projects which need a fast MSX-MUSIC
+and/or PSG player. The focus for this format therefore is playback speed, but
+data size is also important.
+
+## OPLL-PSG format converter features
+
+  * OPLL support
+  * PSG support
+  * Fast playback
+  * Compact data format
+  * Timing quantisation
+  * Aggressive optimisation of register writes
+  * Channel remapping (OPLL only)
+  * Volume adjustment
+
+## OPLL-PSG format specification
+
+Re-play `.rep` files start with a byte indicating the data format, followed by
+a command stream with events based on the data format.
+
+Format ID: `2`
+
+  * `00-3F`: OPLL register write block.
+             Bit 0-5: count n - 1.
+             Bytes 1-2n: address, value sequence.
+  * `40-7F`: PSG register write block.
+             Bit 0-5: count n - 1.
+             Bytes 1-2n: address, value sequence.
+  * `80`:    Relative jump.
+             Byte 1-2: address offset, byte 3: bank offset.
+  * `81`:    Relative call.
+             Byte 1-2: address offset, byte 3: bank offset.
+  * `82`:    Return.
+  * `83-FF`: Wait.
+             n - 82H: nr. of ticks.
+
 # Other formats
 
 Use the `text` format to generate a textual description of the command data

@@ -64,6 +64,24 @@ Memory_SetSlot:
 	ei
 	ret
 
+; a = slot ID
+; hl = address (00H <= h < C0H)
+; a <- value
+; Modifies: af, bc, de
+Memory_ReadSlot:
+	call RDSLT
+	ei
+	ret
+
+; a = slot ID
+; e = value
+; hl = address (00H <= h < C0H)
+; Modifies: af, bc, de
+Memory_WriteSlot:
+	call WRSLT
+	ei
+	ret
+
 ; Search all slots and subslots for a match.
 ; Invoke Continue to continue searching where a previous search left off.
 ; hl = detection routine (receives a = slot ID, can modify all)

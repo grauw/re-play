@@ -3,13 +3,16 @@ import path from "path";
 import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
+import { FormatOPLLPSG } from "./FormatOPLLPSG.js";
 import { FormatText } from "./FormatText.js";
-import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4 } from "./FormatVGM.js";
+import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4, FormatVGMOPLLPSG } from "./FormatVGM.js";
 import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize,
 	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
 import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory } from "./TransformOPL4.js";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
+import { TransformOPLLFrameSanitizer } from "./TransformOPLL.js";
+import { TransformPSGFrameSanitizer } from "./TransformPSG.js";
 
 export class Resources {
 	constructor(format) {
@@ -71,6 +74,8 @@ export class ResourcesLoader {
 				new TransformMultiPCMToOPL4(),
 				j.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
 				new TransformOPL4FrameSanitizer(),
+				new TransformPSGFrameSanitizer(),
+				new TransformOPLLFrameSanitizer(),
 				new TransformMapChannels(j.channelMapping),
 				new TransformAttenuateVolume(j.attenuation),
 				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
@@ -93,6 +98,8 @@ export class ResourcesLoader {
 				return new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency);
 			case "opl4":
 				return new FormatOPL4(json.bankSize, json.opl4Frequency);
+			case "opll-psg":
+				return new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency);
 			case "text":
 				return new FormatText();
 			case "vgm-opm":
@@ -101,6 +108,8 @@ export class ResourcesLoader {
 				return new FormatVGMOPNB(json.opnbFrequency);
 			case "vgm-opl4":
 				return new FormatVGMOPL4(json.opl4Frequency);
+			case "vgm-opll-psg":
+				return new FormatVGMOPLLPSG(json.opllFrequency, json.psgFrequency);
 			default:
 				throw new Error("Unrecognised format.");
 		}

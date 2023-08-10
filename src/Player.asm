@@ -3,6 +3,7 @@
 ;
 	INCLUDE "FormatOPN.asm"
 	INCLUDE "FormatOPL4.asm"
+	INCLUDE "FormatOPLLPSG.asm"
 
 Player_STACK_CAPACITY: equ 128
 
@@ -20,6 +21,8 @@ Player_Detect_Format:
 	jp z,FormatOPN_Detect
 	cp FormatOPL4_ID
 	jp z,FormatOPL4_Detect
+	cp FormatOPLLPSG_ID
+	jp z,FormatOPLLPSG_Detect
 	and a
 	ret
 

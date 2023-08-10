@@ -7,6 +7,8 @@ import { CommandLabel, CommandJump, CommandReturn, CommandWait, CommandGD3 } fro
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { CommandMultiPCMConfig, CommandMultiPCMRegister, CommandMultiPCMWaveMemory, CommandMultiPCMBankRegister } from "./CommandMultiPCM.js";
+import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.js";
+import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
 
 const VGM_MAGIC_NUMBER = 0x206d6756;
 const GD3_MAGIC_NUMBER = 0x20336447;
@@ -38,22 +40,36 @@ export class FormatVGM extends Format {
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
-		} else if (getChipFrequency(0x2C)) {
+		}
+		if (getChipFrequency(0x2C)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x2C), "ym2612"));
-		} else if (getChipFrequency(0x48)) {
+		}
+		if (getChipFrequency(0x48)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x48), "ym2608"));
-		} else if (getChipFrequency(0x60)) {
+		}
+		if (getChipFrequency(0x60)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x60), "ymf278b"));
-		} else if (getChipFrequency(0x5C)) {
+		}
+		if (getChipFrequency(0x5C)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x5C), "ymf262"));
-		} else if (getChipFrequency(0x50)) {
+		}
+		if (getChipFrequency(0x50)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x50), "ym3812"));
-		} else if (getChipFrequency(0x54)) {
+		}
+		if (getChipFrequency(0x54)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x54), "ym3526"));
-		} else if (getChipFrequency(0x58)) {
+		}
+		if (getChipFrequency(0x58)) {
 			track.addCommand(CommandOPL4Config.of(getChipFrequency(0x58), "y8950"));
-		} else if (getChipFrequency(0x88)) {
+		}
+		if (getChipFrequency(0x88)) {
 			track.addCommand(CommandMultiPCMConfig.of(getChipFrequency(0x88)));
+		}
+		if (getChipFrequency(0x10)) {
+			track.addCommand(CommandOPLLConfig.of(getChipFrequency(0x10)));
+		}
+		if (getChipFrequency(0x74)) {
+			track.addCommand(CommandPSGConfig.of(getChipFrequency(0x74)));
 		}
 
 		if (getHeaderWord(0x14)) {
@@ -85,6 +101,10 @@ export class FormatVGM extends Format {
 				} else {
 					track.addCommand(CommandOPNRegister.of(0x100 | register, value));
 				}
+			} else if (type == 0x51) {
+				const register = vgm.getByte(address++);
+				const value = vgm.getByte(address++);
+				track.addCommand(CommandOPLLRegister.of(register, value));
 			} else if (type == 0x52) {
 				const register = vgm.getByte(address++);
 				const value = vgm.getByte(address++);
@@ -121,6 +141,10 @@ export class FormatVGM extends Format {
 				const register = vgm.getByte(address++);
 				const value = vgm.getByte(address++);
 				track.addCommand(CommandOPL4Register.of(0x100 | register, value));
+			} else if (type == 0xA0) {
+				const register = vgm.getByte(address++);
+				const value = vgm.getByte(address++);
+				track.addCommand(CommandPSGRegister.of(register, value));
 			} else if (type == 0xB5) {
 				const register = vgm.getByte(address++);
 				const value = vgm.getByte(address++);
@@ -328,6 +352,29 @@ export class FormatVGMOPL4 extends FormatVGM {
 			vgm.add(0x67, 0x66, this.rom ? 0x84 : 0x87, size & 0xFF, size >> 8 & 0xFF, size >> 16 & 0xFF, size >> 24,
 				0x00, 0x00, this.rom ? 0x40 : 0x20, 0x00, start & 0xFF, start >> 8 & 0xFF, start >> 16 & 0xFF, start >> 24);
 			vgm.addArray(command.memory);
+		}
+	}
+}
+
+export class FormatVGMOPLLPSG extends FormatVGM {
+	constructor(opllFrequency = 3579545, psgFrequency = 1789773) {
+		super();
+		this.opllFrequency = opllFrequency;
+		this.psgFrequency = psgFrequency;
+	}
+
+	writeTrack(track) {
+		const vgm = super.writeTrack(track);
+		vgm.setDoubleWord(0x10, this.opllFrequency);
+		vgm.setDoubleWord(0x74, this.psgFrequency);
+		return vgm;
+	}
+
+	writeCommand(vgm, command) {
+		if (command instanceof CommandOPLLRegister) {
+			vgm.add(0x51, command.address, command.value);
+		} else if (command instanceof CommandPSGRegister) {
+			vgm.add(0xA0, command.address, command.value);
 		}
 	}
 }

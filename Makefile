@@ -1,7 +1,7 @@
-.PHONY: all com rom makaimura bubble ds6 yu-no sonyc miwaku multipcm dist copy run run2
+.PHONY: all com rom makaimura bubble ds6 yu-no sonyc miwaku multipcm xak dist copy run run2
 COPY_TARGET = /Volumes/MSXDOS2
 
-all: makaimura bubble ds6 yu-no sonyc miwaku com rom
+all: makaimura bubble ds6 yu-no sonyc miwaku xak com rom
 
 com: bin gen
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com gen/re-play.com.sym
@@ -28,6 +28,9 @@ sonyc: bin
 
 miwaku: bin
 	node tools/cli.js res/Miwaku\ no\ Chousho/resources.json bin/miwaku.rep --set bankSize 16384
+
+xak: bin
+	node tools/cli.js res/Xak/resources.json bin/xak.rep --set bankSize 16384
 
 multipcm: gen
 	mkdir -p gen/Daytona\ USA gen/Desert\ Tank gen/Hard\ Dunk gen/Stadium\ Cross gen/Title\ Fight gen/Virtua\ Cop gen/Wing\ War
@@ -63,3 +66,6 @@ run:
 
 run2:
 	openmsx -machine Panasonic_FS-A1GT -cart bin/re-play.rom -romtype ASCII16 -ext slotexpander -ext Yamaha_SFG-05 -ext moonsound -script openmsx.tcl
+
+run3:
+	openmsx -machine Sony_HB-F1XD -ext slotexpander -ext ide -ext ram4mb -ext Yamaha_SFG-05 -ext moonsound -ext fmpac -script openmsx.tcl
