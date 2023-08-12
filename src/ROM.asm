@@ -13,17 +13,20 @@ RG9SAV: equ 0FFE8H
 Mapper_GetBank: equ ASCII8Mapper_GetBank
 Mapper_SetBank: equ ASCII8Mapper_SetBank
 
+RAM_ORG: equ 0C000H
+RAM_SIZE: equ 400H
+
 	org 4000H
 
 	db "AB"
 	dw Main
 	dw 0, 0, 0, 0, 0, 0
 
-RAM: ds 400H
+RAM: ds RAM_SIZE
 
 	SECTION RAM
 
-	org 0C000H
+	org RAM_ORG
 
 	ENDS
 
@@ -40,8 +43,8 @@ Main:
 	call Memory_SetSlot
 	call ASCII8Mapper_Initialize
 	ld hl,RAM
-	ld de,0C000H
-	ld bc,200H
+	ld de,RAM_ORG
+	ld bc,RAM_SIZE
 	ldir
 	call INITXT
 	ld a,0
