@@ -197,7 +197,7 @@ class OPL4FrameSanitizerFMChannel {
 	}
 
 	processRegisterWrite(opl4Input, opl4Output, address, value) {
-		if (address == (0x0B0 + this.channel)) {
+		if (address == 0x0B0 + this.channel) {
 			if (value & 0x20) {
 				this.audible = true;
 			} else {

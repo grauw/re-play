@@ -135,7 +135,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const chb = value & 0x20 ? "On" : "Off";
 				const cha = value & 0x10 ? "On" : "Off";
 				const feedback = value >> 1 & 0x7;
-				const feedbackPi = ["0", "π/16", "π/8", "π/4", "π/2", "π", "2π", "4π"][value >> 1 & 0x7];
+				const feedbackPi = ["0", "π/16", "π/8", "π/4", "π/2", "π", "2π", "4π"][feedback];
 				const connection = value & 0x1 ? "1 (AM)" : "0 (FM)";
 				description = `FM${bank} Ch${channel} CHD: ${chd}, CHC: ${chc}, CHB: ${chb}, CHA: ${cha}, Feedback: ${feedback} (${feedbackPi}), Connection: ${connection}`;
 			} else if (addressLow >= 0xE0 && addressLow < 0xF6) {
