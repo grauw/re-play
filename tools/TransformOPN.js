@@ -1,7 +1,7 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandLabel } from "./Command.js";
-import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandOPNRegister, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { ChipOPN } from "./ChipOPN.js";
 
 export class TransformOPNToGenericFM extends Transform {
@@ -64,6 +64,36 @@ export class TransformOPNFrequencyBeforeKeyOn extends Transform {
 				output.addCommand(command);
 			}
 			lastCommand = command;
+		}
+		return output;
+	}
+}
+
+export class TransformOPNMapChannels extends Transform {
+	constructor(mapping = []) {
+		super();
+		this.mapping = mapping;
+	}
+
+	apply(input) {
+		if (this.mapping.every((value, index) => value == index))
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandFMChannel) {
+				const newChannel = this.mapping[command.channel] ?? command.channel;
+				if (newChannel < 0) {
+					// skip
+				} else if (command instanceof CommandFMKey) {
+					output.addCommand(CommandFMKey.of(newChannel, command.slots));
+				} else if (command instanceof CommandFMFrequency) {
+					output.addCommand(CommandFMFrequency.of(newChannel, command.frequency));
+				} else if (command instanceof CommandFMInstrument) {
+					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
+				}
+			} else {
+				output.addCommand(command);
+			}
 		}
 		return output;
 	}

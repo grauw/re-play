@@ -6,12 +6,11 @@ import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatOPLLPSG } from "./FormatOPLLPSG.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4, FormatVGMOPLLPSG } from "./FormatVGM.js";
-import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize,
-	TransformAttenuateVolume, TransformMapChannels, TransformEndLoop } from "./Transform.js";
-import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn } from "./TransformOPN.js";
-import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory } from "./TransformOPL4.js";
+import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformAttenuateVolume, TransformEndLoop } from "./Transform.js";
+import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels } from "./TransformOPN.js";
+import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels } from "./TransformOPL4.js";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
-import { TransformOPLLFrameSanitizer } from "./TransformOPLL.js";
+import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels } from "./TransformOPLL.js";
 import { TransformPSGFrameSanitizer } from "./TransformPSG.js";
 
 export class Resources {
@@ -76,7 +75,9 @@ export class ResourcesLoader {
 				new TransformOPL4FrameSanitizer(),
 				new TransformPSGFrameSanitizer(),
 				new TransformOPLLFrameSanitizer(),
-				new TransformMapChannels(j.channelMapping),
+				new TransformOPNMapChannels(j.channelMapping),
+				new TransformOPL4WaveMapChannels(j.channelMapping),
+				new TransformOPLLMapChannels(j.channelMapping),
 				new TransformAttenuateVolume(j.attenuation),
 				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
 				new TransformStartConfigAndWait(),

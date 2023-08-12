@@ -104,3 +104,28 @@ function writeRegisterIfSet(opllOutput, register, emit) {
 		register.unset();
 	}
 }
+
+export class TransformOPLLMapChannels extends Transform {
+	constructor(mapping = []) {
+		super();
+		this.mapping = mapping;
+	}
+
+	apply(input) {
+		if (this.mapping.every((value, index) => value == index))
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPLLRegister && command.address >= 0x10 && command.address < 0x40) {
+				const channel = command.address & 0x0F;
+				const newChannel = this.mapping[channel] ?? channel;
+				if (newChannel >= 0) {
+					output.addCommand(CommandOPLLRegister.of(command.address - channel + newChannel, command.value));
+				}
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}

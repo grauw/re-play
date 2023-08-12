@@ -1,6 +1,6 @@
 import { Track } from "./Track.js";
 import { CommandWait, CommandLabel, CommandJump, CommandReturn, CommandGD3 } from "./Command.js";
-import { CommandOPNConfig, CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig, CommandFMInstrument } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.js";
 import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
@@ -8,45 +8,6 @@ import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
 export class Transform {
 	apply(input) {
 		return input;
-	}
-}
-
-export class TransformMapChannels extends Transform {
-	constructor(mapping = []) {
-		super();
-		this.mapping = mapping;
-	}
-
-	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
-		for (const command of input.commands) {
-			if (command instanceof CommandFMChannel) {
-				const newChannel = this.mapping[command.channel] ?? command.channel;
-				if (newChannel < 0) {
-					// skip
-				} else if (command instanceof CommandFMKey) {
-					output.addCommand(CommandFMKey.of(newChannel, command.slots));
-				} else if (command instanceof CommandFMFrequency) {
-					output.addCommand(CommandFMFrequency.of(newChannel, command.frequency));
-				} else if (command instanceof CommandFMInstrument) {
-					output.addCommand(CommandFMInstrument.of(newChannel, ...command.parameters));
-				}
-			} else if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
-				const newChannel = this.mapping[command.waveChannel] ?? command.waveChannel;
-				if (newChannel >= 0) {
-					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
-				}
-			} else if (command instanceof CommandOPLLRegister && command.address >= 0x10 && command.address < 0x40) {
-				const channel = command.address & 0x0F;
-				const newChannel = this.mapping[channel] ?? channel;
-				if (newChannel >= 0) {
-					output.addCommand(CommandOPLLRegister.of(command.address - channel + newChannel, command.value));
-				}
-			} else {
-				output.addCommand(command);
-			}
-		}
-		return output;
 	}
 }
 

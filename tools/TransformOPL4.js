@@ -532,3 +532,27 @@ export class TransformOPL4StripMemory extends Transform {
 		return output;
 	}
 }
+
+export class TransformOPL4WaveMapChannels extends Transform {
+	constructor(mapping = []) {
+		super();
+		this.mapping = mapping;
+	}
+
+	apply(input) {
+		if (this.mapping.every((value, index) => value == index))
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
+				const newChannel = this.mapping[command.waveChannel] ?? command.waveChannel;
+				if (newChannel >= 0) {
+					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
+				}
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}
