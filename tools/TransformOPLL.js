@@ -129,3 +129,27 @@ export class TransformOPLLMapChannels extends Transform {
 		return output;
 	}
 }
+
+export class TransformOPLLAttenuateVolume extends Transform {
+	constructor(dB = 0) {
+		super();
+		this.dB = dB;
+	}
+
+	apply(input) {
+		if (this.dB == 0)
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPLLRegister && command.address >= 0x30 && command.address < 0x40) {
+				const level = command.value & 0x0F;
+				const instrument = command.value >> 4;
+				const newLevel = Math.min(Math.max(Math.round(level + this.dB / -3), 0x00), 0x0F);
+				output.addCommand(CommandOPLLRegister.of(command.address, instrument << 4 | newLevel));
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}

@@ -556,3 +556,27 @@ export class TransformOPL4WaveMapChannels extends Transform {
 		return output;
 	}
 }
+
+export class TransformOPL4WaveAttenuateVolume extends Transform {
+	constructor(dB = 0) {
+		super();
+		this.dB = dB;
+	}
+
+	apply(input) {
+		if (this.dB == 0)
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPL4Register && command.address >= 0x250 && command.address < 0x268) {
+				const level = command.value >> 1;
+				const direct = command.value & 0x01;
+				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0x00), 0x7F);
+				output.addCommand(CommandOPL4Register.of(command.address, newLevel << 1 | direct));
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}

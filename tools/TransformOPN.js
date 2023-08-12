@@ -98,3 +98,24 @@ export class TransformOPNMapChannels extends Transform {
 		return output;
 	}
 }
+
+export class TransformOPNAttenuateVolume extends Transform {
+	constructor(dB = 0) {
+		super();
+		this.dB = dB;
+	}
+
+	apply(input) {
+		if (this.dB == 0)
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandFMInstrument) {
+				output.addCommand(command.attenuateVolume(this.dB));
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}

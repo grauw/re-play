@@ -6,12 +6,12 @@ import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatOPLLPSG } from "./FormatOPLLPSG.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4, FormatVGMOPLLPSG } from "./FormatVGM.js";
-import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformAttenuateVolume, TransformEndLoop } from "./Transform.js";
-import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels } from "./TransformOPN.js";
-import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels } from "./TransformOPL4.js";
+import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop } from "./Transform.js";
+import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels, TransformOPNAttenuateVolume } from "./TransformOPN.js";
+import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels, TransformOPL4WaveAttenuateVolume } from "./TransformOPL4.js";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
-import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels } from "./TransformOPLL.js";
-import { TransformPSGFrameSanitizer } from "./TransformPSG.js";
+import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLAttenuateVolume } from "./TransformOPLL.js";
+import { TransformPSGFrameSanitizer, TransformPSGAttenuateVolume } from "./TransformPSG.js";
 
 export class Resources {
 	constructor(format) {
@@ -78,7 +78,10 @@ export class ResourcesLoader {
 				new TransformOPNMapChannels(j.channelMapping),
 				new TransformOPL4WaveMapChannels(j.channelMapping),
 				new TransformOPLLMapChannels(j.channelMapping),
-				new TransformAttenuateVolume(j.attenuation),
+				new TransformOPNAttenuateVolume(j.attenuation),
+				new TransformOPL4WaveAttenuateVolume(j.attenuation),
+				new TransformOPLLAttenuateVolume(j.attenuation),
+				new TransformPSGAttenuateVolume(j.attenuation),
 				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
 				new TransformStartConfigAndWait(),
 				json.format.startsWith("vgm") ? new Transform() : new TransformEndLoop()

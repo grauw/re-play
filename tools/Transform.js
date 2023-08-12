@@ -1,47 +1,13 @@
 import { Track } from "./Track.js";
 import { CommandWait, CommandLabel, CommandJump, CommandReturn, CommandGD3 } from "./Command.js";
-import { CommandOPNConfig, CommandFMInstrument } from "./CommandFM.js";
+import { CommandOPNConfig } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
-import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.js";
-import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
+import { CommandOPLLConfig } from "./CommandOPLL.js";
+import { CommandPSGConfig } from "./CommandPSG.js";
 
 export class Transform {
 	apply(input) {
 		return input;
-	}
-}
-
-export class TransformAttenuateVolume extends Transform {
-	constructor(dB = 0) {
-		super();
-		this.dB = dB;
-	}
-
-	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
-		for (const command of input.commands) {
-			if (command instanceof CommandFMInstrument) {
-				output.addCommand(command.attenuateVolume(this.dB));
-			} else if (command instanceof CommandOPL4Register && command.address >= 0x250 && command.address < 0x268) {
-				const level = command.value >> 1;
-				const direct = command.value & 1;
-				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0), 127);
-				output.addCommand(CommandOPL4Register.of(command.address, newLevel << 1 | direct));
-			} else if (command instanceof CommandOPLLRegister && command.address >= 0x30 && command.address < 0x40) {
-				const level = command.value & 0x0F;
-				const instrument = command.value >> 4;
-				const newLevel = Math.min(Math.max(Math.round(level + this.dB / -3), 0), 15);
-				output.addCommand(CommandOPLLRegister.of(command.address, instrument << 4 | newLevel));
-			} else if (command instanceof CommandPSGRegister && command.address >= 0x08 && command.address < 0x0B) {
-				const level = command.value & 0x0F;
-				const envelopeEnable = command.value >> 4 & 0x01;
-				const newLevel = level == 0x00 ? level : Math.min(Math.max(Math.round(level + this.dB / 3), 0), 15);
-				output.addCommand(CommandPSGRegister.of(command.address, envelopeEnable << 4 | newLevel));
-			} else {
-				output.addCommand(command);
-			}
-		}
-		return output;
 	}
 }
 

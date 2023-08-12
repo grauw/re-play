@@ -92,3 +92,27 @@ function writeRegisterIfSet(psgOutput, register, emit) {
 		register.unset();
 	}
 }
+
+export class TransformPSGAttenuateVolume extends Transform {
+	constructor(dB = 0) {
+		super();
+		this.dB = dB;
+	}
+
+	apply(input) {
+		if (this.dB == 0)
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandPSGRegister && command.address >= 0x08 && command.address < 0x0B) {
+				const level = command.value & 0x0F;
+				const envelopeEnable = command.value >> 4 & 0x01;
+				const newLevel = level == 0x00 ? level : Math.min(Math.max(Math.round(level + this.dB / 3), 0x00), 0x0F);
+				output.addCommand(CommandPSGRegister.of(command.address, envelopeEnable << 4 | newLevel));
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}
