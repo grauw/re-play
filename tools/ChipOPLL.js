@@ -4,7 +4,7 @@ import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.js";
 export class ChipOPLL extends Chip {
 	constructor() {
 		super(registerMasks);
-		this.clockFrequency = 3579545;
+		this.clockFrequency = 315000000 / 88;
 	}
 
 	config(clockFrequency) {

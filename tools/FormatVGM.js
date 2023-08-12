@@ -357,7 +357,7 @@ export class FormatVGMOPL4 extends FormatVGM {
 }
 
 export class FormatVGMOPLLPSG extends FormatVGM {
-	constructor(opllFrequency = 3579545, psgFrequency = 1789773) {
+	constructor(opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
 		super();
 		this.opllFrequency = opllFrequency;
 		this.psgFrequency = psgFrequency;

@@ -8,7 +8,7 @@ import { BankedData } from "./BankedData.js";
 export const FORMAT_OPLLPSG_ID = 0x02;
 
 export class FormatOPLLPSG extends Format {
-	constructor(bankSize, opllFrequency = 3579545, psgFrequency = 1789773) {
+	constructor(bankSize, opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
 		super();
 		this.bankSize = bankSize;
 		this.opllFrequency = opllFrequency;
