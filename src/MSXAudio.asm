@@ -80,7 +80,7 @@ MSXAudio_WriteFM1:
 MSXAudio_WriteFM1_Loop:
 	dec c
 	outi
-	ld a,($)  ; extra wait for R800 -- wait 3.4 µs (24 cycles)
+	ld a,($)  ; extra wait for R800 -- wait 3.4 µs (12 Y8950 cycles)
 	ld a,($)
 	inc c
 	outi
@@ -89,10 +89,10 @@ MSXAudio_WriteFM1_Loop:
 	ld a,(hl)
 	dec hl
 	ld l,(hl)
-	ld h,MSXAudio_fmRegisterMirrors >> 8
+	ld h,MSXAudio_registerMirrors >> 8
 	ld (hl),a
 	pop hl
-	ex (sp),ix  ; extra wait for R800 -- wait 23.5 µs (168 cycles)
+	ex (sp),ix  ; extra wait for R800 -- wait 23.5 µs (84 Y8950 cycles)
 	ex (sp),ix
 	ex (sp),ix
 	ex (sp),ix
@@ -138,13 +138,13 @@ MSXAudio_WriteMemory:
 	jp MSXAudio_Process_Loop
 
 MSXAudio_Mute:
-	ld b,9
 	ld a,0BDH
 	call MSXAudio_ReadRegister
 	and 11100000B
 	ld e,a
 	ld d,0BDH
 	call MSXAudio_WriteRegister
+	ld b,9
 MSXAudio_MuteFM_Loop:
 	ld a,0B9H
 	sub b
@@ -169,7 +169,7 @@ MSXAudio_WriteRegister:
 	ld a,e
 	out (MSXAudio_FM_DATA),a
 	ld l,a
-	ld h,MSXAudio_fmRegisterMirrors >> 8
+	ld h,MSXAudio_registerMirrors >> 8
 	ld (hl),e
 	ex (sp),ix  ; extra wait for R800 -- wait 23.5 µs (168 cycles)
 	ex (sp),ix
@@ -187,7 +187,7 @@ MSXAudio_WriteRegister:
 ; a = value
 MSXAudio_ReadRegister:
 	ld l,a
-	ld h,MSXAudio_fmRegisterMirrors >> 8
+	ld h,MSXAudio_registerMirrors >> 8
 	ld a,(hl)
 	ret
 
@@ -200,7 +200,7 @@ MSXAudio_ReadStatusRegister:
 
 	ds -$ & 0xFF  ; align to 100H
 
-MSXAudio_fmRegisterMirrors:
+MSXAudio_registerMirrors:
 	ds 100H
 
 	ENDS

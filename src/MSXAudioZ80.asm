@@ -73,7 +73,7 @@ MSXAudioZ80_WriteFM1_Loop:
 	ld a,(hl)
 	dec hl
 	ld l,(hl)
-	ld h,MSXAudio_fmRegisterMirrors >> 8
+	ld h,MSXAudio_registerMirrors >> 8
 	ld (hl),a
 	pop hl
 	jp nz,MSXAudioZ80_WriteFM1_Loop
