@@ -226,6 +226,8 @@ The following key / values can be set either globally or on a per-track basis:
   * `channelMapping`:
     A list of channels and their new channel assignments.
     Specify -1 to remove a channel.
+  * `psgChannelMapping`:
+    See above, for the PSG in the OPLL-PSG format.
   * `attenuation`:
     A volume attenuation specified in dB. Use negative values.
     Default: `0`.

@@ -93,6 +93,48 @@ function writeRegisterIfSet(psgOutput, register, emit) {
 	}
 }
 
+export class TransformPSGMapChannels extends Transform {
+	constructor(mapping = []) {
+		super();
+		this.mapping = mapping;
+	}
+
+	apply(input) {
+		if (this.mapping.every((value, index) => value == index))
+			return input;
+		const output = new Track(input.name, input.tickFrequency);
+		for (const command of input.commands) {
+			if (command instanceof CommandPSGRegister && command.address >= 0x00 && command.address < 0x06) {
+				const channel = command.address >> 1;
+				const newChannel = this.mapping[channel] ?? channel;
+				if (newChannel >= 0 && newChannel < 3) {
+					output.addCommand(CommandPSGRegister.of(command.address - channel * 2 + newChannel * 2, command.value));
+				}
+			} else if (command instanceof CommandPSGRegister && command.address == 0x07) {
+				const io = command.value & 0xC0;
+				const mixer = [command.value & 0x09, command.value >> 1 & 0x09, command.value >> 2 & 0x09];
+				const newMixer = [0x09, 0x09, 0x09];
+				for (let channel = 0; channel < 3; channel++) {
+					const newChannel = this.mapping[channel] ?? channel;
+					if (newChannel >= 0) {
+						newMixer[newChannel] = mixer[channel];
+					}
+				}
+				output.addCommand(CommandPSGRegister.of(command.address, io | newMixer[2] << 2 | newMixer[1] << 1 | newMixer[0]));
+			} else if (command instanceof CommandPSGRegister && command.address >= 0x08 && command.address < 0x0B) {
+				const channel = command.address - 0x08;
+				const newChannel = this.mapping[channel] ?? channel;
+				if (newChannel >= 0 && newChannel < 3) {
+					output.addCommand(CommandPSGRegister.of(command.address - channel + newChannel, command.value));
+				}
+			} else {
+				output.addCommand(command);
+			}
+		}
+		return output;
+	}
+}
+
 export class TransformPSGAttenuateVolume extends Transform {
 	constructor(dB = 0) {
 		super();

@@ -11,7 +11,7 @@ import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPN
 import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels, TransformOPL4WaveAttenuateVolume } from "./TransformOPL4.js";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
 import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLAttenuateVolume } from "./TransformOPLL.js";
-import { TransformPSGFrameSanitizer, TransformPSGAttenuateVolume } from "./TransformPSG.js";
+import { TransformPSGFrameSanitizer, TransformPSGMapChannels, TransformPSGAttenuateVolume } from "./TransformPSG.js";
 
 export class Resources {
 	constructor(format) {
@@ -78,6 +78,7 @@ export class ResourcesLoader {
 				new TransformOPNMapChannels(j.channelMapping),
 				new TransformOPL4WaveMapChannels(j.channelMapping),
 				new TransformOPLLMapChannels(j.channelMapping),
+				new TransformPSGMapChannels(j.psgChannelMapping),
 				new TransformOPNAttenuateVolume(j.attenuation),
 				new TransformOPL4WaveAttenuateVolume(j.attenuation),
 				new TransformOPLLAttenuateVolume(j.attenuation),
