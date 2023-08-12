@@ -1,0 +1,268 @@
+{
+	"format": "opn",
+	"tickFrequency": 59.922743404312307,
+	"waitThreshold": 50,
+	"tracks": [
+		{
+			"path": "01 Prologue.vgz"
+		},
+		{
+			"path": "02 Reminiscence.vgz"
+		},
+		{
+			"path": "03 Movement 1.vgz"
+		},
+		{
+			"path": "04 Memories.vgz"
+		},
+		{
+			"path": "05 Girl.vgz"
+		},
+		{
+			"path": "06 Hearth.vgz"
+		},
+		{
+			"path": "07 Ayumi.vgz"
+		},
+		{
+			"path": "08 Yuuki.vgz"
+		},
+		{
+			"path": "09 Omen.vgz"
+		},
+		{
+			"path": "10 Mizuki.vgz"
+		},
+		{
+			"path": "11 Movment.vgz"
+		},
+		{
+			"path": "12 Fate.vgz"
+		},
+		{
+			"path": "13 Fate (Version B).vgz"
+		},
+		{
+			"path": "14 Activation.vgz"
+		},
+		{
+			"path": "15 Sword Cape.vgz"
+		},
+		{
+			"path": "16 Home.vgz"
+		},
+		{
+			"path": "17 Mio.vgz"
+		},
+		{
+			"path": "18 Illusion.vgz"
+		},
+		{
+			"path": "19 Suspiciousness 1.vgz"
+		},
+		{
+			"path": "20 Suspiciousness 2.vgz"
+		},
+		{
+			"path": "21 Opening.vgz"
+		},
+		{
+			"path": "22 Remains.vgz"
+		},
+		{
+			"path": "23 Bonds.vgz"
+		},
+		{
+			"path": "24 Nostalgia.vgz"
+		},
+		{
+			"path": "25 Kanna.vgz"
+		},
+		{
+			"path": "26 Impatience.vgz"
+		},
+		{
+			"path": "27 Crisis.vgz"
+		},
+		{
+			"path": "28 Crisis (Version B).vgz"
+		},
+		{
+			"path": "29 Elly.vgz"
+		},
+		{
+			"path": "30 Affection.vgz"
+		},
+		{
+			"path": "31 Peep.vgz"
+		},
+		{
+			"path": "32 solution.vgz"
+		},
+		{
+			"path": "33 FANKY TANG.vgz"
+		},
+		{
+			"path": "34 Manifestation.vgz"
+		},
+		{
+			"path": "35 Fear.vgz"
+		},
+		{
+			"path": "36 YU-NO.vgz"
+		},
+		{
+			"path": "37 YU-NO (Version B).vgz"
+		},
+		{
+			"path": "38 Enigma.vgz"
+		},
+		{
+			"path": "39 Sorrow.vgz"
+		},
+		{
+			"path": "40 Love 1.vgz"
+		},
+		{
+			"path": "41 Love 2.vgz"
+		},
+		{
+			"path": "42 Sudden Change.vgz"
+		},
+		{
+			"path": "43 Search.vgz"
+		},
+		{
+			"path": "44 Girl in the Lake's Surface.vgz"
+		},
+		{
+			"path": "45 Note.vgz"
+		},
+		{
+			"path": "46 Movement 2.vgz"
+		},
+		{
+			"path": "47 Movement 3.vgz"
+		},
+		{
+			"path": "48 School.vgz"
+		},
+		{
+			"path": "49 Movement (Night).vgz"
+		},
+		{
+			"path": "50 Those Who Leave.vgz"
+		},
+		{
+			"path": "51 Burial Chamber.vgz"
+		},
+		{
+			"path": "52 Yui Narusawa.vgz"
+		},
+		{
+			"path": "53 Lower Grade Girl.vgz"
+		},
+		{
+			"path": "54 Quickening.vgz"
+		},
+		{
+			"path": "55 Rare Metal.vgz"
+		},
+		{
+			"path": "56 ARABESQUE.vgz"
+		},
+		{
+			"path": "57 Silence.vgz"
+		},
+		{
+			"path": "58 Contact.vgz"
+		},
+		{
+			"path": "59 Comical.vgz"
+		},
+		{
+			"path": "60 GABU.vgz"
+		},
+		{
+			"path": "61 Invasion.vgz"
+		},
+		{
+			"path": "62 Scarry Thing Discovery.vgz"
+		},
+		{
+			"path": "63 Got Item.vgz"
+		},
+		{
+			"path": "64 Discovery.vgz"
+		},
+		{
+			"path": "65 Discovery 2.vgz"
+		},
+		{
+			"path": "66 Selection.vgz"
+		},
+		{
+			"path": "67 Other World 1.vgz"
+		},
+		{
+			"path": "68 Other World 1 (Version B).vgz"
+		},
+		{
+			"path": "69 Other World 2.vgz"
+		},
+		{
+			"path": "70 Celes.vgz"
+		},
+		{
+			"path": "71 Coffin.vgz"
+		},
+		{
+			"path": "72 Departure.vgz"
+		},
+		{
+			"path": "73 Temple.vgz"
+		},
+		{
+			"path": "74 Growth.vgz"
+		},
+		{
+			"path": "75 Parting.vgz"
+		},
+		{
+			"path": "76 WANPAKU.vgz"
+		},
+		{
+			"path": "77 Travel.vgz"
+		},
+		{
+			"path": "78 Imperial Capital.vgz"
+		},
+		{
+			"path": "79 Tension.vgz"
+		},
+		{
+			"path": "80 Ending.vgz"
+		},
+		{
+			"path": "81 Ruins.vgz"
+		},
+		{
+			"path": "82 DEBU.vgz"
+		},
+		{
+			"path": "83 Reunion.vgz"
+		},
+		{
+			"path": "84 Fountain.vgz"
+		},
+		{
+			"path": "85 Underground Labyrinth.vgz"
+		},
+		{
+			"path": "86 Sudden Fall.vgz"
+		},
+		{
+			"path": "87 Prisoner.vgz"
+		}
+	]
+}

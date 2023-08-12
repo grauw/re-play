@@ -1,0 +1,32 @@
+{
+	"format": "opl4",
+	"tickFrequency": 59.922743404312307,
+	"waitThreshold": 50,
+	"attenuation": -6,
+	"tracks": [
+		{
+			"path": "01 Introduction ~ Main Theme.vgz"
+		},
+		{
+			"path": "02 Hurry! ~ Main Theme (faster).vgz"
+		},
+		{
+			"path": "03 Extend ~ Bonus Music.vgz"
+		},
+		{
+			"path": "04 Secret Room.vgz"
+		},
+		{
+			"path": "05 False Ending.vgz"
+		},
+		{
+			"path": "07 Real Ending.vgz"
+		},
+		{
+			"path": "08 Name Register.vgz"
+		},
+		{
+			"path": "09 Game Over.vgz"
+		}
+	]
+}

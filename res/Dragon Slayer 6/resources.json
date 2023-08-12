@@ -1,0 +1,91 @@
+{
+	"format": "opn",
+	"tickFrequency": 59.922743404312307,
+	"waitThreshold": 50,
+	"tracks": [
+		{
+			"path": "01 - Title Demo.vgz"
+		},
+		{
+			"path": "02 - Title Theme.vgz"
+		},
+		{
+			"path": "03 - Opening Theme.vgz"
+		},
+		{
+			"path": "04 - Town.vgz"
+		},
+		{
+			"path": "05 - Field.vgz"
+		},
+		{
+			"path": "06 - Event BGM 1.vgz"
+		},
+		{
+			"path": "07 - Dungeon.vgz"
+		},
+		{
+			"path": "08 - Battle.vgz"
+		},
+		{
+			"path": "09 - Event BGM 2.vgz"
+		},
+		{
+			"path": "10 - Boss Theme.vgz"
+		},
+		{
+			"path": "11 - Event Clear.vgz"
+		},
+		{
+			"path": "12 - Castle.vgz"
+		},
+		{
+			"path": "13 - Ship.vgz"
+		},
+		{
+			"path": "14 - Event BGM 3.vgz"
+		},
+		{
+			"path": "15 - Pirate Island.vgz"
+		},
+		{
+			"path": "16 - The Voice of God.vgz"
+		},
+		{
+			"path": "17 - Dragon.vgz"
+		},
+		{
+			"path": "18 - Neargead Castle.vgz"
+		},
+		{
+			"path": "19 - Agnesia.vgz"
+		},
+		{
+			"path": "20 - Ending.vgz"
+		},
+		{
+			"path": "21 - Game Over.vgz"
+		},
+		{
+			"path": "22 - Unused - Title Demo Short.vgz"
+		},
+		{
+			"path": "23 - Unused - Unknown Song 1.vgz"
+		},
+		{
+			"path": "24 - Unused - User Disk Creation.vgz"
+		},
+		{
+			"path": "25 - Unused - Utility.vgz"
+		},
+		{
+			"path": "26 - Unused - The March of Heroes.vgz"
+		},
+		{
+			"path": "27 - Unused - Unknown Song 2.vgz"
+		},
+		{
+			"path": "28 - Unused - Ending 2.vgz"
+		}
+	]
+}
