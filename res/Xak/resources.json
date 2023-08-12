@@ -1,0 +1,158 @@
+{
+	"format": "opll-psg",
+	"tickFrequency": 60,
+	"waitThreshold": 50,
+	"tolerance": 0.5,
+	"tracks": [
+		{
+			"path": "01 Opening 1 (sound effects).vgz"
+		},
+		{
+			"path": "02 Opening 2.vgz"
+		},
+		{
+			"path": "03 Opening 3.vgz"
+		},
+		{
+			"path": "04 Opening 4.vgz"
+		},
+		{
+			"path": "05 Town of Fearless.vgz"
+		},
+		{
+			"path": "06 Church.vgz"
+		},
+		{
+			"path": "07 Messenger.vgz"
+		},
+		{
+			"path": "08 Shop.vgz"
+		},
+		{
+			"path": "09 Sadness.vgz"
+		},
+		{
+			"path": "10 Comfort.vgz"
+		},
+		{
+			"path": "11 Smile 1.vgz"
+		},
+		{
+			"path": "12 Smile 2.vgz"
+		},
+		{
+			"path": "13 Uneasyness.vgz"
+		},
+		{
+			"path": "14 To Town.vgz"
+		},
+		{
+			"path": "15 Battle Field.vgz"
+		},
+		{
+			"path": "16 Verdant Land.vgz"
+		},
+		{
+			"path": "17 Evil Tree.vgz"
+		},
+		{
+			"path": "18 Path to the Fort.vgz"
+		},
+		{
+			"path": "19 Fort.vgz"
+		},
+		{
+			"path": "20 Water Dragon.vgz"
+		},
+		{
+			"path": "21 Town of Normana.vgz"
+		},
+		{
+			"path": "22 Blue Sea.vgz"
+		},
+		{
+			"path": "23 Cave.vgz"
+		},
+		{
+			"path": "24 Rock Biter.vgz"
+		},
+		{
+			"path": "25 Fire Elemental & Water Elemental.vgz"
+		},
+		{
+			"path": "26 Combined Elemental.vgz"
+		},
+		{
+			"path": "27 Ending 1.vgz"
+		},
+		{
+			"path": "28 Eye Catch.vgz"
+		},
+		{
+			"path": "29 Town of Nemnu.vgz"
+		},
+		{
+			"path": "30 Underground Tower.vgz"
+		},
+		{
+			"path": "31 Necromancer.vgz"
+		},
+		{
+			"path": "32 Land of Flames.vgz"
+		},
+		{
+			"path": "33 Fort of Flames.vgz"
+		},
+		{
+			"path": "34 Dragon's Ring.vgz"
+		},
+		{
+			"path": "35 Land of Flames, The Sky.vgz"
+		},
+		{
+			"path": "36 Salamander.vgz"
+		},
+		{
+			"path": "37 To the Sanctuary.vgz"
+		},
+		{
+			"path": "38 Sealed Place.vgz"
+		},
+		{
+			"path": "39 Badu's Menace.vgz"
+		},
+		{
+			"path": "40 Victory.vgz"
+		},
+		{
+			"path": "41 Ending 2.vgz"
+		},
+		{
+			"path": "42 GET_Item.vgz"
+		},
+		{
+			"path": "43 Game Over.vgz"
+		},
+		{
+			"path": "44 Game Over 2.vgz"
+		},
+		{
+			"path": "45 System Menu.vgz"
+		},
+		{
+			"path": "46 Pixie, Fly!.vgz"
+		},
+		{
+			"path": "47 Maker Message.vgz"
+		},
+		{
+			"path": "48 Fanfare.vgz"
+		},
+		{
+			"path": "49 Unused CG Opening.vgz"
+		},
+		{
+			"path": "50 Unused CG BGM (Millie's Theme).vgz"
+		}
+	]
+}
