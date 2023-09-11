@@ -1,4 +1,4 @@
-import { CommandLabel, CommandJump, CommandWait, Command } from "./Command.js";
+import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 
 export class Format {
 	constructor(combine = true) {
@@ -13,22 +13,32 @@ export class Format {
 		throw new Error("Not implemented.");
 	}
 
+	getSize(command, preceding) {
+		return 0;
+	}
+
 	getStats(track) {
-		throw new Error("Not implemented.");
+		return new FormatStats(track, this);
 	}
 }
 
 export class FormatStats {
-	constructor(track) {
+	constructor(track, format) {
 		this.name = track.name;
+		this.size = FormatStats.getSize(track, format);
 		this.duration = FormatStats.getDuration(track);
 		this.tickFrequency = track.tickFrequency;
 		this.maxCommandsPerFrame = FormatStats.getMaxCommandsPerFrame(track);
 	}
 
+	static getSize(track, format) {
+		return track.commands.reduce((accu, command) =>
+			[accu[0] + format.getSize(command, accu[1]), command], [0, undefined])[0];
+	}
+
 	static getDuration(track) {
-		return track.commands.reduce((sum, command) =>
-			command instanceof CommandWait ? sum + command.ticks : sum, 0) / track.tickFrequency;
+		return track.commands.reduce((accu, command) =>
+			command instanceof CommandWait ? accu + command.ticks : accu, 0) / track.tickFrequency;
 	}
 
 	static getMaxCommandsPerFrame(track) {
@@ -50,6 +60,7 @@ export class FormatStats {
 		lines.push(`Track ${this.name}`);
 		lines.push(`  Duration: ${this.duration.toFixed(2)} s`);
 		lines.push(`  Tick frequency: ${this.tickFrequency} Hz`);
+		lines.push(`  Raw data size: ${this.size}`);
 		lines.push(`  Max commands per frame: ${this.maxCommandsPerFrame}`);
 		return lines.join("\n");
 	}

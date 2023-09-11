@@ -65,14 +65,30 @@ export class FormatOPLLPSG extends Format {
 		return data.getData();
 	}
 
+	getSize(command, preceding) {
+		if (command instanceof CommandOPLLRegister) {
+			return preceding instanceof CommandOPLLRegister ? 2 : 3;
+		} else if (command instanceof CommandPSGRegister) {
+			return preceding instanceof CommandPSGRegister ? 2 : 3;
+		} else if (command instanceof CommandWait) {
+			return preceding instanceof CommandWait ? 0 : 1;
+		} else if (command instanceof CommandCall || command instanceof CommandJump) {
+			return 4;
+		} else if (command instanceof CommandReturn) {
+			return 1;
+		} else {
+			return super.getSize(command, preceding);
+		}
+	}
+
 	getStats(track) {
-		return new FormatOPLLPSGStats(track);
+		return new FormatOPLLPSGStats(track, this);
 	}
 }
 
 class FormatOPLLPSGStats extends FormatStats {
-	constructor(track) {
-		super(track);
+	constructor(track, format) {
+		super(track, format);
 		this.registerCounts = FormatOPLLPSGStats.getRegisterCounts(track);
 	}
 

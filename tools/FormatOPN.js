@@ -55,14 +55,32 @@ export class FormatOPN extends Format {
 		return data.getData();
 	}
 
+	getSize(command, preceding) {
+		if (command instanceof CommandFMKey) {
+			return 1;
+		} else if (command instanceof CommandFMFrequency) {
+			return 5;
+		} else if (command instanceof CommandFMInstrument) {
+			return 26;
+		} else if (command instanceof CommandWait) {
+			return preceding instanceof CommandWait ? 0 : 1;
+		} else if (command instanceof CommandCall || command instanceof CommandJump) {
+			return 4;
+		} else if (command instanceof CommandReturn) {
+			return 1;
+		} else {
+			return super.getSize(command, preceding);
+		}
+	}
+
 	getStats(track) {
-		return new FormatOPNStats(track);
+		return new FormatOPNStats(track, this);
 	}
 }
 
 class FormatOPNStats extends FormatStats {
-	constructor(track) {
-		super(track);
+	constructor(track, format) {
+		super(track, format);
 		this.unusedChannels = FormatOPNStats.getUnusedChannels(track);
 	}
 

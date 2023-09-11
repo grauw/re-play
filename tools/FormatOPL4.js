@@ -73,14 +73,33 @@ export class FormatOPL4 extends Format {
 		return data.getData();
 	}
 
+	getSize(command, preceding) {
+		if (command instanceof CommandOPL4Register) {
+			return preceding instanceof CommandOPL4Register &&
+				preceding.address >> 8 == command.address >> 8 ? 2 : 3;
+		} else if (command instanceof CommandOPL4WaitLoad) {
+			return 1;
+		} else if (command instanceof CommandOPL4WaveMemory) {
+			return 6 + command.memory.length;
+		} else if (command instanceof CommandWait) {
+			return preceding instanceof CommandWait ? 0 : 1;
+		} else if (command instanceof CommandCall || command instanceof CommandJump) {
+			return 4;
+		} else if (command instanceof CommandReturn) {
+			return 1;
+		} else {
+			return super.getSize(command, preceding);
+		}
+	}
+
 	getStats(track) {
-		return new FormatOPL4Stats(track);
+		return new FormatOPL4Stats(track, this);
 	}
 }
 
 class FormatOPL4Stats extends FormatStats {
-	constructor(track) {
-		super(track);
+	constructor(track, format) {
+		super(track, format);
 		this.registerCounts = FormatOPL4Stats.getRegisterCounts(track);
 	}
 
