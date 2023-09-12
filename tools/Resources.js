@@ -107,6 +107,12 @@ export class ResourcesLoader {
 				return new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency);
 			case "text":
 				return new FormatText();
+			case "text-opn":
+				return new FormatText(new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency));
+			case "text-opl4":
+				return new FormatText(new FormatOPL4(json.bankSize, json.opl4Frequency));
+			case "text-opll-psg":
+				return new FormatText(new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency));
 			case "vgm-opm":
 				return new FormatVGMOPM(json.opmFrequency);
 			case "vgm-opnb":

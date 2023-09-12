@@ -195,7 +195,8 @@ The top level object supports the following key / values:
 
   * `format`:
     Format identifier.
-    One of `opn`, `opl4`, `opll-psg`, `text`, `vgm-opm`, `vgm-opnb`, `vgm-opl4`.
+    One of `opn`, `opl4`, `opll-psg`, `text`, `text-opn`, `text-opl4`,
+    `text-opll-psg`, `vgm-opm`, `vgm-opnb`, `vgm-opl4`.
   * `bankSize`:
     Player bank size.
     Typically `16384` (16K) or `8192` (8K).
