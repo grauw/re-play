@@ -124,7 +124,8 @@ export class ResourcesLoader {
 export class ResourceOverride {
 	constructor(path, value) {
 		this.path = path.split(".").map(part => /^\d+$/.test(part) ? parseInt(part, 10) : part);
-		this.value = value == "undefined" ? undefined : JSON.parse(value);
+		this.value = value == "true" ? true : value == "false" ? false : value == "null" ? null :
+			value == "undefined" ? undefined : /^[\-\d\[\{\"]/.test(value[0]) ? JSON.parse(value) : value;
 	}
 
 	apply(json) {
