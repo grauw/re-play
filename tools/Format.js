@@ -17,6 +17,10 @@ export class Format {
 		return 0;
 	}
 
+	getCycles(command, preceding) {
+		return 0;
+	}
+
 	getStats(track) {
 		return new FormatStats(track, this);
 	}
@@ -29,6 +33,7 @@ export class FormatStats {
 		this.duration = FormatStats.getDuration(track);
 		this.tickFrequency = track.tickFrequency;
 		this.maxCommandsPerFrame = FormatStats.getMaxCommandsPerFrame(track);
+		this.maxCyclesPerFrame = FormatStats.getMaxCyclesPerFrame(track, format);
 	}
 
 	static getSize(track, format) {
@@ -55,6 +60,26 @@ export class FormatStats {
 		return Math.max(maxCommands, accumulator);
 	}
 
+	static getMaxCyclesPerFrame(track, format) {
+		let cycles = 0;
+		let maxCycles = 0;
+		let lastCommand = undefined;
+		let firstFrame = true;
+		for (const command of track.commands) {
+			cycles += format.getCycles(command, lastCommand);
+			if (command instanceof CommandWait) {
+				if (firstFrame) {
+					firstFrame = false;
+				} else {
+					maxCycles = Math.max(maxCycles, cycles);
+				}
+				cycles = 0;
+			}
+			lastCommand = command;
+		}
+		return Math.max(maxCycles, cycles);
+	}
+
 	toString() {
 		const lines = [];
 		lines.push(`Track ${this.name}`);
@@ -62,6 +87,8 @@ export class FormatStats {
 		lines.push(`  Tick frequency: ${this.tickFrequency} Hz`);
 		lines.push(`  Raw data size: ${this.size}`);
 		lines.push(`  Max commands per frame: ${this.maxCommandsPerFrame}`);
+		if (this.maxCyclesPerFrame)
+			lines.push(`  Max CPU cycles per frame: ${this.maxCyclesPerFrame}`);
 		return lines.join("\n");
 	}
 }

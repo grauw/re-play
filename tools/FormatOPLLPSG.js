@@ -81,6 +81,24 @@ export class FormatOPLLPSG extends Format {
 		}
 	}
 
+	getCycles(command, preceding) {
+		if (command instanceof CommandOPLLRegister) {
+			return preceding instanceof CommandOPLLRegister ? 126 : 223;
+		} else if (command instanceof CommandPSGRegister) {
+			return preceding instanceof CommandPSGRegister ? 57 : 186;
+		} else if (command instanceof CommandJump) {
+			return 243;
+		} else if (command instanceof CommandCall) {
+			return 395;
+		} else if (command instanceof CommandReturn) {
+			return 301;
+		} else if (command instanceof CommandWait) {
+			return preceding instanceof CommandWait ? 0 : 145;
+		} else {
+			return super.getSize(command, preceding);
+		}
+	}
+
 	getStats(track) {
 		return new FormatOPLLPSGStats(track, this);
 	}

@@ -91,6 +91,30 @@ export class FormatOPL4 extends Format {
 		}
 	}
 
+	getCycles(command, preceding) {
+		if (command instanceof CommandOPL4Register) {
+			if (preceding instanceof CommandOPL4Register && preceding.bank == command.bank) {
+				return 46;
+			} else {
+				return [201, 212, 196][command.bank];
+			}
+		} else if (command instanceof CommandOPL4WaitLoad) {
+			return 99;
+		} else if (command instanceof CommandOPL4WaveMemory) {
+			return 0;
+		} else if (command instanceof CommandJump) {
+			return 263;
+		} else if (command instanceof CommandCall) {
+			return 412;
+		} else if (command instanceof CommandReturn) {
+			return 315;
+		} else if (command instanceof CommandWait) {
+			return preceding instanceof CommandWait ? 0 : 119;
+		} else {
+			return super.getCycles(command, preceding);
+		}
+	}
+
 	getStats(track) {
 		return new FormatOPL4Stats(track, this);
 	}
