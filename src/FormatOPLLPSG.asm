@@ -60,7 +60,7 @@ FormatOPLLPSG_ProcessZ80:
 	ld a,(hl)
 	inc hl
 	call FormatOPLLPSG_ProcessZ80_Dispatch
-	jr FormatOPLLPSG_ProcessZ80
+	jp FormatOPLLPSG_ProcessZ80
 FormatOPLLPSG_ProcessZ80_Dispatch:
 	cp 40H
 	jp c,MSXMusic_WriteBlockZ80
