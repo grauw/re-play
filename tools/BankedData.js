@@ -47,7 +47,7 @@ export class BankedData {
 
 	addSymbol(name) {
 		if (this.symbols.has(name)) {
-			throw new Error(`Symbol already exists: ${command.name}`);
+			throw new Error(`Symbol already exists: ${name}`);
 		}
 		this.symbols.set(name, this.data.length);
 	}
