@@ -50,6 +50,10 @@ export class CommandOPL4Register extends CommandOPL4 {
 		return commandOPL4RegisterMemo.get(address, value);
 	}
 
+	get bank() {
+		return this.address >> 8;
+	}
+
 	get fmOperator() {
 		if (this.address < 0x200) {
 			const bank = this.address >> 8;

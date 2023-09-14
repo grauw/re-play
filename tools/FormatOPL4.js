@@ -24,7 +24,7 @@ export class FormatOPL4 extends Format {
 		let blockBank = -1;
 		let blockCommands = [];
 		for (const command of track.commands) {
-			if (!(command instanceof CommandOPL4Register && (command.address >> 8) == blockBank)) {
+			if (!(command instanceof CommandOPL4Register && command.bank == blockBank)) {
 				while (blockCommands.length) {
 					const space = Math.floor((data.free - data.jump.length - 1) / 2);
 					const count = Math.min(blockCommands.length, 0x40, space > 0 ? space : Infinity);
@@ -35,7 +35,7 @@ export class FormatOPL4 extends Format {
 
 			if (command instanceof CommandOPL4Register) {
 				if (command.address != 0x105 && command.address != 0x202) {
-					blockBank = command.address >> 8;
+					blockBank = command.bank;
 					blockCommands.push(command);
 				}
 			} else if (command instanceof CommandOPL4WaitLoad) {
@@ -75,8 +75,7 @@ export class FormatOPL4 extends Format {
 
 	getSize(command, preceding) {
 		if (command instanceof CommandOPL4Register) {
-			return preceding instanceof CommandOPL4Register &&
-				preceding.address >> 8 == command.address >> 8 ? 2 : 3;
+			return preceding instanceof CommandOPL4Register && preceding.bank == command.bank ? 2 : 3;
 		} else if (command instanceof CommandOPL4WaitLoad) {
 			return 1;
 		} else if (command instanceof CommandOPL4WaveMemory) {
