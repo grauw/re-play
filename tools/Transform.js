@@ -16,7 +16,7 @@ export class TransformMoveWaitAfterLoop extends Transform {
 		if (input.commands.at(-1) instanceof CommandJump) {
 			const loop = input.commands.findIndex(command => command instanceof CommandLabel && input.isLoopLabel(command));
 			if (loop >= 0 && input.commands[loop + 1] instanceof CommandWait) {
-				const output = new Track(input.name, input.tickFrequency);
+				const output = Track.new(input);
 				output.addCommands(input.commands.slice(0, loop));
 				output.addCommand(input.commands[loop + 1]);
 				output.addCommand(input.commands[loop]);
@@ -49,7 +49,7 @@ export class TransformQuantize extends Transform {
 	}
 
 	applyHertz(input) {
-		const output = new Track(input.name, this.tickFrequency);
+		const output = Track.new({...input, tickFrequency: this.tickFrequency});
 		let inputTicks = 0;
 		let outputTicks = 0;
 		let accumulator = 0;
@@ -94,7 +94,7 @@ export class TransformQuantize extends Transform {
 		let inputTicks = 0;
 		let outputTicks = 0;
 		let timerActive = false;
-		const output = new Track(input.name, 0);
+		const output = Track.new({...input, tickFrequency: 0});
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
 				if (timerActive) {
@@ -121,7 +121,7 @@ export class TransformQuantize extends Transform {
 
 export class TransformStartConfigAndWait extends Transform {
 	apply(input) {
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (let index = 0; index < input.commands.length; ++index) {
 			const command = input.commands[index];
 			if (command instanceof CommandWait) {
@@ -147,7 +147,7 @@ export class TransformStartConfigAndWait extends Transform {
 export class TransformEndLoop extends Transform {
 	apply(input) {
 		if (input.commands.at(-1) instanceof CommandReturn) {
-			const output = new Track(input.name, input.tickFrequency);
+			const output = Track.new(input);
 			const stripCount = input.commands.at(-2) instanceof CommandWait ? 2 : 1;
 			output.addCommands(input.commands.slice(0, -stripCount));
 			output.addCommand(CommandLabel.of("loop"));

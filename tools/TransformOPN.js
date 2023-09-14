@@ -8,7 +8,7 @@ export class TransformOPNToGenericFM extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPNConfig))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		const opn = new ChipOPN();
 		for (const command of input.commands) {
 			if (command instanceof CommandOPNRegister) {
@@ -52,7 +52,7 @@ export class TransformOPNFrequencyBeforeKeyOn extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPNConfig))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		let lastCommand = null;
 		for (const command of input.commands) {
 			if (command instanceof CommandFMFrequency && lastCommand instanceof CommandFMKey &&
@@ -78,7 +78,7 @@ export class TransformOPNMapChannels extends Transform {
 	apply(input) {
 		if (this.mapping.every((value, index) => value == index))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandFMChannel) {
 				const newChannel = this.mapping[command.channel] ?? command.channel;
@@ -108,7 +108,7 @@ export class TransformOPNAttenuateVolume extends Transform {
 	apply(input) {
 		if (this.dB == 0)
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandFMInstrument) {
 				output.addCommand(command.attenuateVolume(this.dB));

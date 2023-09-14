@@ -56,6 +56,10 @@ export class Track {
 		return null;
 	}
 
+	static new(track) {
+		return new Track(track.name, track.tickFrequency);
+	}
+
 	static ofTracksWithIndex(name, tracks) {
 		const tickFrequency = tracks.length / tracks.reduce((sum, track) => sum + 1 / track.tickFrequency, 0);
 		const track = new Track(name, tickFrequency);
@@ -69,16 +73,16 @@ export class Track {
 		return track;
 	}
 
-	addScope(scope) {
-		const track = new Track(scope, this.tickFrequency);
-		track.addCommand(CommandLabel.of(scope));
+	addScope(name) {
+		const track = Track.new({...this, name});
+		track.addCommand(CommandLabel.of(name));
 		for (const command of this.commands) {
 			if (command instanceof CommandLabel) {
-				track.addCommand(CommandLabel.of(`${scope}.${command.name}`));
+				track.addCommand(CommandLabel.of(`${name}.${command.name}`));
 			} else if (command instanceof CommandJump) {
-				track.addCommand(CommandJump.of(`${scope}.${command.target}`));
+				track.addCommand(CommandJump.of(`${name}.${command.target}`));
 			} else if (command instanceof CommandCall) {
-				track.addCommand(CommandCall.of(`${scope}.${command.target}`));
+				track.addCommand(CommandCall.of(`${name}.${command.target}`));
 			} else {
 				track.addCommand(command);
 			}

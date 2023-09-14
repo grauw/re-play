@@ -18,7 +18,7 @@ export class TransformMultiPCMReduceChannels extends Transform {
 			return input;
 		if (!input.hasSetupCommand(command => command instanceof CommandMultiPCMConfig))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		const chip = new ChipMultiPCM();
 		const channelMap = Array(32).fill(-1);
 		const free = realChannels.slice(0, this.maxChannels);
@@ -133,7 +133,7 @@ export class TransformMultiPCMToOPL4 extends Transform {
 			opl4Memory.set(address, opl4Memory.get(address, 0x80) >> 1 | opl4Memory.get(address, 0x1F));
 		}
 
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		output.addCommand(CommandOPL4Config.of(chip.clockFrequency, "ymf278b"));
 		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
 		output.addCommand(CommandOPL4Register.of(0x202, 0x00));

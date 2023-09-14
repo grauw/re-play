@@ -16,7 +16,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
 		const emit = command => output.addCommand(command);
 		const opl4Input = new ChipOPL4();
@@ -398,7 +398,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 		}
 		if (instruments.length >= (rom ? 0x100 : 0x80))
 			throw new Error("Too many different instruments.");
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		output.addCommands(outputCommands.filter(command => command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory));
 		output.addCommand(CommandOPL4WaveMemory.of(rom ? 0x0 : 0x200000, Uint8Array.from(instruments.flatMap(instrument => instrument.header))));
 		output.addCommands(outputCommands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
@@ -456,7 +456,7 @@ export class TransformOPL4StripMemory extends Transform {
 		chip.memory.ranges.intersect(ranges);
 		chip.memory.ranges.removeGaps(this.margin);
 
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		output.addCommands(input.commands.filter(command => command instanceof CommandOPL4Config));
 		for (const [range, data] of chip.memory.getDataRanges()) {
 			output.addCommand(CommandOPL4WaveMemory.of(range.start, data));
@@ -496,7 +496,7 @@ export class TransformOPL4StripMemory extends Transform {
 		chip.memory.ranges.intersect(ranges);
 		chip.memory.ranges.removeGaps(this.margin);
 
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		output.addCommands(commands.filter(command => command instanceof CommandOPL4Config));
 		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
 		output.addCommand(CommandOPL4Register.of(0x202, 0x10));
@@ -542,7 +542,7 @@ export class TransformOPL4WaveMapChannels extends Transform {
 	apply(input) {
 		if (this.mapping.every((value, index) => value == index))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
 				const newChannel = this.mapping[command.waveChannel] ?? command.waveChannel;
@@ -566,7 +566,7 @@ export class TransformOPL4WaveAttenuateVolume extends Transform {
 	apply(input) {
 		if (this.dB == 0)
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandOPL4Register && command.address >= 0x250 && command.address < 0x268) {
 				const level = command.value >> 1;

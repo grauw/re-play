@@ -10,7 +10,7 @@ export class TransformOPLLFrameSanitizer extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPLLConfig))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		const emit = command => output.addCommand(command);
 		const opllInput = new ChipOPLL();
 		const opllOutput = new ChipOPLL();
@@ -114,7 +114,7 @@ export class TransformOPLLMapChannels extends Transform {
 	apply(input) {
 		if (this.mapping.every((value, index) => value == index))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandOPLLRegister && command.address >= 0x10 && command.address < 0x40) {
 				const channel = command.address & 0x0F;
@@ -139,7 +139,7 @@ export class TransformOPLLAttenuateVolume extends Transform {
 	apply(input) {
 		if (this.dB == 0)
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandOPLLRegister && command.address >= 0x30 && command.address < 0x40) {
 				const level = command.value & 0x0F;

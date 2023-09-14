@@ -8,7 +8,7 @@ export class TransformPSGFrameSanitizer extends Transform {
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandPSGConfig))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		const emit = command => output.addCommand(command);
 		const psgInput = new ChipPSG();
 		const psgOutput = new ChipPSG();
@@ -102,7 +102,7 @@ export class TransformPSGMapChannels extends Transform {
 	apply(input) {
 		if (this.mapping.every((value, index) => value == index))
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandPSGRegister && command.address >= 0x00 && command.address < 0x06) {
 				const channel = command.address >> 1;
@@ -144,7 +144,7 @@ export class TransformPSGAttenuateVolume extends Transform {
 	apply(input) {
 		if (this.dB == 0)
 			return input;
-		const output = new Track(input.name, input.tickFrequency);
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandPSGRegister && command.address >= 0x08 && command.address < 0x0B) {
 				const level = command.value & 0x0F;
