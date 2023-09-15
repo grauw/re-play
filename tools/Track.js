@@ -1,4 +1,4 @@
-import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
+import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait, Command } from "./Command.js";
 import { CommandFMInstrument } from "./CommandFM.js";
 
 export class Track {
@@ -32,6 +32,8 @@ export class Track {
 			if (this.commands.at(-1) instanceof CommandCall) {
 				command = CommandJump.of(this.commands.pop().target);
 			}
+		} else if (!(command instanceof Command)) {
+			throw new Error("Not a command.");
 		}
 		this.commands.push(command);
 	}
