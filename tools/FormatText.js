@@ -1,11 +1,10 @@
 import fs from "fs";
 import { CommandWait } from "./Command.js";
-import { Format } from "./Format.js";
+import { FormatWrapper } from "./Format.js";
 
-export class FormatText extends Format {
+export class FormatText extends FormatWrapper {
 	constructor(baseFormat) {
-		super();
-		this.baseFormat = baseFormat;
+		super(baseFormat);
 	}
 
 	async saveTrack(track, path) {
@@ -32,13 +31,5 @@ export class FormatText extends Format {
 		}
 
 		return lines.join("\n");
-	}
-
-	getSize(command, preceding) {
-		return this.baseFormat ? this.baseFormat.getSize(command, preceding) : super.getSize(command, preceding);
-	}
-
-	getStats(track) {
-		return this.baseFormat ? this.baseFormat.getStats(track) : super.getStats(track);
 	}
 }

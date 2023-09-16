@@ -1,8 +1,24 @@
+import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop } from "./Transform.js";
 import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 
 export class Format {
 	constructor(combine = true) {
 		this.combine = combine;
+	}
+
+	transform(track, options) {
+		return this.getTransforms(options).reduce((track, transform) => transform.apply(track), track);
+	}
+
+	getTransforms(options, innerTransforms = []) {
+		return [
+			new TransformMoveWaitAfterLoop(),
+			new TransformQuantize(options.tickFrequency, options.waitThreshold, options.tolerance),
+			options.targetTickFrequency ? new TransformQuantize(options.targetTickFrequency) : new Transform(),
+			...innerTransforms,
+			new TransformStartConfigAndWait(),
+			new TransformEndLoop()
+		];
 	}
 
 	async loadTrack(path, name) {
@@ -23,6 +39,32 @@ export class Format {
 
 	getStats(track) {
 		return new FormatStats(track, this);
+	}
+}
+
+export class FormatReplay extends Format {
+}
+
+export class FormatWrapper extends Format {
+	constructor(baseFormat, combine) {
+		super(combine);
+		this.baseFormat = baseFormat;
+	}
+
+	getTransforms(options, innerTransforms) {
+		return this.baseFormat ? this.baseFormat.getTransforms(options, innerTransforms) : super.getTransforms(options, innerTransforms);
+	}
+
+	getSize(command, preceding) {
+		return this.baseFormat ? this.baseFormat.getSize(command, preceding) : super.getSize(command, preceding);
+	}
+
+	getCycles(command, preceding) {
+		return this.baseFormat ? this.baseFormat.getCycles(command, preceding) : super.getCycles(command, preceding);
+	}
+
+	getStats(track) {
+		return this.baseFormat ? this.baseFormat.getStats(track) : super.getStats(track);
 	}
 }
 

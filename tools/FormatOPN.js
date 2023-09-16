@@ -1,17 +1,27 @@
 import fs from "fs";
-import { Format, FormatStats } from "./Format.js";
+import { FormatReplay, FormatStats } from "./Format.js";
+import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels, TransformOPNAttenuateVolume } from "./TransformOPN.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
 import { BankedData } from "./BankedData.js";
 
 const FORMAT_OPN_ID = 0x00;
 
-export class FormatOPN extends Format {
+export class FormatOPN extends FormatReplay {
 	constructor(bankSize, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
 		super();
 		this.bankSize = bankSize;
 		this.opnFrequency = opnFrequency;
 		this.opmFrequency = opmFrequency;
+	}
+
+	getTransforms(options) {
+		return super.getTransforms(options, [
+			new TransformOPNToGenericFM(),
+			new TransformOPNFrequencyBeforeKeyOn(),
+			new TransformOPNMapChannels(options.channelMapping),
+			new TransformOPNAttenuateVolume(options.attenuation)
+		]);
 	}
 
 	async saveTrack(track, path) {

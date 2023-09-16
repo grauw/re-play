@@ -6,12 +6,6 @@ import { FormatOPL4 } from "./FormatOPL4.js";
 import { FormatOPLLPSG } from "./FormatOPLLPSG.js";
 import { FormatText } from "./FormatText.js";
 import { FormatVGM, FormatVGMOPM, FormatVGMOPNB, FormatVGMOPL4, FormatVGMOPLLPSG } from "./FormatVGM.js";
-import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop } from "./Transform.js";
-import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels, TransformOPNAttenuateVolume } from "./TransformOPN.js";
-import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels, TransformOPL4WaveAttenuateVolume } from "./TransformOPL4.js";
-import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
-import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLAttenuateVolume } from "./TransformOPLL.js";
-import { TransformPSGFrameSanitizer, TransformPSGMapChannels, TransformPSGAttenuateVolume } from "./TransformPSG.js";
 
 export class Resources {
 	constructor(format) {
@@ -56,41 +50,15 @@ export class ResourcesLoader {
 			override.apply(json);
 		}
 
-		const resources = new Resources(this.parseFormat(json));
+		const format = this.parseFormat(json);
 
 		const tracks = Promise.all(json.tracks.map(async (jsonTrack, index) => {
 			const trackPath = fspath.resolve(fspath.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name ?? `${index + 1}`);
-
-			const j = { ...json, ...jsonTrack };
-			const transforms = [
-				new TransformMoveWaitAfterLoop(),
-				new TransformQuantize(j.tickFrequency, j.waitThreshold, j.tolerance),
-				j.targetTickFrequency ? new TransformQuantize(j.targetTickFrequency) : new Transform(),
-				new TransformOPNToGenericFM(),
-				new TransformOPNFrequencyBeforeKeyOn(),
-				new TransformMultiPCMReduceChannels(j.reduceChannels),
-				new TransformMultiPCMToOPL4(),
-				j.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
-				new TransformOPL4FrameSanitizer(),
-				new TransformOPLLFrameSanitizer(),
-				new TransformPSGFrameSanitizer(),
-				new TransformOPNMapChannels(j.channelMapping),
-				new TransformOPL4WaveMapChannels(j.channelMapping),
-				new TransformOPLLMapChannels(j.channelMapping),
-				new TransformPSGMapChannels(j.psgChannelMapping),
-				new TransformOPNAttenuateVolume(j.attenuation),
-				new TransformOPL4WaveAttenuateVolume(j.attenuation),
-				new TransformOPLLAttenuateVolume(j.attenuation),
-				new TransformPSGAttenuateVolume(j.attenuation),
-				new TransformOPL4StripMemory(j.stripMode, j.stripMargin, j.stripPadding),
-				new TransformStartConfigAndWait(),
-				json.format.startsWith("vgm") ? new Transform() : new TransformEndLoop()
-			];
-
-			return transforms.reduce((track, transform) => transform.apply(track), track);
+			return format.transform(track, { ...json, ...jsonTrack });
 		}));
 
+		const resources = new Resources(format);
 		for (const track of await tracks)
 			resources.addTrack(track);
 
@@ -108,19 +76,19 @@ export class ResourcesLoader {
 			case "text":
 				return new FormatText();
 			case "text-opn":
-				return new FormatText(new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency));
+				return new FormatText(this.parseFormat({ ...json, format: "opn" }));
 			case "text-opl4":
-				return new FormatText(new FormatOPL4(json.bankSize, json.opl4Frequency));
+				return new FormatText(this.parseFormat({ ...json, format: "opl4" }));
 			case "text-opll-psg":
-				return new FormatText(new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency));
+				return new FormatText(this.parseFormat({ ...json, format: "opll-psg" }));
 			case "vgm-opm":
-				return new FormatVGMOPM(json.opmFrequency);
+				return new FormatVGMOPM(this.parseFormat({ ...json, format: "opn" }));
 			case "vgm-opnb":
-				return new FormatVGMOPNB(json.opnbFrequency);
+				return new FormatVGMOPNB(this.parseFormat({ ...json, format: "opn" }));
 			case "vgm-opl4":
-				return new FormatVGMOPL4(json.opl4Frequency);
+				return new FormatVGMOPL4(this.parseFormat({ ...json, format: "opl4" }));
 			case "vgm-opll-psg":
-				return new FormatVGMOPLLPSG(json.opllFrequency, json.psgFrequency);
+				return new FormatVGMOPLLPSG(this.parseFormat({ ...json, format: "opll-psg" }));
 			default:
 				throw new Error("Unrecognised format.");
 		}

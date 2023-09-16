@@ -1,5 +1,7 @@
 import fs from "fs";
-import { Format, FormatStats } from "./Format.js";
+import { FormatReplay, FormatStats } from "./Format.js";
+import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLAttenuateVolume } from "./TransformOPLL.js";
+import { TransformPSGFrameSanitizer, TransformPSGMapChannels, TransformPSGAttenuateVolume } from "./TransformPSG.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandOPLLRegister } from "./CommandOPLL.js";
 import { CommandPSGRegister } from "./CommandPSG.js";
@@ -7,12 +9,23 @@ import { BankedData } from "./BankedData.js";
 
 export const FORMAT_OPLLPSG_ID = 0x02;
 
-export class FormatOPLLPSG extends Format {
+export class FormatOPLLPSG extends FormatReplay {
 	constructor(bankSize, opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
 		super();
 		this.bankSize = bankSize;
 		this.opllFrequency = opllFrequency;
 		this.psgFrequency = psgFrequency;
+	}
+
+	getTransforms(options) {
+		return super.getTransforms(options, [
+			new TransformOPLLFrameSanitizer(),
+			new TransformPSGFrameSanitizer(),
+			new TransformOPLLMapChannels(options.channelMapping),
+			new TransformPSGMapChannels(options.psgChannelMapping),
+			new TransformOPLLAttenuateVolume(options.attenuation),
+			new TransformPSGAttenuateVolume(options.attenuation)
+		]);
 	}
 
 	async saveTrack(track, path) {

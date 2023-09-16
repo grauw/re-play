@@ -1,7 +1,8 @@
 import fs from "fs";
 import zlib from "zlib";
 import util from "util";
-import { Format } from "./Format.js";
+import { FormatWrapper } from "./Format.js";
+import { TransformEndLoop } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
@@ -13,9 +14,13 @@ import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.js";
 const VGM_MAGIC_NUMBER = 0x206d6756;
 const GD3_MAGIC_NUMBER = 0x20336447;
 
-export class FormatVGM extends Format {
-	constructor() {
-		super(false);
+export class FormatVGM extends FormatWrapper {
+	constructor(baseFormat) {
+		super(baseFormat, false);
+	}
+
+	getTransforms(options) {
+		return super.getTransforms(options).filter(transform => !(transform instanceof TransformEndLoop));
 	}
 
 	async loadTrack(path, name) {
@@ -276,9 +281,9 @@ export class FormatVGM extends Format {
 }
 
 export class FormatVGMOPNB extends FormatVGM {
-	constructor(opnbFrequency = 8000000) {
-		super();
-		this.opnbFrequency = opnbFrequency;
+	constructor(baseFormat) {
+		super(baseFormat);
+		this.opnbFrequency = baseFormat.opnFrequency;
 	}
 
 	writeTrack(track) {
@@ -303,14 +308,9 @@ export class FormatVGMOPNB extends FormatVGM {
 }
 
 export class FormatVGMOPM extends FormatVGM {
-	constructor(opmFrequency = 315000000 / 88) {
-		super();
-		this.opmFrequency = opmFrequency;
-	}
-
 	writeTrack(track) {
 		const vgm = super.writeTrack(track);
-		vgm.setDoubleWord(0x30, this.opmFrequency);  // 30 YM2151 / YM2164 clock
+		vgm.setDoubleWord(0x30, this.baseFormat.opmFrequency);  // 30 YM2151 / YM2164 clock
 		return vgm;
 	}
 
@@ -318,7 +318,7 @@ export class FormatVGMOPM extends FormatVGM {
 		if (command instanceof CommandFMKey) {
 			vgm.add(0x54, 0x08, command.slots << 3 | command.channel);
 		} else if (command instanceof CommandFMFrequency) {
-			const keyCodeFraction = command.getKeyCodeFraction(this.opmFrequency);
+			const keyCodeFraction = command.getKeyCodeFraction(this.baseFormat.opmFrequency);
 			vgm.add(0x54, 0x30 + command.channel, keyCodeFraction & 0xFF);
 			vgm.add(0x54, 0x28 + command.channel, keyCodeFraction >> 8);
 		} else if (command instanceof CommandFMInstrument) {
@@ -330,16 +330,15 @@ export class FormatVGMOPM extends FormatVGM {
 }
 
 export class FormatVGMOPL4 extends FormatVGM {
-	constructor(opl4Frequency = 33868800) {
-		super();
-		this.opl4Frequency = opl4Frequency;
+	constructor(baseFormat) {
+		super(baseFormat);
 		this.rom = false;
 	}
 
 	writeTrack(track) {
 		this.rom = track.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
 		const vgm = super.writeTrack(track);
-		vgm.setDoubleWord(0x60, this.opl4Frequency);  // 60 YMF278B clock
+		vgm.setDoubleWord(0x60, this.baseFormat.opl4Frequency);  // 60 YMF278B clock
 		return vgm;
 	}
 
@@ -357,16 +356,10 @@ export class FormatVGMOPL4 extends FormatVGM {
 }
 
 export class FormatVGMOPLLPSG extends FormatVGM {
-	constructor(opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
-		super();
-		this.opllFrequency = opllFrequency;
-		this.psgFrequency = psgFrequency;
-	}
-
 	writeTrack(track) {
 		const vgm = super.writeTrack(track);
-		vgm.setDoubleWord(0x10, this.opllFrequency);
-		vgm.setDoubleWord(0x74, this.psgFrequency);
+		vgm.setDoubleWord(0x10, this.baseFormat.opllFrequency);
+		vgm.setDoubleWord(0x74, this.baseFormat.psgFrequency);
 		return vgm;
 	}
 
