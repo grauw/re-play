@@ -22,14 +22,13 @@ export class Resources {
 	}
 
 	async write(path) {
-		if (this.format.combine) {
-			const track = this.getCombinedTracks();
-			return await this.format.saveTrack(track, path);
-		} else {
-			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, fspath.join(path, `${track.name}.vgm`));
-			}));
-		}
+		const tracksAndPaths = this.format.combine ?
+			[[this.getCombinedTracks(), path]] :
+			this.tracks.map(track => [track, fspath.join(path, `${track.name}.vgm`)]);
+
+		return Promise.all(tracksAndPaths.map(async ([track, path_]) => {
+			await this.format.saveTrack(this.format.transformPost(track), path_);
+		}));
 	}
 
 	getStats() {

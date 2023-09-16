@@ -1,9 +1,10 @@
 import { Track } from "./Track.js";
-import { CommandWait, CommandLabel, CommandJump, CommandReturn, CommandGD3 } from "./Command.js";
+import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { CommandOPLLConfig } from "./CommandOPLL.js";
 import { CommandPSGConfig } from "./CommandPSG.js";
+import { Player } from "./Player.js";
 
 export class Transform {
 	apply(input) {
@@ -157,5 +158,37 @@ export class TransformEndLoop extends Transform {
 		} else {
 			return input;
 		}
+	}
+}
+
+export class TransformValidate extends Transform {
+	constructor(stackCapacity) {
+		super();
+		this.stackCapacity = stackCapacity;
+	}
+
+	apply(input) {
+		const coverage = Array(input.commands.length).fill(false);
+		const player = new Player(input, this.stackCapacity);
+
+		for (let i = 0; i < player.indexCount; i++) {
+			player.play(i);
+			player.run((command, index) => {
+				coverage[index] = true;
+				if (player.process(command, index)) {
+					player.stop();
+				}
+			});
+		}
+
+		if (!(player.getCommand(player.stack.at(-1) - 1) instanceof CommandWait)) {
+			throw new Error("No wait after loop.");
+		}
+
+		if (coverage.some(visited => !visited)) {
+			throw new Error("Track has unused commands.");
+		}
+
+		return input;
 	}
 }

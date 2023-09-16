@@ -96,4 +96,21 @@ export class Track {
 		return command instanceof CommandLabel && this.commands.at(-1) instanceof CommandJump &&
 			command.name == this.commands.at(-1).target;
 	}
+
+	getIndex() {
+		const index = [];
+		for (const command of this.commands) {
+			if (command instanceof CommandJump) {
+				index.push(command.target);
+			} else if (command instanceof CommandLabel) {
+				if (!index.includes(command.name)) {
+					index.push(command.name);
+				}
+				break;
+			} else {
+				break;
+			}
+		}
+		return index;
+	}
 }

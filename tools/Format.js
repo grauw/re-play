@@ -1,4 +1,4 @@
-import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop } from "./Transform.js";
+import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
 import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 
 export class Format {
@@ -18,6 +18,16 @@ export class Format {
 			...innerTransforms,
 			new TransformStartConfigAndWait(),
 			new TransformEndLoop()
+		];
+	}
+
+	transformPost(track, options) {
+		return this.getPostTransforms(options).reduce((track, transform) => transform.apply(track), track);
+	}
+
+	getPostTransforms(options, innerTransforms = []) {
+		return [
+			new TransformValidate()
 		];
 	}
 
