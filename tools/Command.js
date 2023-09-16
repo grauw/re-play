@@ -12,8 +12,8 @@ export class Command {
 export class CommandWait extends Command {
 	constructor(ticks) {
 		super();
-		if (!Number.isInteger(ticks))
-			throw new Error("Non-integer ticks count.");
+		if (!Number.isInteger(ticks) || ticks < 1)
+			throw new Error("Ticks count is not a positive integer.");
 		this.ticks = ticks;
 		Object.freeze(this);
 	}
