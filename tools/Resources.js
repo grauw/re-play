@@ -1,5 +1,5 @@
 import fs from "fs";
-import path from "path";
+import { default as fspath } from "path";
 import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
 import { FormatOPL4 } from "./FormatOPL4.js";
@@ -27,13 +27,13 @@ export class Resources {
 		return Track.ofTracksWithIndex("combined", this.tracks);
 	}
 
-	async write(path_) {
+	async write(path) {
 		if (this.format.combine) {
 			const track = this.getCombinedTracks();
-			return await this.format.saveTrack(track, path_);
+			return await this.format.saveTrack(track, path);
 		} else {
 			return Promise.all(this.tracks.map(async track => {
-				await this.format.saveTrack(track, path.join(path_, `${track.name}.vgm`));
+				await this.format.saveTrack(track, fspath.join(path, `${track.name}.vgm`));
 			}));
 		}
 	}
@@ -59,7 +59,7 @@ export class ResourcesLoader {
 		const resources = new Resources(this.parseFormat(json));
 
 		const tracks = Promise.all(json.tracks.map(async (jsonTrack, index) => {
-			const trackPath = path.resolve(path.dirname(this.path), jsonTrack.path);
+			const trackPath = fspath.resolve(fspath.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name ?? `${index + 1}`);
 
 			const j = { ...json, ...jsonTrack };
