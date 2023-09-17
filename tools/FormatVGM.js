@@ -19,10 +19,6 @@ export class FormatVGM extends FormatWrapper {
 		super(baseFormat, false);
 	}
 
-	getTransforms(options) {
-		return super.getTransforms(options).filter(transform => !(transform instanceof TransformEndLoop));
-	}
-
 	async loadTrack(path, name) {
 		let vgm = await fs.promises.readFile(path);
 		if (vgm[0] == 0x1f && vgm[1] == 0x8b)  // gzip magic number
@@ -236,6 +232,9 @@ export class FormatVGM extends FormatWrapper {
 
 		this.writeInitial(vgm);
 
+		const idleLoop = track.commands.at(-1) instanceof CommandJump && track.commands.at(-2) instanceof CommandWait &&
+			track.commands.at(-3) instanceof CommandLabel && track.commands.at(-1).target == track.commands.at(-3).name;
+
 		let samples = 0;
 		let loopOffset = -1;
 		let loopSamples = -1;
@@ -250,6 +249,9 @@ export class FormatVGM extends FormatWrapper {
 					ticks -= ticksCapped;
 				}
 			} else if (command instanceof CommandLabel && track.isLoopLabel(command)) {
+				if (idleLoop) {
+					break;
+				}
 				loopOffset = vgm.length;
 				loopSamples = samples;
 			}
