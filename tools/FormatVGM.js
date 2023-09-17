@@ -230,7 +230,7 @@ export class FormatVGM extends FormatWrapper {
 		vgm.setDoubleWord(0x08, 0x151);
 		vgm.setDoubleWord(0x34, vgm.length - 0x34);
 
-		this.writeInitial(vgm);
+		this.writeInitial(vgm, track);
 
 		const idleLoop = track.commands.at(-1) instanceof CommandJump && track.commands.at(-2) instanceof CommandWait &&
 			track.commands.at(-3) instanceof CommandLabel && track.commands.at(-1).target == track.commands.at(-3).name;
@@ -275,7 +275,7 @@ export class FormatVGM extends FormatWrapper {
 		return vgm;
 	}
 
-	writeInitial(vgm) {
+	writeInitial(vgm, track) {
 	}
 
 	writeCommand(vgm, command) {
@@ -288,10 +288,8 @@ export class FormatVGMOPNB extends FormatVGM {
 		this.opnbFrequency = baseFormat.opnFrequency;
 	}
 
-	writeTrack(track) {
-		const vgm = super.writeTrack(track);
+	writeInitial(vgm, track) {
 		vgm.setDoubleWord(0x4C, this.opnbFrequency);  // 4C YM2610 / YM2610B clock
-		return vgm;
 	}
 
 	writeCommand(vgm, command) {
@@ -310,10 +308,8 @@ export class FormatVGMOPNB extends FormatVGM {
 }
 
 export class FormatVGMOPM extends FormatVGM {
-	writeTrack(track) {
-		const vgm = super.writeTrack(track);
+	writeInitial(vgm, track) {
 		vgm.setDoubleWord(0x30, this.baseFormat.opmFrequency);  // 30 YM2151 / YM2164 clock
-		return vgm;
 	}
 
 	writeCommand(vgm, command) {
@@ -337,11 +333,9 @@ export class FormatVGMOPL4 extends FormatVGM {
 		this.rom = false;
 	}
 
-	writeTrack(track) {
+	writeInitial(vgm, track) {
 		this.rom = track.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
-		const vgm = super.writeTrack(track);
 		vgm.setDoubleWord(0x60, this.baseFormat.opl4Frequency);  // 60 YMF278B clock
-		return vgm;
 	}
 
 	writeCommand(vgm, command) {
@@ -358,11 +352,9 @@ export class FormatVGMOPL4 extends FormatVGM {
 }
 
 export class FormatVGMOPLLPSG extends FormatVGM {
-	writeTrack(track) {
-		const vgm = super.writeTrack(track);
+	writeInitial(vgm, track) {
 		vgm.setDoubleWord(0x10, this.baseFormat.opllFrequency);
 		vgm.setDoubleWord(0x74, this.baseFormat.psgFrequency);
-		return vgm;
 	}
 
 	writeCommand(vgm, command) {
