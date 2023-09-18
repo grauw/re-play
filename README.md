@@ -131,7 +131,7 @@ Format ID: `1`
              Bytes 1-2n: address, value sequence.
   * `C0`:    Wait for OPL4 WAVE load.
   * `C1`:    OPL4 WAVE memory write block.
-             Bytes 1-3: address, bytes 4-5: length.
+             Bytes 1-2: length.
   * `C2`:    Relative jump.
              Byte 1-2: address offset, byte 3: bank offset.
   * `C3`:    Relative call.

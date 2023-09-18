@@ -41,15 +41,16 @@ export class FormatOPL4 extends Format {
 			} else if (command instanceof CommandOPL4WaitLoad) {
 				data.add(0xC0);
 			} else if (command instanceof CommandOPL4WaveMemory) {
+				data.add(0x83, 0x02, 0x11, 0x03, command.address >> 16 & 0x3F,
+					0x04, command.address >> 8 & 0xFF, 0x05, command.address & 0xFF);
 				let index = 0;
 				while (index < command.memory.length) {
-					const address = command.address + index;
 					const space = Math.floor(data.free - data.jump.length - 6);
 					const count = Math.min(command.memory.length - index, data.bankSize - data.jump.length - 6, space > 0 ? space : Infinity);
-					data.addArray([0xC1, address & 0xFF, address >> 8 & 0xFF, address >> 16 & 0xFF,
-						count & 0xFF, count >> 8 & 0xFF, ...command.memory.subarray(index, index + count)]);
+					data.addArray([0xC1, count & 0xFF, count >> 8 & 0xFF, ...command.memory.subarray(index, index + count)]);
 					index += count;
 				}
+				data.add(0x80, 0x02, 0x10);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
 			} else if (command instanceof CommandJump) {
@@ -79,7 +80,7 @@ export class FormatOPL4 extends Format {
 		} else if (command instanceof CommandOPL4WaitLoad) {
 			return 1;
 		} else if (command instanceof CommandOPL4WaveMemory) {
-			return 6 + command.memory.length;
+			return 15 + command.memory.length;
 		} else if (command instanceof CommandWait) {
 			return preceding instanceof CommandWait ? 0 : 1;
 		} else if (command instanceof CommandCall || command instanceof CommandJump) {
