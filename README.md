@@ -75,18 +75,18 @@ a command stream with events based on the data format.
 Format ID: `0`
 
   * `00-7F`: Key on / off.
-             Bit 0-2: channel, bit 3-6: slots.
+             Bit 0..2: channel. Bit 3..6: slots.
   * `80-87`: Note frequency.
-             Bit 0-2: channel, byte 1-2: OPM frequency, byte 3-4: OPN frequency.
+             Bit 0..2: channel. Byte 1..2: OPM frequency. Byte 3..4: OPN frequency.
   * `88-8F`: Instrument settings.
-             Bit 0-2: channel, byte 1-25: slot parameters, byte 26: feedback / algorithm.
+             Bit 0..2: channel. Byte 1..25: slot parameters. Byte 26: feedback / algorithm.
   * `90`:    Relative jump.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `91`:    Relative call.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `92`:    Return.
   * `93-FF`: Wait.
-             n - 92H: nr. of ticks.
+             Byte 0: tick count - 92H.
 
 # OPL4 format (MoonSound)
 
@@ -121,24 +121,21 @@ a command stream with events based on the data format.
 Format ID: `1`
 
   * `00-3F`: OPL4 FM1 register write block.
-             Bit 0-5: count n - 1.
-             Bytes 1-2n: address, value sequence.
+             Byte 0: count n - 1 + 00H. Bytes 1..2n+1: address, value sequence.
   * `40-7F`: OPL4 FM2 register write block.
-             Bit 0-5: count n - 1.
-             Bytes 1-2n: address, value sequence.
+             Byte 0: count n - 1 + 40H. Bytes 1..2n+1: address, value sequence.
   * `80-BF`: OPL4 WAVE register write block.
-             Bit 0-5: count n - 1.
-             Bytes 1-2n: address, value sequence.
+             Byte 0: count n - 1 + 80H. Bytes 1..2n+1: address, value sequence.
   * `C0`:    Wait for OPL4 WAVE load.
   * `C1`:    OPL4 WAVE memory write block.
-             Bytes 1-2: length.
+             Bytes 1..2: length. Bytes 3..n+3: value sequence.
   * `C2`:    Relative jump.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `C3`:    Relative call.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `C4`:    Return.
   * `C5-FF`: Wait.
-             n - C4H: nr. of ticks.
+             Byte 0: tick count - C4H.
 
 # OPLL-PSG format (MSX-MUSIC + PSG)
 
@@ -165,18 +162,16 @@ a command stream with events based on the data format.
 Format ID: `2`
 
   * `00-3F`: OPLL register write block.
-             Bit 0-5: count n - 1.
-             Bytes 1-2n: address, value sequence.
+             Byte 0: count n - 1 + 00H. Bytes 1..2n+1: address, value sequence.
   * `40-7F`: PSG register write block.
-             Bit 0-5: count n - 1.
-             Bytes 1-2n: address, value sequence.
+             Byte 0: count n - 1 + 40H. Bytes 1..2n+1: address, value sequence.
   * `80`:    Relative jump.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `81`:    Relative call.
-             Byte 1-2: address offset, byte 3: bank offset.
+             Byte 1..2: address offset. Byte 3: bank offset.
   * `82`:    Return.
   * `83-FF`: Wait.
-             n - 82H: nr. of ticks.
+             Byte 0: tick count - 82H.
 
 # Other formats
 
