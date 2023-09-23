@@ -1,3 +1,4 @@
+import { default as fspath } from "path";
 import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
 import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
 
@@ -39,6 +40,16 @@ export class Format {
 		throw new Error("Not implemented.");
 	}
 
+	async saveTracks(tracks, path) {
+		await Promise.all(tracks.map(async track => {
+			await this.saveTrack(track, this.combine && tracks.length == 1 ? path : fspath.join(path, this.getFileName(track)));
+		}));
+	}
+
+	getFileName(track) {
+		throw new Error("Not implemented.");
+	}
+
 	getSize(command, preceding) {
 		return 0;
 	}
@@ -53,6 +64,9 @@ export class Format {
 }
 
 export class FormatReplay extends Format {
+	getFileName(track) {
+		return `${track.name}.rep`;
+	}
 }
 
 export class FormatWrapper extends Format {

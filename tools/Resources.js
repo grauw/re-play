@@ -17,23 +17,12 @@ export class Resources {
 		this.tracks.push(track);
 	}
 
-	getCombinedTracks() {
-		return Track.ofTracksWithIndex("combined", this.tracks);
-	}
-
 	async write(path) {
-		const tracksAndPaths = this.format.combine ?
-			[[this.getCombinedTracks(), path]] :
-			this.tracks.map(track => [track, fspath.join(path, `${track.name}.vgm`)]);
-
-		return Promise.all(tracksAndPaths.map(async ([track, path_]) => {
-			await this.format.saveTrack(this.format.transformPost(track), path_);
-		}));
+		await this.format.saveTracks(this.tracks, path);
 	}
 
 	getStats() {
-		const tracks = [...this.tracks, this.getCombinedTracks()];
-		return tracks.map(track => this.format.getStats(track)).join("\n");
+		return this.tracks.map(track => this.format.getStats(track)).join("\n");
 	}
 }
 
@@ -51,14 +40,20 @@ export class ResourcesLoader {
 
 		const format = this.parseFormat(json);
 
-		const tracks = Promise.all(json.tracks.map(async (jsonTrack, index) => {
+		let tracks = await Promise.all(json.tracks.map(async (jsonTrack, index) => {
 			const trackPath = fspath.resolve(fspath.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name ?? `${index + 1}`);
 			return format.transform(track, { ...json, ...jsonTrack });
 		}));
 
+		if (format.combine) {
+			tracks = [Track.ofTracksWithIndex("combined", tracks)];
+		}
+
+		tracks = tracks.map(track => format.transformPost(track, json));
+
 		const resources = new Resources(format);
-		for (const track of await tracks)
+		for (const track of tracks)
 			resources.addTrack(track);
 
 		return resources;

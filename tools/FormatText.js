@@ -7,6 +7,10 @@ export class FormatText extends FormatWrapper {
 		super(baseFormat);
 	}
 
+	getFileName(track) {
+		return `${track.name}.txt`;
+	}
+
 	async saveTrack(track, path) {
 		const data = this.writeTrack(track);
 		await fs.promises.writeFile(path, data);

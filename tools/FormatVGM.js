@@ -19,6 +19,10 @@ export class FormatVGM extends FormatWrapper {
 		super(baseFormat, false);
 	}
 
+	getFileName(track) {
+		return `${track.name}.vgm`;
+	}
+
 	async loadTrack(path, name) {
 		let vgm = await fs.promises.readFile(path);
 		if (vgm[0] == 0x1f && vgm[1] == 0x8b)  // gzip magic number
