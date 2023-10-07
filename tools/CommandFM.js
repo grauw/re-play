@@ -43,8 +43,8 @@ export class CommandOPNRegister extends CommandOPN {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		return `OPNRegister ${`00${hex(this.address)}`.slice(-3)}: ${`0${hex(this.value)}`.slice(-2)}`;
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
+		return `OPNRegister ${hex(this.address, 3)}: ${hex(this.value, 2)}`;
 	}
 }
 
@@ -81,7 +81,7 @@ export class CommandFMKey extends CommandFMChannel {
 	}
 
 	toString() {
-		return `FMKey ${this.channel}: ${("000" + this.slots.toString(2)).slice(-4)}`;
+		return `FMKey ${this.channel}: ${this.slots.toString(2).padStart(4, "0")}`;
 	}
 }
 
@@ -159,7 +159,7 @@ export class CommandFMInstrument extends CommandFMChannel {
 	}
 
 	toString() {
-		return `FMInstrument ${this.channel}: ${this.parameters.map(p => ("0" + p.toString(16)).slice(-2)).join(", ")}`;
+		return `FMInstrument ${this.channel}: ${this.parameters.map(p => p.toString(16).padStart(2, "0")).join(", ")}`;
 	}
 }
 

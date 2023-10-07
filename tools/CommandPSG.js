@@ -38,17 +38,16 @@ export class CommandPSGRegister extends CommandPSG {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		const hexByte = value => `0${hex(value)}`.slice(-2);
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
 		if (address < 0x06 && (address & 1) == 0) {
 			const channel = ["A", "B", "C"][address >> 1];
-			description = `Ch${channel} Tone Frequency Low: 0x${hexByte(value)}`;
+			description = `Ch${channel} Tone Frequency Low: 0x${hex(value, 2)}`;
 		} else if (address < 0x06 && (address & 1) == 1) {
 			const channel = ["A", "B", "C"][address >> 1];
-			description = `Ch${channel} Tone Frequency High: 0x${hexByte(value)}`;
+			description = `Ch${channel} Tone Frequency High: 0x${hex(value, 2)}`;
 		} else if (address == 0x06) {
 			description = `Noise Frequency: ${value}`;
 		} else if (address == 0x07) {
@@ -69,9 +68,9 @@ export class CommandPSGRegister extends CommandPSG {
 				description = `Ch${channel} Level: Envelope Controlled`;
 			}
 		} else if (address == 0x0B) {
-			description = `Envelope Frequency Low: 0x${hexByte(value)}`;
+			description = `Envelope Frequency Low: 0x${hex(value, 2)}`;
 		} else if (address == 0x0C) {
-			description = `Envelope Frequency High: 0x${hexByte(value)}`;
+			description = `Envelope Frequency High: 0x${hex(value, 2)}`;
 		} else if (address == 0x0D) {
 			const continue_ = value & 0x08 ? "On" : "Off";
 			const attack = value & 0x04 ? "On" : "Off";
@@ -80,7 +79,7 @@ export class CommandPSGRegister extends CommandPSG {
 			description = `Envelope Shape Continue: ${continue_}, Attack: ${attack}, Alternate: ${alternate}, Hold: ${hold}`;
 		}
 
-		return `PSGRegister ${hex(address)}: ${hexByte(value)}${description ? " - " + description : ""}`;
+		return `PSGRegister ${hex(address)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
 	}
 }
 

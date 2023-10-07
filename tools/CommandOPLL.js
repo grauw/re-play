@@ -38,8 +38,7 @@ export class CommandOPLLRegister extends CommandOPLL {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		const hexByte = value => `0${hex(value)}`.slice(-2);
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
@@ -86,10 +85,10 @@ export class CommandOPLLRegister extends CommandOPLL {
 			description = `Rhythm: ${rhythm}, Base Drum: ${baseDrum}, Snare Drum: ${snareDrum}, Tom-Tom: ${tomTom}, Top Cymbal: ${topCymbal}, High Hat: ${highHat}`;
 		} else if (address >= 0x10 && address < 0x19) {
 			const channel = (address & 0x0F) + 1;
-			description = `Ch${channel} F-Number Low: 0x${hexByte(value)}`;
+			description = `Ch${channel} F-Number Low: 0x${hex(value, 2)}`;
 		} else if (address >= 0x20 && address < 0x29) {
 			const channel = (address & 0x0F) + 1;
-			description = `Ch${channel} F-Number Low: 0x${hexByte(value)}`;
+			description = `Ch${channel} F-Number Low: 0x${hex(value, 2)}`;
 			const sustain = value & 0x20 ? "On" : "Off";
 			const key = value & 0x10 ? "On" : "Off";
 			const block = value >> 1 & 0x7;
@@ -103,7 +102,7 @@ export class CommandOPLLRegister extends CommandOPLL {
 			description = `Ch${channel} Instrument: ${instrument}, Level: ${level} (-${levelDB} dB)`;
 		}
 
-		return `OPLLRegister ${hexByte(address)}: ${hexByte(value)}${description ? " - " + description : ""}`;
+		return `OPLLRegister ${hex(address, 2)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
 	}
 }
 

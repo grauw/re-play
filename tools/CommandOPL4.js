@@ -90,19 +90,18 @@ export class CommandOPL4Register extends CommandOPL4 {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		const hexByte = value => `0${hex(value)}`.slice(-2);
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
 		if (address < 0x200) {
 			const addressLow = address & 0xFF;
 			const bank = (address >> 8) + 1;
-			const operator = `0${this.fmOperator + 1}`.slice(-2);
-			const channel = `0${this.fmChannel + 1}`.slice(-2);
+			const operator = (this.fmOperator + 1).toString(10).padStart(2, "0");
+			const channel = (this.fmChannel + 1).toString(10).padStart(2, "0");
 			if (addressLow >= 0x00 && addressLow < 0x01) {
 				const register = address & 0x1;
-				const test = `0000000${value.toString(2)}`.slice(-8);
+				const test = value.toString(2).padStart(8, "0");
 				description = `FM${bank} LSI Test ${register}: ${test}`;
 			} else if (addressLow >= 0x20 && addressLow < 0x36) {
 				const tremolo = value >> 7 & 0x1 ? "3.7 Hz" : "Off";
@@ -127,7 +126,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const releaseRate = value & 0xF;
 				description = `FM${bank} Ch${channel} Op${operator} Sustain Level: ${sustainLevel} (${sustainLevelDB} dB), Release Rate: ${releaseRate}`;
 			} else if (addressLow >= 0xA0 && addressLow < 0xA9) {
-				description = `FM${bank} Ch${channel} F-Number Low: 0x${hexByte(value)}`;
+				description = `FM${bank} Ch${channel} F-Number Low: 0x${hex(value, 2)}`;
 			} else if (addressLow >= 0xB0 && addressLow < 0xB9) {
 				const key = value & 0x20 ? "On" : "Off";
 				const block = value >> 2 & 0x7;
@@ -149,7 +148,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const timer = address & 0x1;
 				const timerCount = 256 - value;
 				const timerTime = (timer ? 1 : 4) * timer * 2736000 / 33868800;
-				description = `Timer ${timer + 1} Count: ${hexByte(timerCount)} (${timerTime.toFixed(2)} ms)`;
+				description = `Timer ${timer + 1} Count: ${hex(timerCount, 2)} (${timerTime.toFixed(2)} ms)`;
 			} else if (address == 0x004) {
 				if (value & 0x80) {
 					const mask = [];
@@ -178,7 +177,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM Tremolo Depth: ${tremoloDepth}, Vibrato Depth: ${vibratoDepth}, Rhythm: ${rhythm}, Base Drum: ${baseDrum}, Snare Drum: ${snareDrum}, Tom-Tom: ${tomTom}, Top Cymbal: ${topCymbal}, High Hat: ${highHat}`;
 			} else if (address == 0x104) {
 				const connection = value & 0x3F;
-				const connectionBits = `00000${connection.toString(2)}`.slice(-6);
+				const connectionBits = connection.toString(2).padStart(6, "0");
 				description = `FM Connection: ${connectionBits}`;
 			} else if (address == 0x105) {
 				const new1 = value & 0x1 ? "On" : "Off";
@@ -186,7 +185,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM New2: ${new2}, New: ${new1}`;
 			}
 		} else {
-			const channel = `0${this.waveChannel}`.slice(-2);
+			const channel = this.waveChannel?.toString(10)?.padStart(2, "0");
 			if (address == 0x202) {
 				const accessMode = value & 0x1 ? "CPU" : "OPL4";
 				const type = value & 0x2 ? "RAM" : "ROM";
@@ -194,11 +193,11 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `WAVE Memory Access Mode: ${accessMode}, Type: ${type}, Header: 0x${hex(header)}`;
 			} else if (address >= 0x208 && address < 0x220) {
 				const waveTableLow = value;
-				description = `WAVE Ch${channel} Wave Table Number Low: 0x${hexByte(waveTableLow)}`;
+				description = `WAVE Ch${channel} Wave Table Number Low: 0x${hex(waveTableLow, 2)}`;
 			} else if (address >= 0x220 && address < 0x238) {
 				const fnumberLow = value >> 1;
 				const waveTableHigh = value & 0x1;
-				description = `WAVE Ch${channel} F-Number Low: 0x${hexByte(fnumberLow)}, Wave Table Number High: 0x${waveTableHigh}`;
+				description = `WAVE Ch${channel} F-Number Low: 0x${hex(fnumberLow, 2)}, Wave Table Number High: 0x${waveTableHigh}`;
 			} else if (address >= 0x238 && address < 0x250) {
 				const fnumberHigh = value & 0x7;
 				const octave = value << 24 >> 28;
@@ -208,7 +207,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const totalLevel = value >> 1;
 				const totalLevelDB = totalLevel == 0x7F ? "-∞" : totalLevel * -3 / 8;
 				const levelDirect = value & 0x1 ? "On" : "Off";
-				description = `WAVE Ch${channel} Total Level: 0x${hexByte(totalLevel)} (${totalLevelDB} dB), Level Direct: ${levelDirect}`;
+				description = `WAVE Ch${channel} Total Level: 0x${hex(totalLevel, 2)} (${totalLevelDB} dB), Level Direct: ${levelDirect}`;
 			} else if (address >= 0x268 && address < 0x280) {
 				const key = value & 0x80 ? "On" : "Off";
 				const damp = value & 0x40 ? "On" : "Off";
@@ -251,7 +250,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 			}
 		}
 
-		return `OPL4Register ${`00${hex(address)}`.slice(-3)}: ${hexByte(value)}${description ? " - " + description : ""}`;
+		return `OPL4Register ${hex(address, 3)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
 	}
 }
 

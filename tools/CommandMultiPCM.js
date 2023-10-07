@@ -52,12 +52,11 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		const hexByte = value => `0${hex(value)}`.slice(-2);
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
-		const channel = `0${this.realChannel}`.slice(-2);
+		const channel = this.realChannel.toString(10).padStart(2, "0");
 		if (address >= 0x00 && address < 0x20) {
 			const panpot = value << 24 >> 28;
 			const panpotLeftDB = panpot == -8 ? "-∞" : [0, -3, -6, -9, -12, -15, -18, "-∞"][panpot] ?? 0;
@@ -65,11 +64,11 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 			description = `Ch${channel} Panpot: ${panpot} (Left: ${panpotLeftDB} dB, Right: ${panpotRightDB} dB)`;
 		} else if (address >= 0x20 && address < 0x40) {
 			const waveTableLow = value;
-			description = `Ch${channel} Wave Table Number Low: 0x${hexByte(waveTableLow)}`;
+			description = `Ch${channel} Wave Table Number Low: 0x${hex(waveTableLow, 2)}`;
 		} else if (address >= 0x40 && address < 0x60) {
 			const fnumberLow = value >> 2;
 			const waveTableHigh = value & 0x1;
-			description = `Ch${channel} F-Number Low: 0x${hexByte(fnumberLow)}, Wave Table Number High: 0x${waveTableHigh}`;
+			description = `Ch${channel} F-Number Low: 0x${hex(fnumberLow, 2)}, Wave Table Number High: 0x${waveTableHigh}`;
 		} else if (address >= 0x60 && address < 0x80) {
 			const fnumberHigh = value & 0xF;
 			const octave = value << 24 >> 28;
@@ -81,7 +80,7 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 			const totalLevel = value >> 1;
 			const totalLevelDB = totalLevel == 0x7F ? "-∞" : totalLevel * -3 / 8;
 			const levelDirect = value & 0x1 ? "On" : "Off";
-			description = `Ch${channel} Total Level: 0x${hexByte(totalLevel)} (${totalLevelDB} dB), Level Direct: ${levelDirect}`;
+			description = `Ch${channel} Total Level: 0x${hex(totalLevel, 2)} (${totalLevelDB} dB), Level Direct: ${levelDirect}`;
 		} else if (address >= 0xC0 && address < 0xE0) {
 			const lfoSpeed = (value >> 3) & 0x7;
 			const lfoSpeedHz = [0.168, 2.019, 3.196, 4.206, 5.215, 5.888, 6.224, 7.066][lfoSpeed];
@@ -94,7 +93,7 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 			description = `Ch${channel} Tremolo Depth: ${tremoloDepth} (${tremoloDepthDB})`;
 		}
 
-		return `MultiPCMRegister ${`0${hex(address)}`.slice(-2)}: ${hexByte(value)}${description ? " - " + description : ""}`;
+		return `MultiPCMRegister ${hex(address, 2)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
 	}
 }
 
@@ -134,8 +133,8 @@ export class CommandMultiPCMBankRegister extends CommandMultiPCM {
 	}
 
 	toString() {
-		const hex = value => value.toString(16).toUpperCase();
-		return `MultiPCMBankRegister ${`0${hex(this.address)}`.slice(-2)}: ${`0${hex(this.value)}`.slice(-2)}`;
+		const hex = (value, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
+		return `MultiPCMBankRegister ${hex(this.address, 2)}: ${hex(this.value, 2)}`;
 	}
 }
 
