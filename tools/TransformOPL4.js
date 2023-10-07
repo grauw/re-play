@@ -1,6 +1,6 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
-import { CommandWait, CommandControlFlow, CommandLabel, CommandJump } from "./Command.js";
+import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandNop } from "./Command.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
@@ -576,6 +576,54 @@ export class TransformOPL4WaveAttenuateVolume extends Transform {
 			} else {
 				output.addCommand(command);
 			}
+		}
+		return output;
+	}
+}
+
+/**
+ * The OPL4 processes each channel once every 1/44100th of a second, that is, every
+ * 768 OPL4 cycles. If it receives both a key-off and a key-on in-between these, to
+ * the OPL4 it is as if nothing happened and the EG is never retriggered.
+ *
+ * This makes sure that situation never occurs, by keeping the previous key value
+ * active for 768 OPL4 cycles (22.7 µs / 82 Z80 cycles / 163 R800 cycles) if it
+ * detects this situation. It finds these by looking back a few commands whether
+ * they touch key-off and key-on in short succession. If so, it adds a nop command
+ * to introduce extra wait time.
+ *
+ * The nop command just makes it start a new registers write block in the rep-file,
+ * which is slow enough to ensure there is enough of a wait.
+ *
+ * Based on the register block write speed of the included player routines, the
+ * Z80 player needs a look-back of 1, and the R800 needs a look-back of 4.
+ */
+export class TransformMinimumKeyWait extends Transform {
+	constructor(lookback = 4) {
+		super();
+		this.lookback = lookback;
+	}
+
+	apply(input) {
+		if (this.lookback == 0) {
+			return input;
+		}
+		const output = Track.new(input);
+		for (const command of input.commands) {
+			if (command instanceof CommandOPL4Register && command.address >= 0x268 && command.address < 0x280) {
+				for (let i = 1; i <= this.lookback; i++) {
+					const lastCommand = output.commands.at(-i);
+					if (lastCommand instanceof CommandOPL4Register && command.address >= 0x200) {
+						if (command.address == lastCommand.address && ((command.value ^ lastCommand.value) & 0xE0) != 0x00) {
+							output.addCommand(CommandNop.of());
+							break;
+						}
+					} else {
+						break;
+					}
+				}
+			}
+			output.addCommand(command);
 		}
 		return output;
 	}

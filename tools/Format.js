@@ -1,6 +1,6 @@
 import { default as fspath } from "path";
 import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
-import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn } from "./Command.js";
+import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandNop } from "./Command.js";
 
 export class Format {
 	constructor(combine = true) {
@@ -155,6 +155,7 @@ export class FormatStats {
 			jump: track.commands.reduce((sum, command) => command instanceof CommandJump ? sum + 1 : sum, 0),
 			call: track.commands.reduce((sum, command) => command instanceof CommandCall ? sum + 1 : sum, 0),
 			return: track.commands.reduce((sum, command) => command instanceof CommandReturn ? sum + 1 : sum, 0),
+			nop: track.commands.reduce((sum, command) => command instanceof CommandNop ? sum + 1 : sum, 0),
 		};
 	}
 
@@ -169,7 +170,7 @@ export class FormatStats {
 			lines.push(`  Max CPU cycles per frame: ${this.maxCyclesPerFrame}`);
 		lines.push(`  Command counts: ${this.commandCounts.total} total, ${this.commandCounts.wait} waits, ` +
 			`${this.commandCounts.label} labels, ${this.commandCounts.jump} jumps, ${this.commandCounts.call} calls, ` +
-			`${this.commandCounts.return} returns`);
+			`${this.commandCounts.return} returns, ${this.commandCounts.nop} nops`);
 		return lines.join("\n");
 	}
 }

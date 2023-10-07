@@ -118,6 +118,10 @@ MoonSound_WriteWave_Loop:
 	inc c
 	outi
 	jp nz,MoonSound_WriteWave_Loop
+	ld b,9
+MoonSound_WriteWave_SampleWaitLoop:  ; wait to let OPL4 process the sample (e.g. key-off)
+	in a,(MoonSound_STATUS)          ; extra wait for R800 -- wait 22.7 µs (163 cycles)
+	djnz MoonSound_WriteWave_SampleWaitLoop
 	jp MoonSound_Process_Loop
 
 ; hl = sound data

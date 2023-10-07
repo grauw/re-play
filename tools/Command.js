@@ -105,6 +105,18 @@ export class CommandReturn extends CommandControlFlow {
 
 const commandReturnMemo = Object.freeze(new CommandReturn());
 
+export class CommandNop extends Command {
+	static of() {
+		return commandNopMemo;
+	}
+
+	toString() {
+		return `CommandNop`;
+	}
+}
+
+const commandNopMemo = Object.freeze(new CommandNop());
+
 export class CommandGD3 extends Command {
 	constructor(tag) {
 		super();
