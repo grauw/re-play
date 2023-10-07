@@ -1,6 +1,6 @@
 import { default as fspath } from "path";
 import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
-import { CommandLabel, CommandJump, CommandWait } from "./Command.js";
+import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn } from "./Command.js";
 
 export class Format {
 	constructor(combine = true) {
@@ -100,6 +100,7 @@ export class FormatStats {
 		this.tickFrequency = track.tickFrequency;
 		this.maxCommandsPerFrame = FormatStats.getMaxCommandsPerFrame(track);
 		this.maxCyclesPerFrame = FormatStats.getMaxCyclesPerFrame(track, format);
+		this.commandCounts = FormatStats.countCommands(track);
 	}
 
 	static getSize(track, format) {
@@ -146,6 +147,17 @@ export class FormatStats {
 		return Math.max(maxCycles, cycles);
 	}
 
+	static countCommands(track) {
+		return {
+			total: track.commands.length,
+			wait: track.commands.reduce((sum, command) => command instanceof CommandWait ? sum + 1 : sum, 0),
+			label: track.commands.reduce((sum, command) => command instanceof CommandLabel ? sum + 1 : sum, 0),
+			jump: track.commands.reduce((sum, command) => command instanceof CommandJump ? sum + 1 : sum, 0),
+			call: track.commands.reduce((sum, command) => command instanceof CommandCall ? sum + 1 : sum, 0),
+			return: track.commands.reduce((sum, command) => command instanceof CommandReturn ? sum + 1 : sum, 0),
+		};
+	}
+
 	toString() {
 		const lines = [];
 		lines.push(`Track ${this.name}`);
@@ -155,6 +167,9 @@ export class FormatStats {
 		lines.push(`  Max commands per frame: ${this.maxCommandsPerFrame}`);
 		if (this.maxCyclesPerFrame)
 			lines.push(`  Max CPU cycles per frame: ${this.maxCyclesPerFrame}`);
+		lines.push(`  Command counts: ${this.commandCounts.total} total, ${this.commandCounts.wait} waits, ` +
+			`${this.commandCounts.label} labels, ${this.commandCounts.jump} jumps, ${this.commandCounts.call} calls, ` +
+			`${this.commandCounts.return} returns`);
 		return lines.join("\n");
 	}
 }
