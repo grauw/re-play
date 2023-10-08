@@ -1,5 +1,6 @@
 import fs from "fs";
 import { FormatReplay, FormatStats } from "./Format.js";
+import { TransformGroup } from "./Transform.js";
 import { TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLAttenuateVolume } from "./TransformOPLL.js";
 import { TransformPSGFrameSanitizer, TransformPSGMapChannels, TransformPSGAttenuateVolume } from "./TransformPSG.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
@@ -17,15 +18,15 @@ export class FormatOPLLPSG extends FormatReplay {
 		this.psgFrequency = psgFrequency;
 	}
 
-	getTransforms(options) {
-		return super.getTransforms(options, [
+	getTransform(options) {
+		return super.getTransform(options, new TransformGroup([
 			new TransformOPLLFrameSanitizer(),
 			new TransformPSGFrameSanitizer(),
 			new TransformOPLLMapChannels(options.channelMapping),
 			new TransformPSGMapChannels(options.psgChannelMapping),
 			new TransformOPLLAttenuateVolume(options.attenuation),
 			new TransformPSGAttenuateVolume(options.attenuation)
-		]);
+		]));
 	}
 
 	async saveTrack(track, path) {

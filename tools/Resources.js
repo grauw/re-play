@@ -43,14 +43,14 @@ export class ResourcesLoader {
 		let tracks = await Promise.all(json.tracks.map(async (jsonTrack, index) => {
 			const trackPath = fspath.resolve(fspath.dirname(this.path), jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name ?? `${index + 1}`);
-			return format.transform(track, { ...json, ...jsonTrack });
+			return format.getTransform({ ...json, ...jsonTrack }).apply(track);
 		}));
 
 		if (format.combine) {
 			tracks = [Track.ofTracksWithIndex("combined", tracks)];
 		}
 
-		tracks = tracks.map(track => format.transformPost(track, json));
+		tracks = tracks.map(track => format.getPostTransform(json).apply(track));
 
 		const resources = new Resources(format);
 		for (const track of tracks)

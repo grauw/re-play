@@ -1,5 +1,6 @@
 import fs from "fs";
 import { FormatReplay, FormatStats } from "./Format.js";
+import { TransformGroup } from "./Transform.js";
 import { TransformOPNToGenericFM, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels, TransformOPNAttenuateVolume } from "./TransformOPN.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandFMChannel, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
@@ -15,13 +16,13 @@ export class FormatOPN extends FormatReplay {
 		this.opmFrequency = opmFrequency;
 	}
 
-	getTransforms(options) {
-		return super.getTransforms(options, [
+	getTransform(options) {
+		return super.getTransform(options, new TransformGroup([
 			new TransformOPNToGenericFM(),
 			new TransformOPNFrequencyBeforeKeyOn(),
 			new TransformOPNMapChannels(options.channelMapping),
 			new TransformOPNAttenuateVolume(options.attenuation)
-		]);
+		]));
 	}
 
 	async saveTrack(track, path) {

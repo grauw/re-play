@@ -12,6 +12,16 @@ export class Transform {
 	}
 }
 
+export class TransformGroup {
+	constructor(transforms = []) {
+		this.transforms = transforms;
+	}
+
+	apply(input) {
+		return this.transforms.reduce((input, transform) => transform.apply(input), input);
+	}
+}
+
 export class TransformMoveWaitAfterLoop extends Transform {
 	apply(input) {
 		if (input.commands.at(-1) instanceof CommandJump) {

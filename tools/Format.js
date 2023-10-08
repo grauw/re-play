@@ -1,5 +1,5 @@
 import { default as fspath } from "path";
-import { Transform, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
+import { Transform, TransformGroup, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
 import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandNop } from "./Command.js";
 
 export class Format {
@@ -7,29 +7,21 @@ export class Format {
 		this.combine = combine;
 	}
 
-	transform(track, options) {
-		return this.getTransforms(options).reduce((track, transform) => transform.apply(track), track);
-	}
-
-	getTransforms(options, innerTransforms = []) {
-		return [
+	getTransform(options, innerTransform = new Transform()) {
+		return new TransformGroup([
 			new TransformMoveWaitAfterLoop(),
 			new TransformQuantize(options.tickFrequency, options.waitThreshold, options.tolerance),
 			options.targetTickFrequency ? new TransformQuantize(options.targetTickFrequency) : new Transform(),
-			...innerTransforms,
+			innerTransform,
 			new TransformStartConfigAndWait(),
 			new TransformEndLoop()
-		];
+		]);
 	}
 
-	transformPost(track, options) {
-		return this.getPostTransforms(options).reduce((track, transform) => transform.apply(track), track);
-	}
-
-	getPostTransforms(options, innerTransforms = []) {
-		return [
+	getPostTransform(options, innerTransform = new Transform()) {
+		return new TransformGroup([
 			new TransformValidate()
-		];
+		]);
 	}
 
 	async loadTrack(path, name) {
@@ -75,8 +67,12 @@ export class FormatWrapper extends Format {
 		this.baseFormat = baseFormat;
 	}
 
-	getTransforms(options, innerTransforms) {
-		return this.baseFormat ? this.baseFormat.getTransforms(options, innerTransforms) : super.getTransforms(options, innerTransforms);
+	getTransform(options, innerTransform) {
+		return this.baseFormat ? this.baseFormat.getTransform(options, innerTransform) : super.getTransform(options, innerTransform);
+	}
+
+	getPostTransform(options, innerTransform) {
+		return this.baseFormat ? this.baseFormat.getPostTransform(options, innerTransform) : super.getPostTransform(options, innerTransform);
 	}
 
 	getSize(command, preceding) {
