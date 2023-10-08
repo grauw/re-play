@@ -99,10 +99,12 @@ export class FormatStats {
 
 		this.ticks = 0;
 		this.maxCommandsPerFrame = 0;
+		this.maxBytesPerFrame = 0;
 		this.maxCyclesPerFrame = 0;
 		const player = new Player(track);
 		for (let i = 0; i < player.indexCount; i++) {
 			let frameCommands = 0;
+			let frameBytes = 0;
 			let frameCycles = 0;
 			let lastCommand = null;
 			player.play(i);
@@ -111,12 +113,15 @@ export class FormatStats {
 					player.stop();
 				}
 				frameCommands++;
+				frameBytes += format.getSize(command, lastCommand);
 				frameCycles += format.getCycles(command, lastCommand);
 				if (command instanceof CommandWait) {
 					this.ticks += player.playing ? command.ticks : 0;
 					this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, frameCommands);
+					this.maxBytesPerFrame = Math.max(this.maxBytesPerFrame, frameBytes);
 					this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, frameCycles);
 					frameCommands = 0;
+					frameBytes = 0;
 					frameCycles = 0;
 				}
 				lastCommand = command;
@@ -138,12 +143,10 @@ export class FormatStats {
 	toString() {
 		const lines = [];
 		lines.push(`Track ${this.name}`);
-		lines.push(`  Duration: ${this.duration.toFixed(2)} s`);
-		lines.push(`  Tick frequency: ${this.tickFrequency} Hz`);
-		lines.push(`  Raw data size: ${this.size}`);
-		lines.push(`  Max commands per frame: ${this.maxCommandsPerFrame}`);
-		if (this.maxCyclesPerFrame)
-			lines.push(`  Max CPU cycles per frame: ${this.maxCyclesPerFrame}`);
+		lines.push(`  Data size: ${this.size} bytes`);
+		lines.push(`  Duration: ${this.ticks} ticks at ${this.tickFrequency.toFixed(2)} Hz (${this.duration.toFixed(2)} seconds)`);
+		lines.push(`  Maxima per frame: ${this.maxCommandsPerFrame} commands, ${this.maxBytesPerFrame} bytes` +
+			(this.maxCyclesPerFrame ? `, ${this.maxCyclesPerFrame} CPU cycles` : ``));
 		lines.push(`  Command counts: ${this.commandCounts.total} total, ${this.commandCounts.wait} waits, ` +
 			`${this.commandCounts.label} labels, ${this.commandCounts.jump} jumps, ${this.commandCounts.call} calls, ` +
 			`${this.commandCounts.return} returns, ${this.commandCounts.nop} nops`);
