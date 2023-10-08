@@ -121,10 +121,7 @@ export class FormatOPLLPSG extends FormatReplay {
 class FormatOPLLPSGStats extends FormatStats {
 	constructor(track, format) {
 		super(track, format);
-		this.registerCounts = FormatOPLLPSGStats.getRegisterCounts(track);
-	}
 
-	static getRegisterCounts(track) {
 		const opllCounts = Array(0x40).fill(0);
 		const psgCounts = Array(0x10).fill(0);
 		for (const command of track.commands) {
@@ -134,7 +131,7 @@ class FormatOPLLPSGStats extends FormatStats {
 				psgCounts[command.address]++;
 			}
 		}
-		return {
+		this.registerCounts = {
 			opll: {
 				total: opllCounts.reduce((sum, value) => sum + value, 0),
 			},

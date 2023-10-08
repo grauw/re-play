@@ -92,10 +92,7 @@ export class FormatOPN extends FormatReplay {
 class FormatOPNStats extends FormatStats {
 	constructor(track, format) {
 		super(track, format);
-		this.unusedChannels = FormatOPNStats.getUnusedChannels(track);
-	}
 
-	static getUnusedChannels(track) {
 		const usedChannels = new Array(8).fill(false);
 		const keyOnChannels = new Array(8).fill(false);
 		for (const command of track.commands) {
@@ -106,13 +103,12 @@ class FormatOPNStats extends FormatStats {
 				}
 			}
 		}
-		const unusedChannels = [];
+		this.unusedChannels = [];
 		for (let i = 0; i < 8; ++i) {
 			if (usedChannels[i] && !keyOnChannels[i]) {
-				unusedChannels.push(i);
+				this.unusedChannels.push(i);
 			}
 		}
-		return unusedChannels;
 	}
 
 	toString() {

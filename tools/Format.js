@@ -91,41 +91,28 @@ export class FormatWrapper extends Format {
 export class FormatStats {
 	constructor(track, format) {
 		this.name = track.name;
-		this.size = FormatStats.getSize(track, format);
-		this.duration = FormatStats.getDuration(track);
 		this.tickFrequency = track.tickFrequency;
-		this.maxCommandsPerFrame = FormatStats.getMaxCommandsPerFrame(track);
-		this.maxCyclesPerFrame = FormatStats.getMaxCyclesPerFrame(track, format);
-		this.commandCounts = FormatStats.countCommands(track);
-	}
 
-	static getSize(track, format) {
-		return track.commands.reduce((accu, command) =>
+		this.size = track.commands.reduce((accu, command) =>
 			[accu[0] + format.getSize(command, accu[1]), command], [0, undefined])[0];
-	}
 
-	static getDuration(track) {
-		return track.commands.reduce((accu, command) =>
+		this.duration = track.commands.reduce((accu, command) =>
 			command instanceof CommandWait ? accu + command.ticks : accu, 0) / track.tickFrequency;
-	}
 
-	static getMaxCommandsPerFrame(track) {
-		let maxCommands = 0;
+		this.maxCommandsPerFrame = 0;
 		let accumulator = 0;
 		for (const command of track.commands) {
 			if (command instanceof CommandWait || command instanceof CommandJump) {
-				maxCommands = Math.max(maxCommands, accumulator + 1);
+				this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, accumulator + 1);
 				accumulator = 0;
 			} else if (!(command instanceof CommandLabel)) {
 				accumulator++;
 			}
 		}
-		return Math.max(maxCommands, accumulator);
-	}
+		this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, accumulator);
 
-	static getMaxCyclesPerFrame(track, format) {
+		this.maxCyclesPerFrame = 0;
 		let cycles = 0;
-		let maxCycles = 0;
 		let lastCommand = undefined;
 		let firstFrame = true;
 		for (const command of track.commands) {
@@ -134,17 +121,15 @@ export class FormatStats {
 				if (firstFrame) {
 					firstFrame = false;
 				} else {
-					maxCycles = Math.max(maxCycles, cycles);
+					this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, cycles);
 				}
 				cycles = 0;
 			}
 			lastCommand = command;
 		}
-		return Math.max(maxCycles, cycles);
-	}
+		this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, cycles);
 
-	static countCommands(track) {
-		return {
+		this.commandCounts = {
 			total: track.commands.length,
 			wait: track.commands.reduce((sum, command) => command instanceof CommandWait ? sum + 1 : sum, 0),
 			label: track.commands.reduce((sum, command) => command instanceof CommandLabel ? sum + 1 : sum, 0),

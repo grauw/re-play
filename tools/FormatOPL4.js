@@ -140,17 +140,14 @@ export class FormatOPL4 extends FormatReplay {
 class FormatOPL4Stats extends FormatStats {
 	constructor(track, format) {
 		super(track, format);
-		this.registerCounts = FormatOPL4Stats.getRegisterCounts(track);
-	}
 
-	static getRegisterCounts(track) {
 		const counts = Array(0x300).fill(0);
 		for (const command of track.commands) {
 			if (command instanceof CommandOPL4Register) {
 				counts[command.address]++;
 			}
 		}
-		return {
+		this.registerCounts = {
 			total: counts.reduce((sum, value) => sum + value, 0),
 			waveTable: counts.slice(0x208, 0x220).reduce((sum, value) => sum + value, 0),
 			frequencyLow: counts.slice(0x220, 0x238).reduce((sum, value) => sum + value, 0),
