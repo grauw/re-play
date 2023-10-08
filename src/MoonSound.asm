@@ -141,13 +141,13 @@ MoonSound_WriteMemory:
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:
-	ld b,9
 	ld a,0BDH
 	call MoonSound_ReadFM1Register
 	and 11100000B
 	ld e,a
 	ld d,0BDH
 	call MoonSound_WriteFM1Register
+	ld b,9
 MoonSound_MuteFM1_Loop:
 	ld a,0B9H
 	sub b
