@@ -1,6 +1,7 @@
 import { default as fspath } from "path";
 import { Transform, TransformGroup, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
 import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandNop } from "./Command.js";
+import { Player } from "./Player.js";
 
 export class Format {
 	constructor(combine = true) {
@@ -96,38 +97,32 @@ export class FormatStats {
 		this.size = track.commands.reduce((accu, command) =>
 			[accu[0] + format.getSize(command, accu[1]), command], [0, undefined])[0];
 
-		this.duration = track.commands.reduce((accu, command) =>
-			command instanceof CommandWait ? accu + command.ticks : accu, 0) / track.tickFrequency;
-
+		this.ticks = 0;
 		this.maxCommandsPerFrame = 0;
-		let accumulator = 0;
-		for (const command of track.commands) {
-			if (command instanceof CommandWait || command instanceof CommandJump) {
-				this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, accumulator + 1);
-				accumulator = 0;
-			} else if (!(command instanceof CommandLabel)) {
-				accumulator++;
-			}
-		}
-		this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, accumulator);
-
 		this.maxCyclesPerFrame = 0;
-		let cycles = 0;
-		let lastCommand = undefined;
-		let firstFrame = true;
-		for (const command of track.commands) {
-			cycles += format.getCycles(command, lastCommand);
-			if (command instanceof CommandWait) {
-				if (firstFrame) {
-					firstFrame = false;
-				} else {
-					this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, cycles);
+		const player = new Player(track);
+		for (let i = 0; i < player.indexCount; i++) {
+			let frameCommands = 0;
+			let frameCycles = 0;
+			let lastCommand = null;
+			player.play(i);
+			player.run((command, index) => {
+				if (player.process(command, index)) {
+					player.stop();
 				}
-				cycles = 0;
-			}
-			lastCommand = command;
+				frameCommands++;
+				frameCycles += format.getCycles(command, lastCommand);
+				if (command instanceof CommandWait) {
+					this.ticks += player.playing ? command.ticks : 0;
+					this.maxCommandsPerFrame = Math.max(this.maxCommandsPerFrame, frameCommands);
+					this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, frameCycles);
+					frameCommands = 0;
+					frameCycles = 0;
+				}
+				lastCommand = command;
+			});
 		}
-		this.maxCyclesPerFrame = Math.max(this.maxCyclesPerFrame, cycles);
+		this.duration = this.ticks / this.tickFrequency;
 
 		this.commandCounts = {
 			total: track.commands.length,
