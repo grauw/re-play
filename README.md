@@ -239,6 +239,8 @@ The following key / values can be set either globally or on a per-track basis:
   * `reduceChannels`:
     Dynamically remaps channels to target amount. Only for MultiPCM source.
     Default: `28`.
+  * `stackCapacity`:
+    Stack capacity to take into account when validating. Default: `128`.
   * `compress`:
     Compress the command stream (with options object). Default: `false`.
     Options: `minimumLength` minimum length to consider for compression.

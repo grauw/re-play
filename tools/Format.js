@@ -23,7 +23,7 @@ export class Format {
 		return new TransformGroup([
 			options.compress ? new TransformCompress(this, options.compress.minimumLength) : new Transform(),
 			innerTransform,
-			new TransformValidate()
+			new TransformValidate(options.stackCapacity)
 		]);
 	}
 
