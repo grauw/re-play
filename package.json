@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Re-Play music converter & player",
   "author": "Laurens Holst",
-  "license": "BSD-2-Clause",
+  "license": "MIT",
   "repository": {
     "type": "hg",
     "url": "https://hg.sr.ht/~grauw/re-play"
