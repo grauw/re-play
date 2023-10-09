@@ -97,9 +97,18 @@ export class ResourceOverride {
 	}
 
 	apply(json) {
-		for (let i = 0; i < this.path.length - 2; i++) {
-			json = json[this.path[i]];
+		const path = this.path;
+		for (let i = 0; i < path.length - 1; i++) {
+			if (path[i] in json) {
+				json = json[path[i]];
+			} else if (typeof path[i + 1] == "number") {
+				json = json[path[i]] = [];
+			} else if (typeof path[i + 1] == "string") {
+				json = json[path[i]] = {};
+			} else {
+				throw new Error("Invalid path element type.");
+			}
 		}
-		json[this.path.at(-1)] = this.value;
+		json[path.at(-1)] = this.value;
 	}
 }
