@@ -9,6 +9,8 @@
     "url": "https://hg.sr.ht/~grauw/re-play"
   },
   "type": "module",
-  "dependencies": {},
+  "dependencies": {
+    "lfs2-compression": "^1.0.1"
+  },
   "private": true
 }

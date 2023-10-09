@@ -1,5 +1,5 @@
 import { default as fspath } from "path";
-import { Transform, TransformGroup, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformValidate } from "./Transform.js";
+import { Transform, TransformGroup, TransformStartConfigAndWait, TransformMoveWaitAfterLoop, TransformQuantize, TransformEndLoop, TransformCompress, TransformValidate } from "./Transform.js";
 import { CommandWait, CommandLabel, CommandJump, CommandCall, CommandReturn, CommandNop } from "./Command.js";
 import { Player } from "./Player.js";
 
@@ -21,6 +21,8 @@ export class Format {
 
 	getPostTransform(options, innerTransform = new Transform()) {
 		return new TransformGroup([
+			options.compress ? new TransformCompress(this, options.compress.minimumLength) : new Transform(),
+			innerTransform,
 			new TransformValidate()
 		]);
 	}

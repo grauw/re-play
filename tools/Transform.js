@@ -4,6 +4,7 @@ import { CommandOPNConfig } from "./CommandFM.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { CommandOPLLConfig } from "./CommandOPLL.js";
 import { CommandPSGConfig } from "./CommandPSG.js";
+import { Grammar } from "lfs2-compression";
 import { Player } from "./Player.js";
 
 export class Transform {
@@ -168,6 +169,103 @@ export class TransformEndLoop extends Transform {
 		} else {
 			return input;
 		}
+	}
+}
+
+export class TransformCompress extends Transform {
+	constructor(format, minimumLength = 1) {
+		super();
+		this.format = format;
+		this.minimumLength = minimumLength;
+	}
+
+	apply(input) {
+		if (this.minimumLength == Infinity) {
+			return input;
+		}
+
+		const indexSymbols = new Set(input.getIndex().map(name => Symbol.for(name)));
+		let grammar = input.getCommandsGrammar();
+
+		grammar = grammar.compress({ minimumLength: this.minimumLength });
+		grammar = grammar.inlineUnitRules();
+		grammar = this.inlineSmallRules(grammar, indexSymbols);
+		grammar = this.inlineNonRepeats(grammar, indexSymbols);
+		grammar = grammar.getReachableRules();
+		grammar = this.sortTailCalls(grammar);
+
+		const output = Track.new(input);
+		output.addCommandsGrammar(grammar);
+		return output;
+	}
+
+	inlineSmallRules(grammar, blacklist) {
+		const format = this.format;
+		const callCommand = new CommandCall("dummy");
+		const returnCommand = new CommandReturn();
+		const occurrenceCounts = grammar.getOccurrenceCounts();
+		return grammar.inline((expansion, nonTerminal) => {
+			if (blacklist.has(nonTerminal)) {
+				return false;
+			}
+			const frequency = occurrenceCounts.get(nonTerminal);
+			let inlineSize = 0;
+			let outlineSize = frequency * format.getSize(callCommand) + format.getSize(returnCommand);
+			let inlinePreceding = undefined;
+			let outlinePreceding = undefined;
+			for (let command of expansion) {
+				if (typeof command == "symbol") {
+					command = callCommand;
+				}
+				inlineSize += format.getSize(command, inlinePreceding);
+				outlineSize += format.getSize(command, outlinePreceding);
+				inlinePreceding = undefined;
+				outlinePreceding = command;
+			}
+			return outlineSize >= inlineSize * frequency;
+		});
+	}
+
+	inlineNonRepeats(grammar, blacklist) {
+		const occurrenceCounts = grammar.getOccurrenceCounts();
+		return grammar.inline((_, nonTerminal) => !blacklist.has(nonTerminal) && occurrenceCounts.get(nonTerminal) < 2);
+	}
+
+	sortTailCalls(grammar, nextNonTerminal = Grammar.start) {
+		let tailCalls = new Set();
+		for (const [nonTerminal, expansion] of grammar) {
+			const symbol = expansion.at(-1);
+			if (grammar.has(symbol) && symbol != nonTerminal) {
+				tailCalls.add(symbol);
+			}
+		}
+		let nonTailCalls = new Set();
+		for (const nonTerminal of grammar.keys()) {
+			if (!tailCalls.has(nonTerminal)) {
+				nonTailCalls.add(nonTerminal);
+			}
+		}
+		const counts = grammar.getOccurrenceCounts();
+		tailCalls = new Set([...tailCalls].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0)));
+		nonTailCalls = new Set([...nonTailCalls].sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0)));
+
+		const rules = new Map();
+		while (true) {
+			const expansion = grammar.get(nextNonTerminal);
+			rules.set(nextNonTerminal, expansion);
+			tailCalls.delete(nextNonTerminal);
+			nonTailCalls.delete(nextNonTerminal);
+			if (tailCalls.has(expansion.at(-1))) {
+				nextNonTerminal = expansion.at(-1);
+			} else if (nonTailCalls.size > 0) {
+				nextNonTerminal = nonTailCalls.values().next().value;
+			} else if (tailCalls.size > 0) {
+				nextNonTerminal = tailCalls.values().next().value;
+			} else {
+				break;
+			}
+		}
+		return new Grammar(rules);
 	}
 }
 

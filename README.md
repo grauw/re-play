@@ -17,6 +17,11 @@ music for since almost any source or tool can be used as long as a VGM recording
 can be obtained. The weakness is the size of the data, which needs to be
 carefully optimised. It is most suitable for use in MegaROM software.
 
+The format also supports compression using the grammar compression technique,
+which extracts repetition in the command stream to subsequences that can be
+called in multiple places. It can decode straight from ROM as it is playing,
+and does not need extra RAM apart from some space to keep track of a stack.
+
 In addition to the currently supported sound chips, this project intends to
 provide a framework to support more sound chips and specialised formats for
 future projects, which will be implemented as needed.
@@ -234,6 +239,9 @@ The following key / values can be set either globally or on a per-track basis:
   * `reduceChannels`:
     Dynamically remaps channels to target amount. Only for MultiPCM source.
     Default: `28`.
+  * `compress`:
+    Compress the command stream (with options object). Default: `false`.
+    Options: `minimumLength` minimum length to consider for compression.
 
 Resource keys can be overridden from the command line with `--set key value`.
 

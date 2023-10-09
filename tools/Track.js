@@ -1,5 +1,6 @@
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait, Command } from "./Command.js";
 import { CommandFMInstrument } from "./CommandFM.js";
+import { Grammar } from "lfs2-compression";
 
 export class Track {
 	constructor(name, tickFrequency) {
@@ -112,5 +113,59 @@ export class Track {
 			}
 		}
 		return index;
+	}
+
+	getCommandsGrammar(startSymbol = Grammar.start) {
+		const rules = new Map();
+		let nonTerminal = startSymbol;
+		let expansion = [];
+		let lastCommand = undefined;
+		for (const command of this.commands) {
+			if (command instanceof CommandLabel) {
+				if (!(lastCommand instanceof CommandJump || lastCommand instanceof CommandReturn)) {
+					expansion.push(Symbol.for(command.name));
+				}
+				rules.set(nonTerminal, expansion);
+				nonTerminal = Symbol.for(command.name);
+				expansion = [];
+			} else if (command instanceof CommandJump) {
+				expansion.push(Symbol.for(command.target));
+			} else if (command instanceof CommandCall) {
+				expansion.push(Symbol.for(command.target));
+			} else if (command instanceof CommandReturn) {
+			} else {
+				expansion.push(command);
+			}
+			lastCommand = command;
+		}
+		rules.set(nonTerminal, expansion);
+		return new Grammar(rules);
+	}
+
+	addCommandsGrammar(grammar, startSymbol = Grammar.start) {
+		const symbolToLabel = symbol => Symbol.keyFor(symbol) ?? `.${symbol.description}`;
+		const loopingRules = grammar.getRecursiveRules();
+		for (const [nonTerminal, expansion] of grammar) {
+			if (nonTerminal != startSymbol) {
+				this.addCommand(CommandLabel.of(symbolToLabel(nonTerminal)));
+			} else if (this.commands.length > 0) {
+				throw new Error("Start symbol is not the first rule.");
+			}
+			for (let i = 0; i < expansion.length; i++) {
+				const command = expansion[i];
+				if (typeof command == "symbol") {
+					if (loopingRules.has(command)) {
+						this.addCommand(CommandJump.of(symbolToLabel(command)));
+					} else {
+						this.addCommand(CommandCall.of(symbolToLabel(command)));
+					}
+				} else {
+					this.addCommand(command);
+				}
+			}
+			if (!(this.commands.at(-1) instanceof CommandJump)) {
+				this.addCommand(CommandReturn.of());
+			}
+		}
 	}
 }
