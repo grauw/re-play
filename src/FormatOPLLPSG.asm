@@ -37,11 +37,10 @@ FormatOPLLPSG_JumpTablePSG:
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessR800:
+	ld bc,FormatOPLLPSG_ProcessR800
+	push bc
 	ld a,(hl)
 	inc hl
-	call FormatOPLLPSG_ProcessR800_Dispatch
-	jr FormatOPLLPSG_ProcessR800
-FormatOPLLPSG_ProcessR800_Dispatch:
 	cp 40H
 	jp c,MSXMusic_WriteBlockR800
 	cp 80H
@@ -57,11 +56,10 @@ FormatOPLLPSG_ProcessR800_Dispatch:
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessZ80:
+	ld bc,FormatOPLLPSG_ProcessZ80
+	push bc
 	ld a,(hl)
 	inc hl
-	call FormatOPLLPSG_ProcessZ80_Dispatch
-	jp FormatOPLLPSG_ProcessZ80
-FormatOPLLPSG_ProcessZ80_Dispatch:
 	cp 40H
 	jp c,MSXMusic_WriteBlockZ80
 	cp 80H
@@ -77,11 +75,10 @@ FormatOPLLPSG_ProcessZ80_Dispatch:
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessPSG:
+	ld bc,FormatOPLLPSG_ProcessPSG
+	push bc
 	ld a,(hl)
 	inc hl
-	call FormatOPLLPSG_ProcessPSG_Dispatch
-	jr FormatOPLLPSG_ProcessPSG
-FormatOPLLPSG_ProcessPSG_Dispatch:
 	cp 40H
 	jr c,FormatOPLLPSG_SkipBlock
 	cp 80H

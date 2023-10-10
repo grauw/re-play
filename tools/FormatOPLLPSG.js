@@ -97,17 +97,17 @@ export class FormatOPLLPSG extends FormatReplay {
 
 	getCycles(command, preceding) {
 		if (command instanceof CommandOPLLRegister) {
-			return preceding instanceof CommandOPLLRegister ? 126 : 223;
+			return preceding instanceof CommandOPLLRegister ? 126 : 217;
 		} else if (command instanceof CommandPSGRegister) {
-			return preceding instanceof CommandPSGRegister ? 57 : 186;
+			return preceding instanceof CommandPSGRegister ? 57 : 180;
 		} else if (command instanceof CommandJump) {
-			return 243;
+			return 237;
 		} else if (command instanceof CommandCall) {
-			return 395;
+			return 389;
 		} else if (command instanceof CommandReturn) {
-			return 301;
+			return 295;
 		} else if (command instanceof CommandWait) {
-			return preceding instanceof CommandWait ? 0 : 145;
+			return preceding instanceof CommandWait ? 0 : 139;
 		} else {
 			return super.getSize(command, preceding);
 		}
