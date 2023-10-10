@@ -268,4 +268,5 @@ embedded in the project requires [Java 8](https://adoptopenjdk.net/). To check
 your Java version, invoke the `java -version` command.
 
 Additionally, the conversion tools are written in JavaScript for Node.js.
-You need to have Node.js and NPM installed.
+You need to have Node.js and NPM installed, and invoke `npm install` in the
+project directory before use to install dependencies.
