@@ -10,7 +10,7 @@ CLIKSW: equ 0F3DBH
 JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
-Player_SetBank_M: MACRO
+RePlayer_SetBank_M: MACRO
 ;	ld (6000H),a  ; Konami4 6000H-7FFFH
 ;	ld (7000H),a  ; Konami5 6000H-7FFFH
 ;	ld (6800H),a  ; ASCII8  6000H-7FFFH
@@ -34,7 +34,7 @@ RAM: ds RAM_SIZE
 
 	ENDS
 
-	INCLUDE "Player.asm"
+	INCLUDE "RePlayer.asm"
 	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
 
@@ -55,21 +55,21 @@ Main:
 	call Main_PrintString
 
 	ld a,1
-	ld (Player_currentBank),a
-	Player_SetBank_M
+	ld (RePlayer_currentBank),a
+	RePlayer_SetBank_M
 	ld a,(SoundData)
-	call Player_Detect
+	call RePlayer_Detect
 Main_Play:
-	call Player_Stop
+	call RePlayer_Stop
 	call Main_WaitFrame
 	ld bc,(Main_currentTrack)
 	ld a,1
 	ld hl,SoundData + 1
-	call Player_Play
-	call Player_Tick
+	call RePlayer_Play
+	call RePlayer_Tick
 Main_Loop:
 	call Main_WaitFrame
-	call Player_Tick
+	call RePlayer_Tick
 	call CHSNS
 	jr z,Main_Loop
 	call CHGET
@@ -86,16 +86,16 @@ Main_Loop:
 	jr z,Main_ToggleFrequency
 	jr Main_End
 Main_Pause:
-	call Player_TogglePause
+	call RePlayer_TogglePause
 	jr Main_Loop
 Main_Next:
-	call Player_Stop
+	call RePlayer_Stop
 	ld bc,(Main_currentTrack)
 	inc bc
 	ld (Main_currentTrack),bc
 	jp Main_Play
 Main_Previous:
-	call Player_Stop
+	call RePlayer_Stop
 	ld bc,(Main_currentTrack)
 	dec bc
 	ld (Main_currentTrack),bc
@@ -109,7 +109,7 @@ Main_ToggleFrequency:
 	call WRTVDP
 	jp Main_Loop
 Main_End:
-	call Player_Stop
+	call RePlayer_Stop
 	ret
 
 Main_WaitFrame:

@@ -19,7 +19,7 @@ PARAMETERS: equ 80H
 
 SoundData: equ 4000H
 
-Player_SetBank_M: MACRO
+RePlayer_SetBank_M: MACRO
 	call DOS2Mapper_SetBank  ; DOS2 8000H-BFFFH
 	ENDM
 
@@ -29,7 +29,7 @@ Player_SetBank_M: MACRO
 
 RAM: ds 400H
 
-	INCLUDE "Player.asm"
+	INCLUDE "RePlayer.asm"
 	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
 	INCLUDE "DOS2Mapper.asm"
@@ -138,23 +138,23 @@ Main_ReadComplete:
 	jp nz,DOS_TerminateWithErrorCode
 
 	ld a,0
-	ld (Player_currentBank),a
-	Player_SetBank_M
+	ld (RePlayer_currentBank),a
+	RePlayer_SetBank_M
 	ld a,(SoundData)
-	call Player_Detect
+	call RePlayer_Detect
 	ld a,1
 	jp nc,DOS_TerminateWithErrorCode
 Main_Play:
-	call Player_Stop
+	call RePlayer_Stop
 	call Main_WaitFrame
 	ld bc,(Main_currentTrack)
 	ld a,0
 	ld hl,SoundData + 1
-	call Player_Play
-	call Player_Tick
+	call RePlayer_Play
+	call RePlayer_Tick
 Main_Loop:
 	call Main_WaitFrame
-	call Player_Tick
+	call RePlayer_Tick
 	ld c,_CONST
 	call BDOS
 	and a
@@ -174,16 +174,16 @@ Main_Loop:
 	jr z,Main_ToggleFrequency
 	jr Main_End
 Main_Pause:
-	call Player_TogglePause
+	call RePlayer_TogglePause
 	jr Main_Loop
 Main_Next:
-	call Player_Stop
+	call RePlayer_Stop
 	ld bc,(Main_currentTrack)
 	inc bc
 	ld (Main_currentTrack),bc
 	jp Main_Play
 Main_Previous:
-	call Player_Stop
+	call RePlayer_Stop
 	ld bc,(Main_currentTrack)
 	dec bc
 	ld (Main_currentTrack),bc
@@ -198,7 +198,7 @@ Main_ToggleFrequency:
 	call Memory_CallBIOS
 	jp Main_Loop
 Main_End:
-	call Player_Stop
+	call RePlayer_Stop
 	ret
 
 Main_WaitFrame:

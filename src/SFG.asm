@@ -131,19 +131,19 @@ SFG_Instrument_Loop:
 
 ; hl = sound data
 SFG_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp SFG_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 SFG_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp SFG_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 SFG_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp SFG_Process_Loop
 
 SFG_Mute:

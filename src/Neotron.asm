@@ -183,19 +183,19 @@ Neotron_Instrument2_Loop:
 
 ; hl = sound data
 Neotron_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp Neotron_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 Neotron_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp Neotron_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 Neotron_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp Neotron_Process_Loop
 
 Neotron_Mute:

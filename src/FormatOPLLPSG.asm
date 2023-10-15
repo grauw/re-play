@@ -52,13 +52,13 @@ FormatOPLLPSG_ProcessR800_WriteBlock:
 	call PSG_WriteBlock
 	jp FormatOPLLPSG_ProcessR800
 FormatOPLLPSG_ProcessR800_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp FormatOPLLPSG_ProcessR800
 FormatOPLLPSG_ProcessR800_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp FormatOPLLPSG_ProcessR800
 FormatOPLLPSG_ProcessR800_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp FormatOPLLPSG_ProcessR800
 
 ; hl = sound data
@@ -80,13 +80,13 @@ FormatOPLLPSG_ProcessZ80_WriteBlock:
 	call PSG_WriteBlock
 	jp FormatOPLLPSG_ProcessZ80
 FormatOPLLPSG_ProcessZ80_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp FormatOPLLPSG_ProcessZ80
 FormatOPLLPSG_ProcessZ80_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp FormatOPLLPSG_ProcessZ80
 FormatOPLLPSG_ProcessZ80_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp FormatOPLLPSG_ProcessZ80
 
 ; hl = sound data
@@ -108,13 +108,13 @@ FormatOPLLPSG_ProcessPSG_WriteBlock:
 	call PSG_WriteBlock
 	jp FormatOPLLPSG_ProcessPSG
 FormatOPLLPSG_ProcessPSG_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp FormatOPLLPSG_ProcessPSG
 FormatOPLLPSG_ProcessPSG_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp FormatOPLLPSG_ProcessPSG
 FormatOPLLPSG_ProcessPSG_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp FormatOPLLPSG_ProcessPSG
 
 ; a = count * 2 - 2

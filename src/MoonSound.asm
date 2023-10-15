@@ -125,19 +125,19 @@ MoonSound_WriteMemory:
 
 ; hl = sound data
 MoonSound_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp MoonSound_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MoonSound_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp MoonSound_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MoonSound_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:

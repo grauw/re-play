@@ -98,17 +98,17 @@ MSXAudioZ80_WriteMemory:
 
 ; hl = sound data
 MSXAudioZ80_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp MSXAudioZ80_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MSXAudioZ80_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp MSXAudioZ80_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MSXAudioZ80_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp MSXAudioZ80_Process_Loop

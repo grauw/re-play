@@ -122,19 +122,19 @@ MSXAudio_WriteMemory:
 
 ; hl = sound data
 MSXAudio_Jump:
-	Player_Jump_M
+	RePlayer_Jump_M
 	jp MSXAudio_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MSXAudio_Call:
-	Player_Call_M
+	RePlayer_Call_M
 	jp MSXAudio_Process_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 MSXAudio_Return:
-	Player_Return_M
+	RePlayer_Return_M
 	jp MSXAudio_Process_Loop
 
 MSXAudio_Mute:

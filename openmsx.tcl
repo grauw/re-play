@@ -28,14 +28,14 @@ proc is_my_program {} {
 debug set_bp -once [symbol Main] {[is_my_program]} {
 	set throttle on
 
-	profile::section_scope_bp frame [symbol Player_Tick] {[is_my_program]}
-	profile::section_scope_bp process [symbol Player_Process] {[is_my_program]}
+	profile::section_scope_bp frame [symbol RePlayer_Tick] {[is_my_program]}
+	profile::section_scope_bp process [symbol RePlayer_Process] {[is_my_program]}
 
-	debug set_bp [symbol Player_Play] {[is_my_program]} {
+	debug set_bp [symbol RePlayer_Play] {[is_my_program]} {
 		variable ticks -1
 	}
 
-	debug set_bp [symbol Player_Tick] {[is_my_program]} {
+	debug set_bp [symbol RePlayer_Tick] {[is_my_program]} {
 		variable ticks
 		if {$ticks >= 0} {
 			set cycles [profile::to_cycles [dict get $profile::sections process frame_time]]
