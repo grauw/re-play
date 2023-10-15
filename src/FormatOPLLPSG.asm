@@ -37,64 +37,85 @@ FormatOPLLPSG_JumpTablePSG:
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessR800:
-	ld bc,FormatOPLLPSG_ProcessR800
-	push bc
 	ld a,(hl)
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessR800_WriteBlock
-	jp z,FormatOPLLPSG_Call
+	jp z,FormatOPLLPSG_ProcessR800_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Return
-	jp z,FormatOPLLPSG_Jump
+	jp c,FormatOPLLPSG_ProcessR800_Return
+	jp z,FormatOPLLPSG_ProcessR800_Jump
 	rrca
-	pop bc
 	ret
 FormatOPLLPSG_ProcessR800_WriteBlock:
 	jp p,MSXMusic_WriteBlockR800
-	jp PSG_WriteBlock
+	call PSG_WriteBlock
+	jp FormatOPLLPSG_ProcessR800
+FormatOPLLPSG_ProcessR800_Call:
+	Player_Call_M
+	jp FormatOPLLPSG_ProcessR800
+FormatOPLLPSG_ProcessR800_Return:
+	Player_Return_M
+	jp FormatOPLLPSG_ProcessR800
+FormatOPLLPSG_ProcessR800_Jump:
+	Player_Jump_M
+	jp FormatOPLLPSG_ProcessR800
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessZ80:
-	ld bc,FormatOPLLPSG_ProcessZ80
-	push bc
 	ld a,(hl)
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessZ80_WriteBlock
-	jp z,FormatOPLLPSG_Call
+	jp z,FormatOPLLPSG_ProcessZ80_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Return
-	jp z,FormatOPLLPSG_Jump
+	jp c,FormatOPLLPSG_ProcessZ80_Return
+	jp z,FormatOPLLPSG_ProcessZ80_Jump
 	rrca
-	pop bc
 	ret
 FormatOPLLPSG_ProcessZ80_WriteBlock:
 	jp p,MSXMusic_WriteBlockZ80
-	jp PSG_WriteBlock
+	call PSG_WriteBlock
+	jp FormatOPLLPSG_ProcessZ80
+FormatOPLLPSG_ProcessZ80_Call:
+	Player_Call_M
+	jp FormatOPLLPSG_ProcessZ80
+FormatOPLLPSG_ProcessZ80_Return:
+	Player_Return_M
+	jp FormatOPLLPSG_ProcessZ80
+FormatOPLLPSG_ProcessZ80_Jump:
+	Player_Jump_M
+	jp FormatOPLLPSG_ProcessZ80
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessPSG:
-	ld bc,FormatOPLLPSG_ProcessPSG
-	push bc
 	ld a,(hl)
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessPSG_WriteBlock
-	jp z,FormatOPLLPSG_Call
+	jp z,FormatOPLLPSG_ProcessPSG_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Return
-	jp z,FormatOPLLPSG_Jump
+	jp c,FormatOPLLPSG_ProcessPSG_Return
+	jp z,FormatOPLLPSG_ProcessPSG_Jump
 	rrca
-	pop bc
 	ret
 FormatOPLLPSG_ProcessPSG_WriteBlock:
 	jp p,FormatOPLLPSG_SkipBlock
-	jp PSG_WriteBlock
+	call PSG_WriteBlock
+	jp FormatOPLLPSG_ProcessPSG
+FormatOPLLPSG_ProcessPSG_Call:
+	Player_Call_M
+	jp FormatOPLLPSG_ProcessPSG
+FormatOPLLPSG_ProcessPSG_Return:
+	Player_Return_M
+	jp FormatOPLLPSG_ProcessPSG
+FormatOPLLPSG_ProcessPSG_Jump:
+	Player_Jump_M
+	jp FormatOPLLPSG_ProcessPSG
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -103,24 +124,7 @@ FormatOPLLPSG_SkipBlock:
 	ld c,a
 	ld b,0
 	add hl,bc
-	ret
-
-; hl = sound data
-FormatOPLLPSG_Jump:
-	Player_Jump_M
-	ret
-
-; hl = sound data
-; ix = stack pointer
-FormatOPLLPSG_Call:
-	Player_Call_M
-	ret
-
-; hl = sound data
-; ix = stack pointer
-FormatOPLLPSG_Return:
-	Player_Return_M
-	ret
+	jp FormatOPLLPSG_ProcessPSG
 
 FormatOPLLPSG_Mute:
 	call MSXMusic_Mute

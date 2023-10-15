@@ -96,7 +96,7 @@ MSXMusic_WriteBlockR800_Loop:
 	in a,(MSXMusic_BASE)
 	in a,(MSXMusic_BASE)
 	jp nz,MSXMusic_WriteBlockR800_Loop
-	ret
+	jp FormatOPLLPSG_ProcessR800
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -118,7 +118,7 @@ MSXMusic_WriteBlockZ80_Loop:
 	ld (hl),a
 	pop hl
 	jp nz,MSXMusic_WriteBlockZ80_Loop
-	ret
+	jp FormatOPLLPSG_ProcessZ80
 
 MSXMusic_Mute:
 	ld a,0FH
