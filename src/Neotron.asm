@@ -74,28 +74,11 @@ Neotron_Process_Loop:
 	jr c,Neotron_Frequency
 	cp 90H
 	jr c,Neotron_Instrument
-	jr z,Neotron_Jump
+	jp z,Neotron_Jump
 	sub 92H
-	jr c,Neotron_Call
-	jr z,Neotron_Return
+	jp c,Neotron_Call
+	jp z,Neotron_Return
 	ret
-
-; hl = sound data
-Neotron_Jump:
-	call Player_Jump
-	jp Neotron_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-Neotron_Call:
-	call Player_Call
-	jp Neotron_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-Neotron_Return:
-	call Player_Return
-	jp Neotron_Process_Loop
 
 ; hl = sound data
 Neotron_Key:
@@ -197,6 +180,23 @@ Neotron_Instrument2_Loop:
 	ld e,(hl)
 	inc hl
 	jp Neotron_WriteRegister2
+
+; hl = sound data
+Neotron_Jump:
+	Player_Jump_M
+	jp Neotron_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Neotron_Call:
+	Player_Call_M
+	jp Neotron_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Neotron_Return:
+	Player_Return_M
+	jp Neotron_Process_Loop
 
 Neotron_Mute:
 	ld h,Neotron_BASE >> 8

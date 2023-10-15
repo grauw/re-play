@@ -30,32 +30,15 @@ MSXAudioZ80_Process_Loop:
 	jr c,MSXAudioZ80_WaitLoad
 	jr z,MSXAudioZ80_WriteMemory
 	cp 0C2H << 1
-	jr z,MSXAudioZ80_Jump
+	jp z,MSXAudioZ80_Jump
 	sub 0C4H << 1
-	jr c,MSXAudioZ80_Call
-	jr z,MSXAudioZ80_Return
+	jp c,MSXAudioZ80_Call
+	jp z,MSXAudioZ80_Return
 	rrca
 	ret
 MSXAudioZ80_Process_FM:
 	jp p,MSXAudioZ80_WriteFM1
 	jp MSXAudioZ80_WriteFM2
-
-; hl = sound data
-MSXAudioZ80_Jump:
-	call Player_Jump
-	jp MSXAudioZ80_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MSXAudioZ80_Call:
-	call Player_Call
-	jp MSXAudioZ80_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MSXAudioZ80_Return:
-	call Player_Return
-	jp MSXAudioZ80_Process_Loop
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -111,4 +94,21 @@ MSXAudioZ80_WriteMemory:
 	ld b,(hl)
 	inc hl
 	add hl,bc
+	jp MSXAudioZ80_Process_Loop
+
+; hl = sound data
+MSXAudioZ80_Jump:
+	Player_Jump_M
+	jp MSXAudioZ80_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MSXAudioZ80_Call:
+	Player_Call_M
+	jp MSXAudioZ80_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MSXAudioZ80_Return:
+	Player_Return_M
 	jp MSXAudioZ80_Process_Loop

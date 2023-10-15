@@ -30,32 +30,15 @@ MoonSoundZ80_Process_Loop:
 	jr c,MoonSoundZ80_WaitLoad
 	jr z,MoonSoundZ80_WriteMemory
 	cp 0C2H << 1
-	jr z,MoonSoundZ80_Jump
+	jp z,MoonSoundZ80_Jump
 	sub 0C4H << 1
-	jr c,MoonSoundZ80_Call
-	jr z,MoonSoundZ80_Return
+	jp c,MoonSoundZ80_Call
+	jp z,MoonSoundZ80_Return
 	rrca
 	ret
 MoonSoundZ80_Process_FM:
 	jp p,MoonSoundZ80_WriteFM1
 	jp MoonSoundZ80_WriteFM2
-
-; hl = sound data
-MoonSoundZ80_Jump:
-	call Player_Jump
-	jp MoonSoundZ80_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MoonSoundZ80_Call:
-	call Player_Call
-	jp MoonSoundZ80_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MoonSoundZ80_Return:
-	call Player_Return
-	jp MoonSoundZ80_Process_Loop
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -112,4 +95,21 @@ MoonSoundZ80_WriteBlock_Unrolled:
 	inc c
 	outi
 	ENDM
+	jp MoonSoundZ80_Process_Loop
+
+; hl = sound data
+MoonSoundZ80_Jump:
+	Player_Jump_M
+	jp MoonSoundZ80_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MoonSoundZ80_Call:
+	Player_Call_M
+	jp MoonSoundZ80_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MoonSoundZ80_Return:
+	Player_Return_M
 	jp MoonSoundZ80_Process_Loop

@@ -104,7 +104,7 @@ Player_Tick:
 	ret
 
 ; hl = sound data
-Player_Jump:
+Player_Jump_M: MACRO
 	ld e,(hl)
 	inc hl
 	ld d,(hl)
@@ -115,11 +115,11 @@ Player_Jump:
 	add hl,de
 	ld (Player_currentBank),a
 	Player_SetBank_M
-	ret
+	ENDM
 
 ; hl = sound data
 ; ix = stack pointer
-Player_Call:
+Player_Call_M: MACRO
 	ld e,(hl)
 	inc hl
 	ld d,(hl)
@@ -132,15 +132,15 @@ Player_Call:
 	add a,b
 	ld (Player_currentBank),a
 	Player_SetBank_M
-	ret
+	ENDM
 
 ; hl = sound data
 ; ix = stack pointer
-Player_Return:
+Player_Return_M: MACRO
 	Player_Pop_M
 	ld (Player_currentBank),a
 	Player_SetBank_M
-	ret
+	ENDM
 
 ; hl = value
 ; ix = stack pointer

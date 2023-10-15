@@ -63,28 +63,11 @@ SFG_Process_Loop:
 	jr c,SFG_Frequency
 	cp 90H
 	jr c,SFG_Instrument
-	jr z,SFG_Jump
+	jp z,SFG_Jump
 	sub 92H
-	jr c,SFG_Call
-	jr z,SFG_Return
+	jp c,SFG_Call
+	jp z,SFG_Return
 	ret
-
-; hl = sound data
-SFG_Jump:
-	call Player_Jump
-	jp SFG_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-SFG_Call:
-	call Player_Call
-	jp SFG_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-SFG_Return:
-	call Player_Return
-	jp SFG_Process_Loop
 
 ; hl = sound data
 SFG_Key:
@@ -145,6 +128,23 @@ SFG_Instrument_Loop:
 	ld e,(hl)
 	inc hl
 	jp SFG_WriteRegister
+
+; hl = sound data
+SFG_Jump:
+	Player_Jump_M
+	jp SFG_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+SFG_Call:
+	Player_Call_M
+	jp SFG_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+SFG_Return:
+	Player_Return_M
+	jp SFG_Process_Loop
 
 SFG_Mute:
 	ld h,SFG_BASE >> 8

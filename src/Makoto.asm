@@ -52,28 +52,11 @@ Makoto_Process_Loop:
 	jr c,Makoto_Frequency
 	cp 90H
 	jr c,Makoto_Instrument
-	jr z,Makoto_Jump
+	jp z,Makoto_Jump
 	sub 92H
-	jr c,Makoto_Call
-	jr z,Makoto_Return
+	jp c,Makoto_Call
+	jp z,Makoto_Return
 	ret
-
-; hl = sound data
-Makoto_Jump:
-	call Player_Jump
-	jp Makoto_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-Makoto_Call:
-	call Player_Call
-	jp Makoto_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-Makoto_Return:
-	call Player_Return
-	jp Makoto_Process_Loop
 
 ; hl = sound data
 Makoto_Key:
@@ -176,6 +159,23 @@ Makoto_Instrument2_Loop:
 	ld e,(hl)
 	inc hl
 	jp Makoto_WriteRegister2
+
+; hl = sound data
+Makoto_Jump:
+	Player_Jump_M
+	jp Makoto_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Makoto_Call:
+	Player_Call_M
+	jp Makoto_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+Makoto_Return:
+	Player_Return_M
+	jp Makoto_Process_Loop
 
 Makoto_Mute:
 	ld b,10H

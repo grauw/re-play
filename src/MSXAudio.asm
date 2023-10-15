@@ -44,32 +44,15 @@ MSXAudio_Process_Loop:
 	jr c,MSXAudio_WaitLoad
 	jr z,MSXAudio_WriteMemory
 	cp 0C2H << 1
-	jr z,MSXAudio_Jump
+	jp z,MSXAudio_Jump
 	sub 0C4H << 1
-	jr c,MSXAudio_Call
-	jr z,MSXAudio_Return
+	jp c,MSXAudio_Call
+	jp z,MSXAudio_Return
 	rrca
 	ret
 MSXAudio_Process_FM:
 	jp p,MSXAudio_WriteFM1
 	jp MSXAudio_WriteFM2
-
-; hl = sound data
-MSXAudio_Jump:
-	call Player_Jump
-	jp MSXAudio_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MSXAudio_Call:
-	call Player_Call
-	jp MSXAudio_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MSXAudio_Return:
-	call Player_Return
-	jp MSXAudio_Process_Loop
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -135,6 +118,23 @@ MSXAudio_WriteMemory:
 	ld b,(hl)
 	inc hl
 	add hl,bc
+	jp MSXAudio_Process_Loop
+
+; hl = sound data
+MSXAudio_Jump:
+	Player_Jump_M
+	jp MSXAudio_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MSXAudio_Call:
+	Player_Call_M
+	jp MSXAudio_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MSXAudio_Return:
+	Player_Return_M
 	jp MSXAudio_Process_Loop
 
 MSXAudio_Mute:

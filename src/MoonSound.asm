@@ -48,32 +48,15 @@ MoonSound_Process_Loop:
 	jr c,MoonSound_WaitLoad
 	jr z,MoonSound_WriteMemory
 	cp 0C2H << 1
-	jr z,MoonSound_Jump
+	jp z,MoonSound_Jump
 	sub 0C4H << 1
-	jr c,MoonSound_Call
-	jr z,MoonSound_Return
+	jp c,MoonSound_Call
+	jp z,MoonSound_Return
 	rrca
 	ret
 MoonSound_Process_FM:
 	jp p,MoonSound_WriteFM1
 	jp MoonSound_WriteFM2
-
-; hl = sound data
-MoonSound_Jump:
-	call Player_Jump
-	jp MoonSound_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MoonSound_Call:
-	call Player_Call
-	jp MoonSound_Process_Loop
-
-; hl = sound data
-; ix = stack pointer
-MoonSound_Return:
-	call Player_Return
-	jp MoonSound_Process_Loop
 
 ; a = count * 2 - 2
 ; hl = sound data
@@ -138,6 +121,23 @@ MoonSound_WriteMemory:
 	ld b,(hl)
 	inc hl
 	call MoonSound_WriteWaveMemory
+	jp MoonSound_Process_Loop
+
+; hl = sound data
+MoonSound_Jump:
+	Player_Jump_M
+	jp MoonSound_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MoonSound_Call:
+	Player_Call_M
+	jp MoonSound_Process_Loop
+
+; hl = sound data
+; ix = stack pointer
+MoonSound_Return:
+	Player_Return_M
 	jp MoonSound_Process_Loop
 
 MoonSound_Mute:
