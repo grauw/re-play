@@ -121,7 +121,7 @@ Memory_SearchSlots_Found:
 	scf
 	ret
 Memory_SearchSlots_JumpHL:
-	jp hl
+	jp (hl)
 
 ; Match a string in a slot.
 ; a = slot

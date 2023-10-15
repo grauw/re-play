@@ -87,7 +87,7 @@ MoonSoundZ80_WriteBlock:
 	add iy,de
 	sla e
 	add iy,de
-	jp iy
+	jp (iy)
 MoonSoundZ80_WriteBlock_Unrolled:
 	REPT 40H
 	dec c
