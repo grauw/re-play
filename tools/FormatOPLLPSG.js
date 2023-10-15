@@ -35,7 +35,7 @@ export class FormatOPLLPSG extends FormatReplay {
 	}
 
 	writeTrack(track) {
-		const data = new BankedData(this.bankSize, [0x80, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0x82, 0, 0, 0]);
 		data.add(FORMAT_OPLLPSG_ID);
 		let blockBank = -1;
 		let blockCommands = [];
@@ -58,14 +58,14 @@ export class FormatOPLLPSG extends FormatReplay {
 				blockCommands.push(command);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
-			} else if (command instanceof CommandJump) {
+			} else if (command instanceof CommandCall) {
 				data.add(0x80, 0, 0, 0);
 				data.addRewrite(command.target);
-			} else if (command instanceof CommandCall) {
-				data.add(0x81, 0, 0, 0);
-				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0x82);
+				data.add(0x81);
+			} else if (command instanceof CommandJump) {
+				data.add(0x82, 0, 0, 0);
+				data.addRewrite(command.target);
 			} else if (command instanceof CommandWait) {
 				let ticks = command.ticks;
 				while (ticks >= 1) {

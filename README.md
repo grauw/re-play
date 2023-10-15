@@ -85,11 +85,11 @@ Format ID: `0`
              Bit 0..2: channel. Byte 1..2: OPM frequency. Byte 3..4: OPN frequency.
   * `88-8F`: Instrument settings.
              Bit 0..2: channel. Byte 1..25: slot parameters. Byte 26: feedback / algorithm.
-  * `90`:    Relative jump.
+  * `90`:    Relative call.
              Byte 1..2: address offset. Byte 3: bank offset.
-  * `91`:    Relative call.
+  * `91`:    Return.
+  * `92`:    Relative jump.
              Byte 1..2: address offset. Byte 3: bank offset.
-  * `92`:    Return.
   * `93-FF`: Wait.
              Byte 0: tick count - 92H.
 
@@ -131,14 +131,14 @@ Format ID: `1`
              Byte 0: count n - 1 + 40H. Bytes 1..2n+1: address, value sequence.
   * `80-BF`: OPL4 WAVE register write block.
              Byte 0: count n - 1 + 80H. Bytes 1..2n+1: address, value sequence.
-  * `C0`:    Wait for OPL4 WAVE load.
-  * `C1`:    OPL4 WAVE memory write block.
-             Bytes 1..2: length. Bytes 3..n+3: value sequence.
+  * `C0`:    Relative call.
+             Byte 1..2: address offset. Byte 3: bank offset.
+  * `C1`:    Return.
   * `C2`:    Relative jump.
              Byte 1..2: address offset. Byte 3: bank offset.
-  * `C3`:    Relative call.
-             Byte 1..2: address offset. Byte 3: bank offset.
-  * `C4`:    Return.
+  * `C3`:    Wait for OPL4 WAVE load.
+  * `C4`:    OPL4 WAVE memory write block.
+             Bytes 1..2: length. Bytes 3..n+3: value sequence.
   * `C5-FF`: Wait.
              Byte 0: tick count - C4H.
 
@@ -170,11 +170,11 @@ Format ID: `2`
              Byte 0: count n - 1 + 00H. Bytes 1..2n+1: address, value sequence.
   * `40-7F`: PSG register write block.
              Byte 0: count n - 1 + 40H. Bytes 1..2n+1: address, value sequence.
-  * `80`:    Relative jump.
+  * `80`:    Relative call.
              Byte 1..2: address offset. Byte 3: bank offset.
-  * `81`:    Relative call.
+  * `81`:    Return.
+  * `82`:    Relative jump.
              Byte 1..2: address offset. Byte 3: bank offset.
-  * `82`:    Return.
   * `83-FF`: Wait.
              Byte 0: tick count - 82H.
 

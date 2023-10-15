@@ -74,10 +74,10 @@ Neotron_Process_Loop:
 	jr c,Neotron_Frequency
 	cp 90H
 	jr c,Neotron_Instrument
-	jp z,Neotron_Jump
+	jp z,Neotron_Call
 	sub 92H
-	jp c,Neotron_Call
-	jp z,Neotron_Return
+	jp c,Neotron_Return
+	jp z,Neotron_Jump
 	ret
 
 ; hl = sound data

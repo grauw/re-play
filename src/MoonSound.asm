@@ -45,13 +45,13 @@ MoonSound_Process_Loop:
 	jr nc,MoonSound_Process_FM
 	jp p,MoonSound_WriteWave
 	cp 0C1H << 1
-	jr c,MoonSound_WaitLoad
-	jr z,MoonSound_WriteMemory
+	jp c,MoonSound_Call
+	jp z,MoonSound_Return
 	cp 0C2H << 1
 	jp z,MoonSound_Jump
 	sub 0C4H << 1
-	jp c,MoonSound_Call
-	jp z,MoonSound_Return
+	jp c,MoonSound_WaitLoad
+	jr z,MoonSound_WriteMemory
 	rrca
 	ret
 MoonSound_Process_FM:

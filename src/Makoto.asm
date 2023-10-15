@@ -52,10 +52,10 @@ Makoto_Process_Loop:
 	jr c,Makoto_Frequency
 	cp 90H
 	jr c,Makoto_Instrument
-	jp z,Makoto_Jump
+	jp z,Makoto_Call
 	sub 92H
-	jp c,Makoto_Call
-	jp z,Makoto_Return
+	jp c,Makoto_Return
+	jp z,Makoto_Jump
 	ret
 
 ; hl = sound data

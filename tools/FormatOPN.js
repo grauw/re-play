@@ -33,7 +33,7 @@ export class FormatOPN extends FormatReplay {
 	writeTrack(track) {
 		const word = value => [value & 0xFF, (value >> 8) & 0xFF];
 
-		const data = new BankedData(this.bankSize, [0x90, 0, 0, 0]);
+		const data = new BankedData(this.bankSize, [0x92, 0, 0, 0]);
 		data.add(FORMAT_OPN_ID);
 		for (const command of track.commands) {
 			if (command instanceof CommandFMKey) {
@@ -46,14 +46,14 @@ export class FormatOPN extends FormatReplay {
 				data.add(0x88 + command.channel, ...command.parameters);
 			} else if (command instanceof CommandLabel) {
 				data.addSymbol(command.name);
-			} else if (command instanceof CommandJump) {
+			} else if (command instanceof CommandCall) {
 				data.add(0x90, 0, 0, 0);
 				data.addRewrite(command.target);
-			} else if (command instanceof CommandCall) {
-				data.add(0x91, 0, 0, 0);
-				data.addRewrite(command.target);
 			} else if (command instanceof CommandReturn) {
-				data.add(0x92);
+				data.add(0x91);
+			} else if (command instanceof CommandJump) {
+				data.add(0x92, 0, 0, 0);
+				data.addRewrite(command.target);
 			} else if (command instanceof CommandWait) {
 				let ticks = command.ticks;
 				while (ticks >= 1) {

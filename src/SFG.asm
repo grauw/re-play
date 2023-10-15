@@ -63,10 +63,10 @@ SFG_Process_Loop:
 	jr c,SFG_Frequency
 	cp 90H
 	jr c,SFG_Instrument
-	jp z,SFG_Jump
+	jp z,SFG_Call
 	sub 92H
-	jp c,SFG_Call
-	jp z,SFG_Return
+	jp c,SFG_Return
+	jp z,SFG_Jump
 	ret
 
 ; hl = sound data

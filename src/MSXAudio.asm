@@ -41,13 +41,13 @@ MSXAudio_Process_Loop:
 	jr nc,MSXAudio_Process_FM
 	jp p,MSXAudio_WriteWave
 	cp 0C1H << 1
-	jr c,MSXAudio_WaitLoad
-	jr z,MSXAudio_WriteMemory
+	jp c,MSXAudio_Call
+	jp z,MSXAudio_Return
 	cp 0C2H << 1
 	jp z,MSXAudio_Jump
 	sub 0C4H << 1
-	jp c,MSXAudio_Call
-	jp z,MSXAudio_Return
+	jp c,MSXAudio_WaitLoad
+	jr z,MSXAudio_WriteMemory
 	rrca
 	ret
 MSXAudio_Process_FM:

@@ -27,13 +27,13 @@ MoonSoundZ80_Process_Loop:
 	jr nc,MoonSoundZ80_Process_FM
 	jp p,MoonSoundZ80_WriteWave
 	cp 0C1H << 1
-	jr c,MoonSoundZ80_WaitLoad
-	jr z,MoonSoundZ80_WriteMemory
+	jp c,MoonSoundZ80_Call
+	jp z,MoonSoundZ80_Return
 	cp 0C2H << 1
 	jp z,MoonSoundZ80_Jump
 	sub 0C4H << 1
-	jp c,MoonSoundZ80_Call
-	jp z,MoonSoundZ80_Return
+	jp c,MoonSoundZ80_WaitLoad
+	jr z,MoonSoundZ80_WriteMemory
 	rrca
 	ret
 MoonSoundZ80_Process_FM:

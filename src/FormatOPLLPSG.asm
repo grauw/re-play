@@ -43,10 +43,10 @@ FormatOPLLPSG_ProcessR800:
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessR800_WriteBlock
-	jp z,FormatOPLLPSG_Jump
+	jp z,FormatOPLLPSG_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Call
-	jp z,FormatOPLLPSG_Return
+	jp c,FormatOPLLPSG_Return
+	jp z,FormatOPLLPSG_Jump
 	rrca
 	pop bc
 	ret
@@ -64,10 +64,10 @@ FormatOPLLPSG_ProcessZ80:
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessZ80_WriteBlock
-	jp z,FormatOPLLPSG_Jump
+	jp z,FormatOPLLPSG_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Call
-	jp z,FormatOPLLPSG_Return
+	jp c,FormatOPLLPSG_Return
+	jp z,FormatOPLLPSG_Jump
 	rrca
 	pop bc
 	ret
@@ -85,10 +85,10 @@ FormatOPLLPSG_ProcessPSG:
 	inc hl
 	add a,a
 	jr nc,FormatOPLLPSG_ProcessPSG_WriteBlock
-	jp z,FormatOPLLPSG_Jump
+	jp z,FormatOPLLPSG_Call
 	sub 82H << 1
-	jp c,FormatOPLLPSG_Call
-	jp z,FormatOPLLPSG_Return
+	jp c,FormatOPLLPSG_Return
+	jp z,FormatOPLLPSG_Jump
 	rrca
 	pop bc
 	ret

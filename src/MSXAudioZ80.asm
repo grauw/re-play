@@ -27,13 +27,13 @@ MSXAudioZ80_Process_Loop:
 	jr nc,MSXAudioZ80_Process_FM
 	jp p,MSXAudioZ80_WriteWave
 	cp 0C1H << 1
-	jr c,MSXAudioZ80_WaitLoad
-	jr z,MSXAudioZ80_WriteMemory
+	jp c,MSXAudioZ80_Call
+	jp z,MSXAudioZ80_Return
 	cp 0C2H << 1
 	jp z,MSXAudioZ80_Jump
 	sub 0C4H << 1
-	jp c,MSXAudioZ80_Call
-	jp z,MSXAudioZ80_Return
+	jp c,MSXAudioZ80_WaitLoad
+	jr z,MSXAudioZ80_WriteMemory
 	rrca
 	ret
 MSXAudioZ80_Process_FM:
