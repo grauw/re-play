@@ -122,7 +122,7 @@ export class FormatOPL4 extends FormatReplay {
 		} else if (command instanceof CommandJump) {
 			return 198;
 		} else if (command instanceof CommandOPL4WaitLoad) {
-			return 146;
+			return 138;
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			return 0;
 		} else if (command instanceof CommandWait) {

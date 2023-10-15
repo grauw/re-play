@@ -29,10 +29,10 @@ MSXAudioZ80_Process_Loop:
 	cp 0C1H << 1
 	jp c,MSXAudioZ80_Call
 	jp z,MSXAudioZ80_Return
-	cp 0C2H << 1
-	jp z,MSXAudioZ80_Jump
+	cp 0C3H << 1
+	jp c,MSXAudioZ80_Jump
+	jp z,MSXAudioZ80_WaitLoad
 	sub 0C4H << 1
-	jp c,MSXAudioZ80_WaitLoad
 	jr z,MSXAudioZ80_WriteMemory
 	rrca
 	ret
