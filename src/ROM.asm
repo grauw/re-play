@@ -10,8 +10,12 @@ CLIKSW: equ 0F3DBH
 JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
-Mapper_GetBank: equ ASCII16Mapper_GetBank
-Mapper_SetBank: equ ASCII16Mapper_SetBank
+Player_SetBank_M: MACRO
+;	ld (6000H),a  ; Konami4 6000H-7FFFH
+;	ld (7000H),a  ; Konami5 6000H-7FFFH
+;	ld (6800H),a  ; ASCII8  6000H-7FFFH
+	ld (7000H),a  ; ASCII16 8000H-BFFFH
+	ENDM
 
 RAM_ORG: equ 0C000H
 RAM_SIZE: equ 400H
@@ -33,7 +37,6 @@ RAM: ds RAM_SIZE
 	INCLUDE "Player.asm"
 	INCLUDE "Utils.asm"
 	INCLUDE "Memory.asm"
-	INCLUDE "ASCII16Mapper.asm"
 
 Main:
 	ei
@@ -41,7 +44,6 @@ Main:
 	call Memory_GetSlot
 	ld h,80H
 	call Memory_SetSlot
-	call ASCII16Mapper_Initialize
 	ld hl,RAM
 	ld de,RAM_ORG
 	ld bc,RAM_SIZE
@@ -52,6 +54,9 @@ Main:
 	ld hl,Main_message
 	call Main_PrintString
 
+	ld a,1
+	ld (Player_currentBank),a
+	Player_SetBank_M
 	ld a,(SoundData)
 	call Player_Detect
 Main_Play:

@@ -87,18 +87,20 @@ Player_Tick:
 	ld ix,(Player_stackPointer)
 	dec (ix)
 	ret nz
-	call Mapper_GetBank
+	ld a,(Player_currentBank)
 	push af
 	call Player_Pop
-	call Mapper_SetBank
+	ld (Player_currentBank),a
+	Player_SetBank_M
 	call Player_Process
 	ld b,a
-	call Mapper_GetBank
+	ld a,(Player_currentBank)
 	call Player_Push
 	ld (ix),b
 	ld (Player_stackPointer),ix
 	pop af
-	call Mapper_SetBank
+	ld (Player_currentBank),a
+	Player_SetBank_M
 	ret
 
 ; hl = sound data
@@ -107,11 +109,13 @@ Player_Jump:
 	inc hl
 	ld d,(hl)
 	inc hl
-	call Mapper_GetBank
+	ld a,(Player_currentBank)
 	add a,(hl)
 	inc hl
 	add hl,de
-	jp Mapper_SetBank
+	ld (Player_currentBank),a
+	Player_SetBank_M
+	ret
 
 ; hl = sound data
 ; ix = stack pointer
@@ -122,17 +126,21 @@ Player_Call:
 	inc hl
 	ld b,(hl)
 	inc hl
-	call Mapper_GetBank
+	ld a,(Player_currentBank)
 	call Player_Push
 	add hl,de
 	add a,b
-	jp Mapper_SetBank
+	ld (Player_currentBank),a
+	Player_SetBank_M
+	ret
 
 ; hl = sound data
 ; ix = stack pointer
 Player_Return:
 	call Player_Pop
-	jp Mapper_SetBank
+	ld (Player_currentBank),a
+	Player_SetBank_M
+	ret
 
 ; hl = value
 ; ix = stack pointer
@@ -161,6 +169,8 @@ Player_Pop:
 	SECTION RAM
 
 Player_playing:
+	db 0
+Player_currentBank:
 	db 0
 Player_stackPointer:
 	dw Player_stack

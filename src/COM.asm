@@ -19,8 +19,9 @@ PARAMETERS: equ 80H
 
 SoundData: equ 4000H
 
-Mapper_GetBank: equ DOS2Mapper_GetBank
-Mapper_SetBank: equ DOS2Mapper_SetBank
+Player_SetBank_M: MACRO
+	call DOS2Mapper_SetBank  ; DOS2 8000H-BFFFH
+	ENDM
 
 	org 100H
 
@@ -136,6 +137,9 @@ Main_ReadComplete:
 	call BDOS
 	jp nz,DOS_TerminateWithErrorCode
 
+	ld a,0
+	ld (Player_currentBank),a
+	Player_SetBank_M
 	ld a,(SoundData)
 	call Player_Detect
 	ld a,1

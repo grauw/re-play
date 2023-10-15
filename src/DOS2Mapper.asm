@@ -24,8 +24,6 @@ DOS2Mapper_Initialize:
 	ld (DOS2Mapper_banks + 1 + 100H),a
 	ld a,1
 	ld (DOS2Mapper_lastBank),a
-	ld a,0
-	ld (DOS2Mapper_currentBank),a
 	ret
 
 ; a <- bank index
@@ -51,13 +49,8 @@ DOS2Mapper_Allocate:
 	ld (hl),b
 	ret
 
-DOS2Mapper_GetBank:
-	ld a,(DOS2Mapper_currentBank)
-	ret
-
 ; a = bank
 DOS2Mapper_SetBank:
-	ld (DOS2Mapper_currentBank),a
 	exx
 	ld hl,DOS2Mapper_banks
 	ld e,a
@@ -109,8 +102,6 @@ GET_P3:
 DOS2Mapper_primaryMapperSlot:
 	db 0
 DOS2Mapper_lastBank:
-	db 0
-DOS2Mapper_currentBank:
 	db 0
 DOS2Mapper_banks:
 	ds 100H * 2
