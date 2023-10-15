@@ -55,7 +55,7 @@ Player_Play:
 	ld (Player_playing),a
 	ld a,b
 	ld ix,Player_stack
-	call Player_Push
+	Player_Push_M
 	ld a,1
 	ld (ix),a
 	ld (Player_stackPointer),ix
@@ -89,13 +89,13 @@ Player_Tick:
 	ret nz
 	ld a,(Player_currentBank)
 	push af
-	call Player_Pop
+	Player_Pop_M
 	ld (Player_currentBank),a
 	Player_SetBank_M
 	call Player_Process
 	ld b,a
 	ld a,(Player_currentBank)
-	call Player_Push
+	Player_Push_M
 	ld (ix),b
 	ld (Player_stackPointer),ix
 	pop af
@@ -127,7 +127,7 @@ Player_Call:
 	ld b,(hl)
 	inc hl
 	ld a,(Player_currentBank)
-	call Player_Push
+	Player_Push_M
 	add hl,de
 	add a,b
 	ld (Player_currentBank),a
@@ -137,7 +137,7 @@ Player_Call:
 ; hl = sound data
 ; ix = stack pointer
 Player_Return:
-	call Player_Pop
+	Player_Pop_M
 	ld (Player_currentBank),a
 	Player_SetBank_M
 	ret
@@ -145,26 +145,26 @@ Player_Return:
 ; hl = value
 ; ix = stack pointer
 ; ix <- stack pointer
-Player_Push:
+Player_Push_M: MACRO
 	ld (ix + 0),l
 	ld (ix + 1),h
 	ld (ix + 2),a
 	inc ix
 	inc ix
 	inc ix
-	ret
+	ENDM
 
 ; ix = stack pointer
 ; hl <- value
 ; ix <- stack pointer
-Player_Pop:
+Player_Pop_M: MACRO
 	dec ix
 	dec ix
 	dec ix
 	ld l,(ix + 0)
 	ld h,(ix + 1)
 	ld a,(ix + 2)
-	ret
+	ENDM
 
 	SECTION RAM
 
