@@ -115,18 +115,18 @@ export class FormatOPL4 extends FormatReplay {
 			} else {
 				return [201, 212, 196][command.bank];
 			}
+		} else if (command instanceof CommandCall) {
+			return 272;
+		} else if (command instanceof CommandReturn) {
+			return 207;
+		} else if (command instanceof CommandJump) {
+			return 198;
 		} else if (command instanceof CommandOPL4WaitLoad) {
-			return 99;
+			return 146;
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			return 0;
-		} else if (command instanceof CommandJump) {
-			return 263;
-		} else if (command instanceof CommandCall) {
-			return 412;
-		} else if (command instanceof CommandReturn) {
-			return 315;
 		} else if (command instanceof CommandWait) {
-			return preceding instanceof CommandWait ? 0 : 119;
+			return preceding instanceof CommandWait ? 0 : 131;
 		} else {
 			return super.getCycles(command, preceding);
 		}
