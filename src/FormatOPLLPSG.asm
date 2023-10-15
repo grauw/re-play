@@ -41,16 +41,18 @@ FormatOPLLPSG_ProcessR800:
 	push bc
 	ld a,(hl)
 	inc hl
-	cp 40H
-	jp c,MSXMusic_WriteBlockR800
-	cp 80H
-	jp c,PSG_WriteBlock
+	add a,a
+	jr nc,FormatOPLLPSG_ProcessR800_WriteBlock
 	jp z,FormatOPLLPSG_Jump
-	sub 82H
+	sub 82H << 1
 	jp c,FormatOPLLPSG_Call
 	jp z,FormatOPLLPSG_Return
+	rrca
 	pop bc
 	ret
+FormatOPLLPSG_ProcessR800_WriteBlock:
+	jp p,MSXMusic_WriteBlockR800
+	jp PSG_WriteBlock
 
 ; hl = sound data
 ; ix = stack pointer
@@ -60,16 +62,18 @@ FormatOPLLPSG_ProcessZ80:
 	push bc
 	ld a,(hl)
 	inc hl
-	cp 40H
-	jp c,MSXMusic_WriteBlockZ80
-	cp 80H
-	jp c,PSG_WriteBlock
+	add a,a
+	jr nc,FormatOPLLPSG_ProcessZ80_WriteBlock
 	jp z,FormatOPLLPSG_Jump
-	sub 82H
+	sub 82H << 1
 	jp c,FormatOPLLPSG_Call
 	jp z,FormatOPLLPSG_Return
+	rrca
 	pop bc
 	ret
+FormatOPLLPSG_ProcessZ80_WriteBlock:
+	jp p,MSXMusic_WriteBlockZ80
+	jp PSG_WriteBlock
 
 ; hl = sound data
 ; ix = stack pointer
@@ -79,22 +83,23 @@ FormatOPLLPSG_ProcessPSG:
 	push bc
 	ld a,(hl)
 	inc hl
-	cp 40H
-	jr c,FormatOPLLPSG_SkipBlock
-	cp 80H
-	jp c,PSG_WriteBlock
+	add a,a
+	jr nc,FormatOPLLPSG_ProcessPSG_WriteBlock
 	jp z,FormatOPLLPSG_Jump
-	sub 82H
+	sub 82H << 1
 	jp c,FormatOPLLPSG_Call
 	jp z,FormatOPLLPSG_Return
+	rrca
 	pop bc
 	ret
+FormatOPLLPSG_ProcessPSG_WriteBlock:
+	jp p,FormatOPLLPSG_SkipBlock
+	jp PSG_WriteBlock
 
-; a = count - 1
+; a = count * 2 - 2
 ; hl = sound data
 FormatOPLLPSG_SkipBlock:
-	inc a
-	add a,a
+	add a,02H
 	ld c,a
 	ld b,0
 	add hl,bc

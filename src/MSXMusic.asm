@@ -61,11 +61,10 @@ MSXMusic_Disable:
 	ld hl,MSXMusic_ENABLE_ADDRESS
 	jp Memory_WriteSlot
 
-; a = count - 1
+; a = count * 2 - 2
 ; hl = sound data
 MSXMusic_WriteBlockR800:
-	inc a
-	add a,a
+	add a,02H
 	ld b,a
 	ld c,MSXMusic_DATA
 MSXMusic_WriteBlockR800_Loop:
@@ -99,11 +98,10 @@ MSXMusic_WriteBlockR800_Loop:
 	jp nz,MSXMusic_WriteBlockR800_Loop
 	ret
 
-; a = count - 1
+; a = count * 2 - 2
 ; hl = sound data
 MSXMusic_WriteBlockZ80:
-	inc a
-	add a,a
+	add a,02H
 	ld b,a
 	ld c,MSXMusic_DATA
 MSXMusic_WriteBlockZ80_Loop:
