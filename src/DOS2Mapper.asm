@@ -16,12 +16,12 @@ DOS2Mapper_Initialize:
 	call GET_PH
 	ld (DOS2Mapper_banks + 0),a
 	call Memory_GetSlot
-	ld (DOS2Mapper_banks + 1),a
+	ld (DOS2Mapper_banks + 0 + 100H),a
 	ld h,80H
 	call GET_PH
-	ld (DOS2Mapper_banks + 2),a
+	ld (DOS2Mapper_banks + 1),a
 	call Memory_GetSlot
-	ld (DOS2Mapper_banks + 3),a
+	ld (DOS2Mapper_banks + 1 + 100H),a
 	ld a,1
 	ld (DOS2Mapper_lastBank),a
 	ld a,0
@@ -46,9 +46,8 @@ DOS2Mapper_Allocate:
 	ld d,0
 	ld hl,DOS2Mapper_banks
 	add hl,de
-	add hl,de
 	ld (hl),c
-	inc hl
+	inc h
 	ld (hl),b
 	ret
 
@@ -64,12 +63,10 @@ DOS2Mapper_SetBank:
 	ld e,a
 	ld d,0
 	add hl,de
-	add hl,de
 	ld a,(hl)
-	inc hl
-	ld d,(hl)
+	inc h
 	call PUT_P1
-	ld a,d
+	ld a,(hl)
 	ld h,40H
 	call ENASLT
 	ei
