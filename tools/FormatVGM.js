@@ -2,7 +2,6 @@ import fs from "fs";
 import zlib from "zlib";
 import util from "util";
 import { FormatWrapper } from "./Format.js";
-import { TransformEndLoop } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandLabel, CommandJump, CommandReturn, CommandWait, CommandGD3 } from "./Command.js";
 import { CommandOPNConfig, CommandOPNRegister, CommandFMKey, CommandFMFrequency, CommandFMInstrument } from "./CommandFM.js";
