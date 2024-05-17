@@ -39,6 +39,10 @@ export class Ranges {
 	}
 
 	add(start, end = start + 1) {
+		if (start > end)
+			throw new Error("Invalid range.");
+		if (start == end)
+			return;
 		let startIndex = 0;
 		let endIndex = this.ranges.length - 1;
 		for (let index = 0; index < this.ranges.length; index++) {
@@ -92,6 +96,12 @@ export class Ranges {
 		}
 		this.ranges = ranges;
 		return this;
+	}
+
+	union(other) {
+		for (const range of other.ranges) {
+			this.add(range.start, range.end);
+		}
 	}
 
 	toString() {
