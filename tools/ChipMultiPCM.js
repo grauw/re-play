@@ -7,7 +7,7 @@ export class ChipMultiPCM extends Chip {
 	constructor() {
 		super(registerMasks);
 		this.clockFrequency = 33868800;
-		this.waveTables = rangeMap(32, i => (i & 0x07) != 0x07 ? new ChipMultiPCMWaveTable() : undefined);
+		this.channels = rangeMap(32, i => (i & 0x07) != 0x07 ? new ChipMultiPCMChannel() : undefined);
 		this.memory = new Memory(new Uint8Array(0x400000));
 		this.bankLow = 0x100000;
 		this.bankHigh = 0x180000;
@@ -24,7 +24,7 @@ export class ChipMultiPCM extends Chip {
 			super.set(address, value, mask);
 			const channel = address & 0x1F;
 			const wtAddress = this.getWaveTableAddress(this.getWaveTableNumber(channel));
-			let changed = this.updateWaveTable(this.waveTables[channel], wtAddress);
+			let changed = this.updateWaveTable(this.channels[channel].waveTable, wtAddress);
 			changed = this.set(0x0C0 + channel, this.memory.get(wtAddress + 7)) || changed;
 			changed = this.set(0x100 + channel, this.memory.get(wtAddress + 8)) || changed;
 			changed = this.set(0x120 + channel, this.memory.get(wtAddress + 9)) || changed;
@@ -38,9 +38,9 @@ export class ChipMultiPCM extends Chip {
 	unset(address, mask = 0xFF) {
 		super.unset(address, mask);
 		if (address >= 0x020 && address < 0x040 && mask) {
-			this.waveTables[address - 0x020].unset();
+			this.channels[address - 0x020].waveTable.unset();
 		} else if (address >= 0x040 && address < 0x060 && mask & 0x01) {
-			this.waveTables[address - 0x040].unset();
+			this.channels[address - 0x040].waveTable.unset();
 		}
 	}
 
@@ -55,6 +55,10 @@ export class ChipMultiPCM extends Chip {
 		}
 	}
 
+	getChannel(index) {
+		return this.channels[index];
+	}
+
 	updateWaveTable(waveTable, wtAddress) {
 		return waveTable.set(
 			this.memory.get(wtAddress + 0) << 16 | this.memory.get(wtAddress + 1) << 8 | this.memory.get(wtAddress + 2),
@@ -63,8 +67,10 @@ export class ChipMultiPCM extends Chip {
 		);
 	}
 
-	getWaveTable(channel) {
-		return this.waveTables[channel];
+	getWaveTable(index) {
+		const waveTable = new ChipMultiPCMWaveTable();
+		this.updateWaveTable(waveTable, this.getWaveTableAddress(index));
+		return waveTable;
 	}
 
 	getWaveTableNumber(channel) {
@@ -87,6 +93,13 @@ export class ChipMultiPCM extends Chip {
 		} else if (command instanceof CommandMultiPCMBankRegister) {
 			this.setBank(command.address, command.value);
 		}
+	}
+}
+
+export class ChipMultiPCMChannel {
+	constructor(index) {
+		this.index = index;
+		this.waveTable = new ChipMultiPCMWaveTable();
 	}
 }
 

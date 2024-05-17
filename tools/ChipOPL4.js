@@ -8,7 +8,7 @@ export class ChipOPL4 extends Chip {
 	constructor() {
 		super(registerMasks);
 		this.clockFrequency = 33868800;
-		this.waveTables = rangeMap(24, i => new ChipOPL4WaveTable());
+		this.channels = rangeMap(24, i => new ChipOPL4Channel(i));
 		const memoryData = new Uint8Array(0x400000);
 		memoryData.set(yrw801Headers);
 		this.memory = new Memory(memoryData);
@@ -48,7 +48,7 @@ export class ChipOPL4 extends Chip {
 			super.set(address, value, mask);
 			const channel = address - 0x208;
 			const wtAddress = this.getWaveTableAddress(this.getWaveTableNumber(channel));
-			let changed = this.updateWaveTable(this.waveTables[channel], wtAddress);
+			let changed = this.updateWaveTable(this.channels[channel].waveTable, wtAddress);
 			changed = this.set(0x280 + channel, this.memory.get(wtAddress + 7)) || changed;
 			changed = this.set(0x298 + channel, this.memory.get(wtAddress + 8)) || changed;
 			changed = this.set(0x2B0 + channel, this.memory.get(wtAddress + 9)) || changed;
@@ -62,10 +62,14 @@ export class ChipOPL4 extends Chip {
 	unset(address, mask = 0xFF) {
 		super.unset(address, mask);
 		if (address >= 0x208 && address < 0x220 && mask) {
-			this.waveTables[address - 0x208].unset();
+			this.channels[address - 0x208].waveTable.unset();
 		} else if (address >= 0x220 && address < 0x238 && mask & 0x01) {
-			this.waveTables[address - 0x220].unset();
+			this.channels[address - 0x220].waveTable.unset();
 		}
+	}
+
+	getChannel(index) {
+		return this.channels[index];
 	}
 
 	updateWaveTable(waveTable, wtAddress) {
@@ -76,8 +80,10 @@ export class ChipOPL4 extends Chip {
 		);
 	}
 
-	getWaveTable(channel) {
-		return this.waveTables[channel];
+	getWaveTable(index) {
+		const waveTable = new ChipOPL4WaveTable();
+		this.updateWaveTable(waveTable, this.getWaveTableAddress(index));
+		return waveTable;
 	}
 
 	getWaveTableNumber(channel) {
@@ -99,6 +105,13 @@ export class ChipOPL4 extends Chip {
 		} else if (command instanceof CommandOPL4WaveMemory) {
 			this.memory.setData(command.address, command.memory);
 		}
+	}
+}
+
+export class ChipOPL4Channel {
+	constructor(index) {
+		this.index = index;
+		this.waveTable = new ChipOPL4WaveTable();
 	}
 }
 

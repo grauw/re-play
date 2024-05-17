@@ -173,7 +173,7 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			}
 		}
 		for (let channel = 0; channel < 24; channel++) {
-			if (!opl4Output.getWaveTable(channel).equals(opl4Loop.getWaveTable(channel))) {
+			if (!opl4Output.getChannel(channel).waveTable.equals(opl4Loop.getChannel(channel).waveTable)) {
 				opl4Output.unset(0x208 + channel);
 				if (!opl4Output.getRegister(0x220 + channel).equals(opl4Loop.getRegister(0x220 + channel), 0x01)) {
 					opl4Output.unset(0x220 + channel, 0x01);
@@ -270,7 +270,7 @@ class OPL4FrameSanitizerWAVEChannel {
 	}
 
 	processFrame(opl4Input, opl4Output) {
-		if (opl4Input.getWaveTable(this.channel).equals(opl4Output.getWaveTable(this.channel))) {
+		if (opl4Input.getChannel(this.channel).waveTable.equals(opl4Output.getChannel(this.channel).waveTable)) {
 			opl4Input.unset(0x208 + this.channel);
 			opl4Input.unset(0x220 + this.channel, 0x01);
 		}
@@ -366,8 +366,9 @@ export class TransformOPL4EGToWaveTables extends Transform {
 			if (command instanceof CommandWait || command instanceof CommandControlFlow) {
 				for (let channel = 0; channel < 24; channel++) {
 					if (chip.isSet(0x208 + channel)) {
+						const waveTable = chip.getChannel(channel).waveTable;
 						const instrument = instrumentMemo.get(
-							chip.getWaveTable(channel).start, chip.getWaveTable(channel).loop, chip.getWaveTable(channel).end,
+							waveTable.start, waveTable.loop, waveTable.end,
 							chip.get(0x280 + channel), chip.get(0x298 + channel), chip.get(0x2B0 + channel),
 							chip.get(0x2C8 + channel), chip.get(0x2E0 + channel)
 						);
@@ -464,8 +465,7 @@ export class TransformOPL4Strip extends Transform {
 				chip.writeCommand(command);
 			}
 			for (let instrument = 0x000; instrument < 0x200; instrument++) {
-				const waveTable = new ChipOPL4WaveTable();
-				chip.updateWaveTable(waveTable, chip.getWaveTableAddress(instrument));
+				const waveTable = chip.getWaveTable(instrument);
 				if (waveTable.start != 0 || waveTable.end != 0) {
 					instruments.add(instrument);
 				}
@@ -485,8 +485,7 @@ export class TransformOPL4Strip extends Transform {
 				ranges.add(chip.getWaveTableAddress(0x1FF) + 12, 0x400000);
 			} else {
 				for (const instrument of instruments) {
-					const waveTable = new ChipOPL4WaveTable();
-					chip.updateWaveTable(waveTable, chip.getWaveTableAddress(instrument));
+					const waveTable = chip.getWaveTable(instrument);
 					if (waveTable.getEnd() < chip.getWaveTableAddress(0x180) && 
 						waveTable.getEnd(this.padding) > chip.getWaveTableAddress(0x180)) {
 						// so that padding for ROM waves doesn’t clip into RAM wave table
@@ -524,7 +523,7 @@ export class TransformOPL4Strip extends Transform {
 			if (command instanceof CommandOPL4Register) {
 				if (command.address >= 0x208 && command.address < 0x220) {
 					const waveTableNumber = chip.getWaveTableNumber(command.waveChannel);
-					const waveTable = chip.getWaveTable(command.waveChannel);
+					const waveTable = chip.getChannel(command.waveChannel).waveTable;
 					ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					if (!instruments.has(waveTableNumber)) {
 						if (instruments.size >= 0x80)
