@@ -232,13 +232,18 @@ The following key / values can be set either globally or on a per-track basis:
   * `attenuation`:
     A volume attenuation specified in dB. Use negative values.
     Default: `0`.
+  * `strip`:
+    Whether to strip OPL4 WAVE table, sample, and/or music data completely.
+    List of identifiers. Default: `[]`.
+    * `table`   - Strip wave table.
+    * `samples` - Strip sample data.
+    * `music`   - Strip music data.
   * `stripMode`:
     Whether to strip specific OPL4 WAVE data.
     Default: `unused`.
     * `none`      - Keep all waves.
     * `unused`    - Strip unused waves.
     * `coalesce`  - Coalesce used waves to contiguous regions.
-    * `samples`   - Strip unused waves and all sample data.
     * `all`       - Strip all waves.
   * `stripPadding`:
     Amount of OPL4 WAVE padding samples to include after sample end.

@@ -1,6 +1,6 @@
 import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
-import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandNop } from "./Command.js";
+import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn, CommandNop } from "./Command.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
 import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
@@ -414,20 +414,21 @@ class OPL4Instrument {
 	}
 }
 
-export class TransformOPL4StripMemory extends Transform {
-	constructor(mode = "unused", margin = 8, padding = 4) {
+export class TransformOPL4Strip extends Transform {
+	constructor(strip = [], mode = "unused", padding = 4, margin = 8) {
 		super();
-		if (mode != "none" && mode != "unused" && mode != "coalesce" && mode != "samples" && mode != "all")
+		if (!strip.every(type => ["table", "samples", "music"].includes(type)))
+			throw new Error("Unsupported strip type.");
+		if (!["none", "unused", "coalesce", "all"].includes(mode))
 			throw new Error("Unsupported strip mode.");
+		this.strip = strip;
 		this.mode = mode;
-		this.margin = margin;
 		this.padding = padding;
+		this.margin = margin;
 	}
 
 	apply(input) {
-		if (this.mode == "none" || 
-			!input.hasSetupCommand(command => command instanceof CommandOPL4Config) ||
-			!input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
+		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
 		if (this.mode == "coalesce") {
 			return this.applyCoalesce(input);
@@ -437,16 +438,37 @@ export class TransformOPL4StripMemory extends Transform {
 	}
 
 	applyStrip(input) {
+		if (this.strip.length == 0 && this.mode == "none")
+			return input;
+		if (!this.strip.includes("music") && !input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
+			return input;
+
 		const ranges = new Ranges();
 		const chip = new ChipOPL4();
-		if (this.mode == "unused" || this.mode == "samples") {
+		if (this.mode == "none") {
+			for (const command of input.commands) {
+				chip.writeCommand(command);
+			}
+			if (!this.strip.includes("table")) {
+				ranges.add(chip.getWaveTableAddress(0x000), chip.getWaveTableAddress(0x17F) + 12);
+				ranges.add(chip.getWaveTableAddress(0x180), chip.getWaveTableAddress(0x1FF) + 12);
+			}
+			if (!this.strip.includes("samples")) {
+				ranges.add(chip.getWaveTableAddress(0x17F) + 12, chip.getWaveTableAddress(0x180));
+				ranges.add(chip.getWaveTableAddress(0x1FF) + 12, 0x400000);
+			}
+		} else if (this.mode == "unused") {
+			const keepTable = !this.strip.includes("table");
+			const keepSamples = !this.strip.includes("samples");
 			for (const command of input.commands) {
 				chip.writeCommand(command);
 				if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x220) {
 					const waveTableAddress = chip.getWaveTableAddress(chip.getWaveTableNumber(command.waveChannel));
 					const waveTable = chip.getWaveTable(command.waveChannel);
-					ranges.add(waveTableAddress, waveTableAddress + 12);
-					if (this.mode != "samples") {
+					if (keepTable) {
+						ranges.add(waveTableAddress, waveTableAddress + 12);
+					}
+					if (keepSamples) {
 						ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					}
 				}
@@ -460,7 +482,12 @@ export class TransformOPL4StripMemory extends Transform {
 		for (const [range, data] of chip.memory.getDataRanges()) {
 			output.addCommand(CommandOPL4WaveMemory.of(range.start, data));
 		}
-		output.addCommands(input.commands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		if (this.strip.includes("music")) {
+			output.addCommand(CommandReturn.of());
+		} else {
+			output.addCommands(input.commands.filter(command =>
+				!(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		}
 		return output;
 	}
 
@@ -505,28 +532,37 @@ export class TransformOPL4StripMemory extends Transform {
 		for (const [range, data] of chip.memory.getDataRanges()) {
 			if (address + data.length > 0x400000)
 				throw new Error("Too much sample data.");
-			memory.setData(address, data);
+			if (!this.strip.includes("samples")) {
+				memory.setData(address, data);
+			}
 			relocations.push({ range: range, offset: address - range.start });
 			address += data.length;
 		}
-		for (const [oldInstrument, newInstrument] of instruments) {
-			const oldAddress = chip.getWaveTableAddress(oldInstrument);
-			const newAddress = 0x200000 + (newInstrument - 0x180) * 12;
-			memory.setData(newAddress, chip.memory.getData(oldAddress, oldAddress + 12));
-			const start = memory.get(newAddress + 0, 0x3F) << 16 | memory.get(newAddress + 1) << 8 | memory.get(newAddress + 2);
-			const relocation = relocations.find(relocation => relocation.range.includes(start));
-			if (relocation) {
-				const newStart = start + relocation.offset;
-				memory.set(newAddress + 0, newStart >> 16, 0x3F);
-				memory.set(newAddress + 1, newStart >> 8);
-				memory.set(newAddress + 2, newStart);
+		if (!this.strip.includes("table")) {
+			for (const [oldInstrument, newInstrument] of instruments) {
+				const oldAddress = chip.getWaveTableAddress(oldInstrument);
+				const newAddress = 0x200000 + (newInstrument - 0x180) * 12;
+				memory.setData(newAddress, chip.memory.getData(oldAddress, oldAddress + 12));
+				const start = memory.get(newAddress + 0, 0x3F) << 16 | memory.get(newAddress + 1) << 8 | memory.get(newAddress + 2);
+				const relocation = relocations.find(relocation => relocation.range.includes(start));
+				if (relocation) {
+					const newStart = start + relocation.offset;
+					memory.set(newAddress + 0, newStart >> 16, 0x3F);
+					memory.set(newAddress + 1, newStart >> 8);
+					memory.set(newAddress + 2, newStart);
+				}
 			}
 		}
 		for (const [range, data] of memory.getDataRanges()) {
 			output.addCommand(CommandOPL4WaveMemory.of(range.start, data));
 		}
 
-		output.addCommands(commands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		if (this.strip.includes("music")) {
+			output.addCommand(CommandReturn.of());
+		} else {
+			output.addCommands(commands.filter(command =>
+				!(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
+		}
 		return output;
 	}
 }

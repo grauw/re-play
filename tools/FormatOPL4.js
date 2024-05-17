@@ -1,7 +1,7 @@
 import fs from "fs";
 import { FormatReplay, FormatStats } from "./Format.js";
 import { Transform, TransformGroup } from "./Transform.js";
-import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4StripMemory, TransformOPL4WaveMapChannels, TransformOPL4WaveAttenuateVolume, TransformMinimumKeyWait } from "./TransformOPL4.js";
+import { TransformOPL4FrameSanitizer, TransformOPL4EGToWaveTables, TransformOPL4Strip, TransformOPL4WaveMapChannels, TransformOPL4WaveAttenuateVolume, TransformMinimumKeyWait } from "./TransformOPL4.js";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.js";
 import { CommandLabel, CommandJump, CommandCall, CommandReturn, CommandWait } from "./Command.js";
 import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
@@ -24,7 +24,7 @@ export class FormatOPL4 extends FormatReplay {
 			new TransformOPL4FrameSanitizer(),
 			new TransformOPL4WaveMapChannels(options.channelMapping),
 			new TransformOPL4WaveAttenuateVolume(options.attenuation),
-			new TransformOPL4StripMemory(options.stripMode, options.stripMargin, options.stripPadding),
+			new TransformOPL4Strip(options.strip, options.stripMode, options.stripPadding, options.stripMargin),
 			new TransformMinimumKeyWait(options.keyWaitLookback),
 		]));
 	}
