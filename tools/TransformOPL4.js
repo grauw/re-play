@@ -499,7 +499,7 @@ export class TransformOPL4StripMemory extends Transform {
 		output.addCommand(CommandOPL4Register.of(0x105, 0x03));
 		output.addCommand(CommandOPL4Register.of(0x202, 0x10));
 
-		let address = 0x200600;
+		let address = 0x200000 + instruments.size * 12;
 		const relocations = [];
 		const memory = new Memory(new Uint8Array(0x400000));
 		for (const [range, data] of chip.memory.getDataRanges()) {
