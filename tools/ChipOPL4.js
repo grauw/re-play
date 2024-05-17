@@ -122,6 +122,10 @@ class ChipOPL4WaveTable {
 		return (this.end ^ 0xFFFF) + 1;
 	}
 
+	getEnd(padding = 0) {
+		return this.getStart() + Math.ceil((this.getSize() + padding) * this.getBits() / 8);
+	}
+
 	isSet() {
 		return this.initialized;
 	}

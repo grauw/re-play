@@ -447,8 +447,7 @@ export class TransformOPL4StripMemory extends Transform {
 					const waveTable = chip.getWaveTable(command.waveChannel);
 					ranges.add(waveTableAddress, waveTableAddress + 12);
 					if (this.mode != "samples") {
-						const size = Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8);
-						ranges.add(waveTable.getStart(), waveTable.getStart() + size);
+						ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					}
 				}
 			}
@@ -476,8 +475,7 @@ export class TransformOPL4StripMemory extends Transform {
 				if (command.address >= 0x208 && command.address < 0x220) {
 					const waveTableNumber = chip.getWaveTableNumber(command.waveChannel);
 					const waveTable = chip.getWaveTable(command.waveChannel);
-					const size = Math.ceil((waveTable.getSize() + this.padding) * waveTable.getBits() / 8);
-					ranges.add(waveTable.getStart(), waveTable.getStart() + size);
+					ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					if (!instruments.has(waveTableNumber)) {
 						if (instruments.size >= 0x80)
 							throw new Error("Too many instruments.");
