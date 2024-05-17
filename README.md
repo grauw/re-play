@@ -243,6 +243,7 @@ The following key / values can be set either globally or on a per-track basis:
     Default: `unused`.
     * `none`      - Keep all waves.
     * `unused`    - Strip unused waves.
+    * `undefined` - Strip undefined waves (start = end = 0).
     * `coalesce`  - Coalesce used waves to contiguous regions.
     * `all`       - Strip all waves.
   * `stripPadding`:

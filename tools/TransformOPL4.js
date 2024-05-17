@@ -2,7 +2,7 @@ import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn, CommandNop } from "./Command.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
-import { ChipOPL4 } from "./ChipOPL4.js";
+import { ChipOPL4, ChipOPL4WaveTable } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
 import { Memory, Ranges } from "./Memory.js";
 import { rangeMap, MemoConstructor } from "./utils.js";
@@ -419,7 +419,7 @@ export class TransformOPL4Strip extends Transform {
 		super();
 		if (!strip.every(type => ["table", "samples", "music"].includes(type)))
 			throw new Error("Unsupported strip type.");
-		if (!["none", "unused", "coalesce", "all"].includes(mode))
+		if (!["none", "unused", "undefined", "coalesce", "all"].includes(mode))
 			throw new Error("Unsupported strip mode.");
 		this.strip = strip;
 		this.mode = mode;
@@ -443,32 +443,55 @@ export class TransformOPL4Strip extends Transform {
 		if (!this.strip.includes("music") && !input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory))
 			return input;
 
-		const ranges = new Ranges();
 		const chip = new ChipOPL4();
+		const instruments = new Set();
 		if (this.mode == "none") {
 			for (const command of input.commands) {
 				chip.writeCommand(command);
 			}
-			if (!this.strip.includes("table")) {
-				ranges.add(chip.getWaveTableAddress(0x000), chip.getWaveTableAddress(0x17F) + 12);
-				ranges.add(chip.getWaveTableAddress(0x180), chip.getWaveTableAddress(0x1FF) + 12);
-			}
-			if (!this.strip.includes("samples")) {
-				ranges.add(chip.getWaveTableAddress(0x17F) + 12, chip.getWaveTableAddress(0x180));
-				ranges.add(chip.getWaveTableAddress(0x1FF) + 12, 0x400000);
+			for (let instrument = 0x000; instrument < 0x200; instrument++) {
+				instruments.add(instrument);
 			}
 		} else if (this.mode == "unused") {
-			const keepTable = !this.strip.includes("table");
-			const keepSamples = !this.strip.includes("samples");
 			for (const command of input.commands) {
 				chip.writeCommand(command);
 				if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x220) {
-					const waveTableAddress = chip.getWaveTableAddress(chip.getWaveTableNumber(command.waveChannel));
-					const waveTable = chip.getWaveTable(command.waveChannel);
-					if (keepTable) {
-						ranges.add(waveTableAddress, waveTableAddress + 12);
-					}
-					if (keepSamples) {
+					instruments.add(chip.getWaveTableNumber(command.waveChannel));
+				}
+			}
+		} else if (this.mode == "undefined") {
+			for (const command of input.commands) {
+				chip.writeCommand(command);
+			}
+			for (let instrument = 0x000; instrument < 0x200; instrument++) {
+				const waveTable = new ChipOPL4WaveTable();
+				chip.updateWaveTable(waveTable, chip.getWaveTableAddress(instrument));
+				if (waveTable.start != 0 || waveTable.end != 0) {
+					instruments.add(instrument);
+				}
+			}
+		}
+
+		const ranges = new Ranges();
+		if (!this.strip.includes("table")) {
+			for (const instrument of instruments) {
+				const waveTableAddress = chip.getWaveTableAddress(instrument);
+				ranges.add(waveTableAddress, waveTableAddress + 12);
+			}
+		}
+		if (!this.strip.includes("samples")) {
+			if (this.mode == "none") {
+				ranges.add(chip.getWaveTableAddress(0x17F) + 12, chip.getWaveTableAddress(0x180));
+				ranges.add(chip.getWaveTableAddress(0x1FF) + 12, 0x400000);
+			} else {
+				for (const instrument of instruments) {
+					const waveTable = new ChipOPL4WaveTable();
+					chip.updateWaveTable(waveTable, chip.getWaveTableAddress(instrument));
+					if (waveTable.getEnd() < chip.getWaveTableAddress(0x180) && 
+						waveTable.getEnd(this.padding) > chip.getWaveTableAddress(0x180)) {
+						// so that padding for ROM waves doesn’t clip into RAM wave table
+						ranges.add(waveTable.getStart(), chip.getWaveTableAddress(0x180));
+					} else {
 						ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					}
 				}

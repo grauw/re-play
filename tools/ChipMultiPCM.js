@@ -24,11 +24,7 @@ export class ChipMultiPCM extends Chip {
 			super.set(address, value, mask);
 			const channel = address & 0x1F;
 			const wtAddress = this.getWaveTableAddress(this.getWaveTableNumber(channel));
-			let changed = this.waveTables[channel].set(
-				this.memory.get(wtAddress + 0) << 16 | this.memory.get(wtAddress + 1) << 8 | this.memory.get(wtAddress + 2),
-				this.memory.get(wtAddress + 3) << 8 | this.memory.get(wtAddress + 4),
-				this.memory.get(wtAddress + 5) << 8 | this.memory.get(wtAddress + 6)
-			);
+			let changed = this.updateWaveTable(this.waveTables[channel], wtAddress);
 			changed = this.set(0x0C0 + channel, this.memory.get(wtAddress + 7)) || changed;
 			changed = this.set(0x100 + channel, this.memory.get(wtAddress + 8)) || changed;
 			changed = this.set(0x120 + channel, this.memory.get(wtAddress + 9)) || changed;
@@ -59,6 +55,14 @@ export class ChipMultiPCM extends Chip {
 		}
 	}
 
+	updateWaveTable(waveTable, wtAddress) {
+		return waveTable.set(
+			this.memory.get(wtAddress + 0) << 16 | this.memory.get(wtAddress + 1) << 8 | this.memory.get(wtAddress + 2),
+			this.memory.get(wtAddress + 3) << 8 | this.memory.get(wtAddress + 4),
+			this.memory.get(wtAddress + 5) << 8 | this.memory.get(wtAddress + 6)
+		);
+	}
+
 	getWaveTable(channel) {
 		return this.waveTables[channel];
 	}
@@ -86,7 +90,7 @@ export class ChipMultiPCM extends Chip {
 	}
 }
 
-class ChipMultiPCMWaveTable {
+export class ChipMultiPCMWaveTable {
 	constructor() {
 		this.initialized = false;
 		this.start = 0;
