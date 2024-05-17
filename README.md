@@ -248,10 +248,10 @@ The following key / values can be set either globally or on a per-track basis:
     * `all`       - Strip all waves.
   * `stripPadding`:
     Amount of OPL4 WAVE padding samples to include after sample end.
-    Default: 4.
+    Default: `4`.
   * `stripMargin`:
     Combine OPL4 WAVE memory blocks when they are within this distance margin.
-    Default: 8.
+    Default: `8`.
   * `reduceChannels`:
     Dynamically remaps channels to target amount. Only for MultiPCM source.
     Default: `28`.
