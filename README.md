@@ -233,9 +233,19 @@ The following key / values can be set either globally or on a per-track basis:
     A volume attenuation specified in dB. Use negative values.
     Default: `0`.
   * `stripMode`:
-    Whether OPL4 WAVE sample data should be stripped.
-    One of `none`, `unused`, `coalesce`, `samples` or `all`.
+    Whether to strip specific OPL4 WAVE data.
     Default: `unused`.
+    * `none`      - Keep all waves.
+    * `unused`    - Strip unused waves.
+    * `coalesce`  - Coalesce used waves to contiguous regions.
+    * `samples`   - Strip unused waves and all sample data.
+    * `all`       - Strip all waves.
+  * `stripPadding`:
+    Amount of OPL4 WAVE padding samples to include after sample end.
+    Default: 4.
+  * `stripMargin`:
+    Combine OPL4 WAVE memory blocks when they are within this distance margin.
+    Default: 8.
   * `reduceChannels`:
     Dynamically remaps channels to target amount. Only for MultiPCM source.
     Default: `28`.
