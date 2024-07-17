@@ -21,9 +21,9 @@ export class FormatOPL4 extends FormatReplay {
 			new TransformMultiPCMReduceChannels(options.reduceChannels),
 			new TransformMultiPCMToOPL4(),
 			options.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
-			new TransformOPL4FrameSanitizer(),
 			new TransformOPL4MapChannels(options.channelMapping, options.fmChannelMapping),
 			new TransformOPL4WaveAttenuateVolume(options.attenuation),
+			new TransformOPL4FrameSanitizer(),
 			new TransformOPL4Strip(options.strip, options.stripMode, options.stripPadding, options.stripMargin),
 			new TransformMinimumKeyWait(options.keyWaitLookback),
 		]));
