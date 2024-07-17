@@ -589,21 +589,36 @@ export class TransformOPL4Strip extends Transform {
 	}
 }
 
-export class TransformOPL4WaveMapChannels extends Transform {
-	constructor(mapping = []) {
+export class TransformOPL4MapChannels extends Transform {
+	constructor(waveMapping = [], fmMapping = []) {
 		super();
-		this.mapping = mapping;
+		this.waveMapping = waveMapping;
+		this.fmMapping = fmMapping;
 	}
 
 	apply(input) {
-		if (this.mapping.every((value, index) => value == index))
+		if (this.waveMapping.every((value, index) => value == index) && this.fmMapping.every((value, index) => value == index))
 			return input;
 		const output = Track.new(input);
 		for (const command of input.commands) {
-			if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x2F8) {
-				const newChannel = this.mapping[command.waveChannel] ?? command.waveChannel;
-				if (newChannel >= 0) {
-					output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
+			if (command instanceof CommandOPL4Register) {
+				if (command.waveChannel != undefined) {
+					const newChannel = this.waveMapping[command.waveChannel] ?? command.waveChannel;
+					if (newChannel >= 0 && newChannel < 24) {
+						output.addCommand(CommandOPL4Register.of(command.address - command.waveChannel + newChannel, command.value));
+					}
+				} else if (command.fmChannel != undefined) {
+					const newChannel = this.fmMapping[command.fmChannel] ?? command.fmChannel;
+					if (newChannel >= 0 && newChannel < 18) {
+						const newAddress = newChannel / 9 << 8 | (
+							(command.address & 0xFF) >= 0xA0 ?
+								command.address & 0xF0 | newChannel % 9 :
+								command.address & 0xE0 | newChannel % 9 / 3 << 3 | newChannel % 3 + Math.floor((command.address & 0x7) / 3) * 3
+						);
+						output.addCommand(CommandOPL4Register.of(newAddress, command.value));
+					}
+				} else {
+					output.addCommand(command);
 				}
 			} else {
 				output.addCommand(command);

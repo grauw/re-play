@@ -58,8 +58,8 @@ export class CommandOPL4Register extends CommandOPL4 {
 		if (this.address < 0x200) {
 			const bank = this.address >> 8;
 			const addressLow = this.address & 0xFF;
-			if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (this.address >> 3 & 0x3) < 3) {
-				return bank * 18 + (this.address >> 3 & 0x3) * 6 + (this.address & 0x7);
+			if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (addressLow >> 3 & 0x3) < 3) {
+				return bank * 18 + (addressLow >> 3 & 0x3) * 6 + (addressLow & 0x7);
 			}
 		}
 		return undefined;
@@ -69,10 +69,10 @@ export class CommandOPL4Register extends CommandOPL4 {
 		if (this.address < 0x200) {
 			const bank = this.address >> 8;
 			const addressLow = this.address & 0xFF;
-			if (addressLow >= 0xA0 && addressLow < 0xD0 && (this.address & 0xF) < 9) {
-				return bank * 9 + (this.address & 0xF);
-			} else if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (this.address >> 3 & 0x3) < 3) {
-				return bank * 9 + (this.address >> 3 & 0x3) * 3 + (this.address & 0x7) % 3;
+			if (addressLow >= 0xA0 && addressLow < 0xD0 && (addressLow & 0xF) < 9) {
+				return bank * 9 + (addressLow & 0xF);
+			} else if ((addressLow >= 0x20 && addressLow < 0xA0 || addressLow >= 0xE0) && (addressLow & 0x7) < 6 && (addressLow >> 3 & 0x3) < 3) {
+				return bank * 9 + (addressLow >> 3 & 0x3) * 3 + (addressLow & 0x7) % 3;
 			}
 		}
 		return undefined;

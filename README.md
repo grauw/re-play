@@ -115,7 +115,7 @@ in the data or to preload wavekits externally (which can then be compressed).
   * Timing quantisation
   * Aggressive optimisation of register writes
   * Custom wave table generation
-  * Channel remapping (WAVE only)
+  * Channel remapping
   * Volume adjustment (WAVE only)
 
 ## OPL4 format specification
@@ -227,6 +227,8 @@ The following key / values can be set either globally or on a per-track basis:
   * `channelMapping`:
     A list of channels and their new channel assignments.
     Specify -1 to remove a channel.
+  * `fmChannelMapping`:
+    See above, for the FM in the OPL4 format.
   * `psgChannelMapping`:
     See above, for the PSG in the OPLL-PSG format.
   * `attenuation`:
