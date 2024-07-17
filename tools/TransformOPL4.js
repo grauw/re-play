@@ -628,27 +628,67 @@ export class TransformOPL4MapChannels extends Transform {
 	}
 }
 
-export class TransformOPL4WaveAttenuateVolume extends Transform {
-	constructor(dB = 0) {
+export class TransformOPL4AttenuateVolume extends Transform {
+	constructor(wavedB = 0, fmdB = 0) {
 		super();
-		this.dB = dB;
+		this.wavedB = wavedB;
+		this.fmdB = fmdB;
 	}
 
 	apply(input) {
-		if (this.dB == 0)
+		if (this.wavedB == 0 && this.fmdB == 0)
 			return input;
 		const output = Track.new(input);
+		const chip = new ChipOPL4();
 		for (const command of input.commands) {
-			if (command instanceof CommandOPL4Register && command.address >= 0x250 && command.address < 0x268) {
-				const level = command.value >> 1;
-				const direct = command.value & 0x01;
-				const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.dB * -8 / 3), 0x00), 0x7F);
-				output.addCommand(CommandOPL4Register.of(command.address, newLevel << 1 | direct));
+			if (command instanceof CommandOPL4Register) {
+				if (command.address >= 0x250 && command.address < 0x268) {
+					output.addCommand(this.attenuateWave(command.address, command.value));
+				} else if ((command.address >= 0x040 && command.address < 0x056 || command.address >= 0x140 && command.address < 0x156) && (command.address & 0x7) < 6) {
+					if (chip.get(command.address & 0x100 | command.channel % 9, 0x1) || (command.address & 0x7) >= 3) {
+						output.addCommand(this.attenuateFM(command.address, command.value));
+					} else {
+						output.addCommand(command);
+					}
+				} else if (command.address >= 0x0C0 && command.address < 0x0C9 || command.address >= 0x1C0 && command.address < 0x1C9) {
+					output.addCommand(command);
+					if (chip.get(command.address) & 0x1 != command.value & 0x1) {
+						const addressOP1 = command.address & 0x100 | 0x40 | (command.address & 0xF) / 3 << 3 | (command.address & 0xF) % 3;
+						if (chip.isSet(addressOP1)) {
+							if (command.value & 1 == 0) {
+								output.addCommand(this.attenuateFM(addressOP1, chip.get(addressOP1)));
+							} else {
+								output.addCommand(CommandOPL4Register.of(addressOP1, chip.get(addressOP1)));
+							}
+						}
+					}
+				} else if (command.address == 0x104) {
+					if (command.value != 0 && this.fmdB != 0)
+						throw new Error("Attenuation of 4-op FM not supported.");
+					output.addCommand(command);
+				} else {
+					output.addCommand(command);
+				}
 			} else {
 				output.addCommand(command);
 			}
+			chip.writeCommand(command);
 		}
 		return output;
+	}
+
+	attenuateWave(address, value) {
+		const level = value >> 1;
+		const direct = value & 0x01;
+		const newLevel = level == 0x7F ? level : Math.min(Math.max(Math.round(level + this.wavedB * -8 / 3), 0x00), 0x7F);
+		return CommandOPL4Register.of(address, newLevel << 1 | direct);
+	}
+
+	attenuateFM(address, value) {
+		const ksl = value >> 6;
+		const level = value & 0x3F;
+		const newLevel = Math.min(Math.max(Math.round(level + this.fmdB * -4 / 3), 0x00), 0x3F);
+		return CommandOPL4Register.of(address, ksl << 6 | newLevel);
 	}
 }
 

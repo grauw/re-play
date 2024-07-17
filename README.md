@@ -116,7 +116,7 @@ in the data or to preload wavekits externally (which can then be compressed).
   * Aggressive optimisation of register writes
   * Custom wave table generation
   * Channel remapping
-  * Volume adjustment (WAVE only)
+  * Volume adjustment (WAVE and 2-op FM)
 
 ## OPL4 format specification
 
@@ -234,6 +234,10 @@ The following key / values can be set either globally or on a per-track basis:
   * `attenuation`:
     A volume attenuation specified in dB. Use negative values.
     Default: `0`.
+  * `fmAttenuation`:
+    See above, optional separate control for FM in the OPL4 format.
+  * `waveAttenuation`:
+    See above, optional separate control for WAVE in the OPL4 format.
   * `strip`:
     Whether to strip OPL4 WAVE table, sample, and/or music data completely.
     List of identifiers. Default: `[]`.
