@@ -14,7 +14,7 @@ export class Format {
 			new TransformQuantize(options.tickFrequency, options.waitThreshold, options.tolerance),
 			options.targetTickFrequency ? new TransformQuantize(options.targetTickFrequency) : new Transform(),
 			innerTransform,
-			new TransformStartConfigAndWait(),
+			new TransformStartConfigAndWait(options.initFrame),
 			new TransformEndLoop()
 		]);
 	}

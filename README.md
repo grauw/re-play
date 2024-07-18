@@ -266,6 +266,9 @@ The following key / values can be set either globally or on a per-track basis:
   * `compress`:
     Compress the command stream (with options object). Default: `false`.
     Options: `minimumLength` minimum length to consider for compression.
+  * `initFrame`:
+    Perform initialisation in the first frame.
+    Default: `true`.
 
 Resource keys can be overridden from the command line with `--set key value`.
 

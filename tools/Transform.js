@@ -132,6 +132,11 @@ export class TransformQuantize extends Transform {
 }
 
 export class TransformStartConfigAndWait extends Transform {
+	constructor(initFrame = true) {
+		super();
+		this.initFrame = initFrame;
+	}
+
 	apply(input) {
 		const output = Track.new(input);
 		for (let index = 0; index < input.commands.length; ++index) {
@@ -147,7 +152,9 @@ export class TransformStartConfigAndWait extends Transform {
 				command instanceof CommandOPLLConfig || command instanceof CommandPSGConfig) {
 				output.addCommand(command);
 			} else {
-				output.addCommand(CommandWait.of(1));
+				if (this.initFrame) {
+					output.addCommand(CommandWait.of(1));
+				}
 				output.addCommands(input.commands.slice(index, input.commands.length));
 				break;
 			}
