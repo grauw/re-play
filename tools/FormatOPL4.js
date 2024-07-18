@@ -23,7 +23,7 @@ export class FormatOPL4 extends FormatReplay {
 			options.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
 			new TransformOPL4MapChannels(options.channelMapping, options.fmChannelMapping),
 			new TransformOPL4AttenuateVolume(options.waveAttenuation ?? options.attenuation, options.fmAttenuation ?? options.attenuation),
-			new TransformOPL4FrameSanitizer(),
+			new TransformOPL4FrameSanitizer(options.initKeyOff),
 			new TransformOPL4Strip(options.strip, options.stripMode, options.stripPadding, options.stripMargin),
 			new TransformMinimumKeyWait(options.keyWaitLookback),
 		]));

@@ -13,6 +13,11 @@ const ignoreAddresses = [
 ];
 
 export class TransformOPL4FrameSanitizer extends Transform {
+	constructor(initKeyOff = false) {
+		super();
+		this.initKeyOff = initKeyOff;
+	}
+
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
@@ -77,6 +82,11 @@ export class TransformOPL4FrameSanitizer extends Transform {
 				channel2.firstKeyOn = channel1.firstKeyOn;
 			}
 		}
+		if (this.initKeyOff) {
+			for (const channel of channels) {
+				channel.firstKeyOn ||= channel.audible;
+			}
+		}
 		for (let i = channels.length - 1; i >= 0; i--) {
 			channels[i].emitKeyOff(opl4Input, opl4Output, emit);
 		}
@@ -113,6 +123,11 @@ export class TransformOPL4FrameSanitizer extends Transform {
 	emitFrameWAVE(opl4Input, opl4Output, channels, emit) {
 		for (const channel of channels) {
 			channel.processFrame(opl4Input, opl4Output);
+		}
+		if (this.initKeyOff) {
+			for (const channel of channels) {
+				channel.firstKeyOn ||= channel.audible;
+			}
 		}
 		for (const channel of channels) {
 			if (channel.waveTableChanged)

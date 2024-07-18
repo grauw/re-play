@@ -269,6 +269,9 @@ The following key / values can be set either globally or on a per-track basis:
   * `initFrame`:
     Perform initialisation in the first frame.
     Default: `true`.
+  * `initKeyOff`:
+    Emits key-off before first key-on.
+    Default: `false`.
 
 Resource keys can be overridden from the command line with `--set key value`.
 
