@@ -2,7 +2,7 @@ import { Transform } from "./Transform.js";
 import { Track } from "./Track.js";
 import { CommandWait, CommandControlFlow, CommandLabel, CommandJump, CommandReturn, CommandNop } from "./Command.js";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.js";
-import { ChipOPL4, ChipOPL4WaveTable } from "./ChipOPL4.js";
+import { ChipOPL4 } from "./ChipOPL4.js";
 import { Register } from "./Chip.js";
 import { Memory, Ranges } from "./Memory.js";
 import { rangeMap, MemoConstructor } from "./utils.js";
