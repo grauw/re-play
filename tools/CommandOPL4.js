@@ -115,7 +115,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const levelKeyScaleDB = [0, 3, 1.5, 6][levelKeyScale];
 				const totalLevel = value & 0x3F;
 				const totalLevelDB = totalLevel * -3 / 4;
-				description = `FM${bank} Ch${channel} Op${operator} Level Key Scale: ${levelKeyScale} (${levelKeyScaleDB} dB/oct), Total Level: ${totalLevel} (${totalLevelDB} dB)`;
+				description = `FM${bank} Ch${channel} Op${operator} Level Key Scale: ${levelKeyScale} (${levelKeyScaleDB} dB/oct), Total Level: 0x${hex(totalLevel, 2)} (${totalLevelDB} dB)`;
 			} else if (addressLow >= 0x60 && addressLow < 0x76) {
 				const attackRate = value >> 4 & 0xF;
 				const decayRate = value & 0xF;
