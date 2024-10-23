@@ -20,7 +20,7 @@ export class FormatOPL4 extends FormatReplay {
 		return super.getTransform(options, new TransformGroup([
 			new TransformMultiPCMReduceChannels(options.reduceChannels),
 			new TransformMultiPCMToOPL4(),
-			options.stripMode != "all" ? new TransformOPL4EGToWaveTables() : new Transform(),
+			options.stripMode != "all" ? TransformOPL4EGToWaveTables.fromPool(options.waveTablePool) : new Transform(),
 			new TransformOPL4MapChannels(options.channelMapping, options.fmChannelMapping),
 			new TransformOPL4AttenuateVolume(options.waveAttenuation ?? options.attenuation, options.fmAttenuation ?? options.attenuation),
 			new TransformOPL4FrameSanitizer(options.initKeyOff),

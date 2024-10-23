@@ -366,13 +366,27 @@ function writeRegisterIfSet(opl4Output, register, emit) {
 }
 
 export class TransformOPL4EGToWaveTables extends Transform {
+	static pool = new Map();
+
+	constructor() {
+		super();
+		this.instrumentMemo = new MemoConstructor(OPL4Instrument);
+		this.instruments = [];
+	}
+
+	static fromPool(name) {
+		const instance = this.pool.get(name) ?? new TransformOPL4EGToWaveTables();
+		if (name) {
+			this.pool.set(name, instance);
+		}
+		return instance;
+	}
+
 	apply(input) {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
 		const rom = input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
 		const chip = new ChipOPL4();
-		const instrumentMemo = new MemoConstructor(OPL4Instrument);
-		const instruments = [];
 		const outputCommands = [];
 		const queuedCommands = [];
 		const channelInstruments = Array(24).fill(null);
@@ -382,15 +396,15 @@ export class TransformOPL4EGToWaveTables extends Transform {
 				for (let channel = 0; channel < 24; channel++) {
 					if (chip.isSet(0x208 + channel)) {
 						const waveTable = chip.getChannel(channel).waveTable;
-						const instrument = instrumentMemo.get(
+						const instrument = this.instrumentMemo.get(
 							waveTable.start, waveTable.loop, waveTable.end,
 							chip.get(0x280 + channel), chip.get(0x298 + channel), chip.get(0x2B0 + channel),
 							chip.get(0x2C8 + channel), chip.get(0x2E0 + channel)
 						);
 						chip.unset(0x208 + channel);
 						if (instrument.number < 0) {
-							instrument.number = instruments.length + (rom ? 0x0 : 0x180);
-							instruments.push(instrument);
+							instrument.number = this.instruments.length + (rom ? 0x0 : 0x180);
+							this.instruments.push(instrument);
 						}
 						channelInstruments[channel] = instrument;
 					}
@@ -412,11 +426,11 @@ export class TransformOPL4EGToWaveTables extends Transform {
 				queuedCommands.push(command);
 			}
 		}
-		if (instruments.length >= (rom ? 0x100 : 0x80))
+		if (this.instruments.length >= (rom ? 0x100 : 0x80))
 			throw new Error("Too many different instruments.");
 		const output = Track.new(input);
 		output.addCommands(outputCommands.filter(command => command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory));
-		output.addCommand(CommandOPL4WaveMemory.of(rom ? 0x0 : 0x200000, Uint8Array.from(instruments.flatMap(instrument => instrument.header))));
+		output.addCommand(CommandOPL4WaveMemory.of(rom ? 0x0 : 0x200000, Uint8Array.from(this.instruments.flatMap(instrument => instrument.header))));
 		output.addCommands(outputCommands.filter(command => !(command instanceof CommandOPL4Config || command instanceof CommandOPL4WaveMemory)));
 		return output;
 	}

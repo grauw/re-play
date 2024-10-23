@@ -258,6 +258,10 @@ The following key / values can be set either globally or on a per-track basis:
   * `stripMargin`:
     Combine OPL4 WAVE memory blocks when they are within this distance margin.
     Default: `8`.
+  * `waveTablePool`:
+    Optional named pool to reuse instrument numbers for identical wave tables
+    across tracks. Useful to better compress variations on the same track.
+    Default: `null`.
   * `reduceChannels`:
     Dynamically remaps channels to target amount. Only for MultiPCM source.
     Default: `28`.
