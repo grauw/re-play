@@ -62,6 +62,12 @@ Main:
 Main_Play:
 	call RePlayer_Stop
 	call Main_WaitFrame
+	ld hl,Main_playingMessage
+	call Main_PrintString
+	ld hl,(Main_currentTrack)
+	call Main_PrintDecHL
+	ld a,13
+	call CHPUT
 	ld bc,(Main_currentTrack)
 	ld a,1
 	ld hl,SoundData + 1
@@ -110,7 +116,8 @@ Main_ToggleFrequency:
 	jp Main_Loop
 Main_End:
 	call RePlayer_Stop
-	ret
+	ld hl,Main_byeMessage
+	jp Main_PrintString
 
 Main_WaitFrame:
 	ld a,(JIFFY)
@@ -131,13 +138,41 @@ Main_PrintString:
 	call CHPUT
 	jr Main_PrintString
 
+; hl = number
+Main_PrintDecHL:
+	ld bc,10000
+	call Main_PrintDecHL_Count
+	ld bc,1000
+	call Main_PrintDecHL_Count
+	ld bc,100
+	call Main_PrintDecHL_Count
+	ld bc,10
+	call Main_PrintDecHL_Count
+	ld bc,1
+Main_PrintDecHL_Count:
+	xor a
+Main_PrintDecHL_CountLoop:
+	sbc hl,bc
+	inc a
+	jr nc,Main_PrintDecHL_CountLoop
+	add hl,bc
+	dec a
+	add a,"0"
+	jp CHPUT
+
 Main_message:
 	db "Re-play",13,10,10
 	db "N - Next track",13,10
 	db "B - Previous track",13,10
 	db "R - Restart track",13,10
 	db "P - Toggle pause",13,10
-	db "F - Toggle frequency",13,10,0
+	db "F - Toggle frequency",13,10,10,0
+
+Main_playingMessage:
+	db "Playing: ",0
+
+Main_byeMessage:
+	db 13,10,10,"Bye.",13,10,0
 
 	SECTION RAM
 

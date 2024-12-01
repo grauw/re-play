@@ -6,6 +6,7 @@ WRTVDP: equ 0047H
 JIFFY: equ 0FC9EH
 RG9SAV: equ 0FFE8H
 
+_CONOUT: equ 02H
 _INNOE: equ 08H
 _STROUT: equ 09H
 _CONST: equ 0BH
@@ -147,6 +148,14 @@ Main_ReadComplete:
 Main_Play:
 	call RePlayer_Stop
 	call Main_WaitFrame
+	ld de,Main_playingMessage
+	ld c,_STROUT
+	call BDOS
+	ld hl,(Main_currentTrack)
+	call Main_PrintDecHL
+	ld e,13
+	ld c,_CONOUT
+	call BDOS
 	ld bc,(Main_currentTrack)
 	ld a,0
 	ld hl,SoundData + 1
@@ -199,7 +208,9 @@ Main_ToggleFrequency:
 	jp Main_Loop
 Main_End:
 	call RePlayer_Stop
-	ret
+	ld de,Main_byeMessage
+	ld c,_STROUT
+	jp BDOS
 
 Main_WaitFrame:
 	ld a,(JIFFY)
@@ -227,13 +238,46 @@ DOS_IsDOS2:
 	cp 2
 	ret
 
+; hl = number
+Main_PrintDecHL:
+	ld bc,10000
+	call Main_PrintDecHL_Count
+	ld bc,1000
+	call Main_PrintDecHL_Count
+	ld bc,100
+	call Main_PrintDecHL_Count
+	ld bc,10
+	call Main_PrintDecHL_Count
+	ld bc,1
+Main_PrintDecHL_Count:
+	xor a
+Main_PrintDecHL_CountLoop:
+	sbc hl,bc
+	inc a
+	jr nc,Main_PrintDecHL_CountLoop
+	add hl,bc
+	dec a
+	add a,"0"
+	push hl
+	ld e,a
+	ld c,_CONOUT
+	call BDOS
+	pop hl
+	ret
+
 Main_message:
 	db "Re-play",13,10,10
 	db "N - Next track",13,10
 	db "B - Previous track",13,10
 	db "R - Restart track",13,10
 	db "P - Toggle pause",13,10
-	db "F - Toggle frequency",13,10,"$"
+	db "F - Toggle frequency",13,10,10,"$"
+
+Main_playingMessage:
+	db "Playing: $"
+
+Main_byeMessage:
+	db 13,10,10,"Bye.",13,10,"$"
 
 ; Data in RAM
 Main_currentTrack:
