@@ -640,7 +640,7 @@ export class TransformOPL4MapChannels extends Transform {
 					const newChannel = this.fmMapping[command.fmChannel] ?? command.fmChannel;
 					if (newChannel >= 0 && newChannel < 18) {
 						const newAddress = newChannel / 9 << 8 | (
-							(command.address & 0xFF) >= 0xA0 ?
+							(command.address & 0xFF) >= 0xA0 && (command.address & 0xFF) < 0xD0 ?
 								command.address & 0xF0 | newChannel % 9 :
 								command.address & 0xE0 | newChannel % 9 / 3 << 3 | newChannel % 3 + Math.floor((command.address & 0x7) / 3) * 3
 						);
