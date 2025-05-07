@@ -9,8 +9,15 @@
     "url": "https://hg.sr.ht/~grauw/re-play"
   },
   "type": "module",
+  "private": true,
   "dependencies": {
     "lfs2-compression": "^1.0.1"
   },
-  "private": true
+  "devDependencies": {
+    "@types/node": "^22.15.15",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "types:check": "tsc --noEmit"
+  }
 }

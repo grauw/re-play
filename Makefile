@@ -7,40 +7,40 @@ com: bin gen
 	java -jar tools/glass.jar src/COM.asm bin/re-play.com gen/re-play.com.sym
 
 rom: bin gen
-	node tools/cli.js res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 16384
+	node tools/cli.ts res/Sonyc_MS/resources.json gen/rom.rep --set bankSize 16384
 	java -jar tools/glass.jar -I gen src/ROM.asm bin/re-play.rom gen/re-play.rom.sym
 
 makaimura: bin
-	node tools/cli.js res/Makaimura/resources.json bin/makaimura.rep --set bankSize 16384
+	node tools/cli.ts res/Makaimura/resources.json bin/makaimura.rep --set bankSize 16384
 
 bubble: bin
-	node tools/cli.js res/Bubble\ Bobble/resources-opl.json bin/bubbopl.rep --set bankSize 16384
-	node tools/cli.js res/Bubble\ Bobble/resources-opn.json bin/bubbopn.rep --set bankSize 16384
+	node tools/cli.ts res/Bubble\ Bobble/resources-opl.json bin/bubbopl.rep --set bankSize 16384
+	node tools/cli.ts res/Bubble\ Bobble/resources-opn.json bin/bubbopn.rep --set bankSize 16384
 
 ds6: bin gen
-	node tools/cli.js res/Dragon\ Slayer\ 6/resources.json bin/ds6.rep --set bankSize 16384
+	node tools/cli.ts res/Dragon\ Slayer\ 6/resources.json bin/ds6.rep --set bankSize 16384
 
 yu-no: bin gen
-	node tools/cli.js res/YU-NO/resources.json bin/yu-no.rep --set bankSize 16384
+	node tools/cli.ts res/YU-NO/resources.json bin/yu-no.rep --set bankSize 16384
 
 sonyc: bin
-	node tools/cli.js res/Sonyc_MS/resources.json bin/sonyc_ms.rep --set bankSize 16384
+	node tools/cli.ts res/Sonyc_MS/resources.json bin/sonyc_ms.rep --set bankSize 16384
 
 miwaku: bin
-	node tools/cli.js res/Miwaku\ no\ Chousho/resources.json bin/miwaku.rep --set bankSize 16384
+	node tools/cli.ts res/Miwaku\ no\ Chousho/resources.json bin/miwaku.rep --set bankSize 16384
 
 xak: bin
-	node tools/cli.js res/Xak/resources.json bin/xak.rep --set bankSize 16384
+	node tools/cli.ts res/Xak/resources.json bin/xak.rep --set bankSize 16384
 
 multipcm: gen
 	mkdir -p gen/Daytona\ USA gen/Desert\ Tank gen/Hard\ Dunk gen/Stadium\ Cross gen/Title\ Fight gen/Virtua\ Cop gen/Wing\ War
-	node tools/cli.js res/MultiPCM/Daytona\ USA/resources.json gen/Daytona\ USA/
-	node tools/cli.js res/MultiPCM/Desert\ Tank/resources.json gen/Desert\ Tank/
-	node tools/cli.js res/MultiPCM/Hard\ Dunk/resources.json gen/Hard\ Dunk/
-	node tools/cli.js res/MultiPCM/Stadium\ Cross/resources.json gen/Stadium\ Cross/
-	node tools/cli.js res/MultiPCM/Title\ Fight/resources.json gen/Title\ Fight/
-	node tools/cli.js res/MultiPCM/Virtua\ Cop/resources.json gen/Virtua\ Cop/
-	node tools/cli.js res/MultiPCM/Wing\ War/resources.json gen/Wing\ War/
+	node tools/cli.ts res/MultiPCM/Daytona\ USA/resources.json gen/Daytona\ USA/
+	node tools/cli.ts res/MultiPCM/Desert\ Tank/resources.json gen/Desert\ Tank/
+	node tools/cli.ts res/MultiPCM/Hard\ Dunk/resources.json gen/Hard\ Dunk/
+	node tools/cli.ts res/MultiPCM/Stadium\ Cross/resources.json gen/Stadium\ Cross/
+	node tools/cli.ts res/MultiPCM/Title\ Fight/resources.json gen/Title\ Fight/
+	node tools/cli.ts res/MultiPCM/Virtua\ Cop/resources.json gen/Virtua\ Cop/
+	node tools/cli.ts res/MultiPCM/Wing\ War/resources.json gen/Wing\ War/
 
 bin:
 	mkdir -p bin
