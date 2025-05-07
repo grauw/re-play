@@ -16,7 +16,7 @@ export class ChipOPN extends Chip {
 		this.clockFrequency = type == "ym2203" ? clockFrequency * 2 : clockFrequency;
 	}
 
-	set(address, value, mask) {
+	set(address, value, mask = 0xFF) {
 		if (address == 0x028 && mask & 0x7) {
 			const channelX4 = (value & 7) << 2;
 			return super.set(address, value >> 4 << channelX4, (mask & 0xF0) >> 4 << channelX4);
