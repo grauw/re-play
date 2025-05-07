@@ -33,7 +33,7 @@ export class ResourcesLoader {
 	}
 
 	async parse() {
-		const json = JSON.parse(await fs.promises.readFile(this.path));
+		const json = JSON.parse(await fs.promises.readFile(this.path, { encoding: "utf8" }));
 		for (const override of this.overrides) {
 			override.apply(json);
 		}
