@@ -31,7 +31,7 @@ export class FormatText extends FormatWrapper {
 				lines.push(`${command} - Total: ${ticks}, Time: ${zeroPad(time / 60)}:${zeroPad(time % 60)}.${zeroPad(time * 100 % 100)}, Commands: ${commandsCount}`);
 				commandsCount = 0;
 			} else {
-				lines.push(command as string);
+				lines.push(command.toString());
 			}
 		}
 

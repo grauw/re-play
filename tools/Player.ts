@@ -123,8 +123,9 @@ export class Player {
 			}
 		} else if (command instanceof CommandJump) {
 			for (let i = this.path.length - 1; i >= 0; i--) {
-				if (this.path[i] instanceof CommandLabel) {
-					if ((this.path[i] as CommandLabel).name == command.target) {  // loop
+				const pathCommand = this.path[i];
+				if (pathCommand instanceof CommandLabel) {
+					if (pathCommand.name == command.target) {  // loop
 						return true;
 					}
 				} else {

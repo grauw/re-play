@@ -62,19 +62,19 @@ export class Resources {
 			case "text":
 				return new FormatText();
 			case "text-opn":
-				return new FormatText(this.createFormat({ ...json, format: "opn" }));
+				return new FormatText(new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency));
 			case "text-opl4":
-				return new FormatText(this.createFormat({ ...json, format: "opl4" }));
+				return new FormatText(new FormatOPL4(json.bankSize, json.opl4Frequency));
 			case "text-opll-psg":
-				return new FormatText(this.createFormat({ ...json, format: "opll-psg" }));
+				return new FormatText(new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency));
 			case "vgm-opm":
-				return new FormatVGMOPM(this.createFormat({ ...json, format: "opn" }));
+				return new FormatVGMOPM(new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency));
 			case "vgm-opnb":
-				return new FormatVGMOPNB(this.createFormat({ ...json, format: "opn" }) as FormatOPN);
+				return new FormatVGMOPNB(new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency));
 			case "vgm-opl4":
-				return new FormatVGMOPL4(this.createFormat({ ...json, format: "opl4" }) as FormatOPL4);
+				return new FormatVGMOPL4(new FormatOPL4(json.bankSize, json.opl4Frequency));
 			case "vgm-opll-psg":
-				return new FormatVGMOPLLPSG(this.createFormat({ ...json, format: "opll-psg" }));
+				return new FormatVGMOPLLPSG(new FormatOPLLPSG(json.bankSize, json.opllFrequency, json.psgFrequency));
 			default:
 				throw new Error("Unrecognised format.");
 		}

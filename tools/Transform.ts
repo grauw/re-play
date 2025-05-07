@@ -63,19 +63,19 @@ export class TransformQuantize extends Transform {
 		if (this.tickFrequency == "opl4-timer") {
 			return this.applyOPL4Timer(input);
 		} else {
-			return this.applyHertz(input);
+			return this.applyHertz(input, this.tickFrequency);
 		}
 	}
 
-	private applyHertz(input: Track) {
-		const output = Track.new({...input, tickFrequency: this.tickFrequency as number});
+	private applyHertz(input: Track, tickFrequency: number) {
+		const output = Track.new({...input, tickFrequency});
 		let inputTicks = 0;
 		let outputTicks = 0;
 		let accumulator = 0;
 		let resetNextAccumulator = this.tolerance != 0;
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
-				accumulator += command.ticks * (this.tickFrequency as number);
+				accumulator += command.ticks * tickFrequency;
 				if (command.ticks >= this.waitThreshold) {
 					const ticks = Math.floor((accumulator + this.tolerance * input.tickFrequency) / input.tickFrequency);
 					if (ticks >= 1) {

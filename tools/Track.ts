@@ -14,14 +14,19 @@ export class Track {
 	}
 
 	addCommand(command: Command) {
-		if (command instanceof CommandWait && this.commands.at(-1) instanceof CommandWait) {
-			command = command.add(this.commands.pop() as CommandWait);
+		if (command instanceof CommandWait) {
+			const lastCommand = this.commands.at(-1);
+			if (lastCommand instanceof CommandWait) {
+				command = command.add(lastCommand);
+				this.commands.pop();
+			}
 		} else if (command instanceof CommandLabel) {
-			if (this.commands.at(-1) instanceof CommandJump && (this.commands.at(-1) as CommandJump).target == command.name) {
+			const lastCommand = this.commands.at(-1);
+			if (lastCommand instanceof CommandJump && lastCommand.target == command.name) {
 				this.commands.pop();
 			}
 		} else if (command instanceof CommandFMInstrument) {
-			let tail: CommandFMInstrument[] = [];
+			const tail: CommandFMInstrument[] = [];
 			while (this.commands.at(-1) instanceof CommandFMInstrument) {
 				const lastCommand = this.commands.pop() as CommandFMInstrument;
 				if (lastCommand.channel == command.channel) {
@@ -31,11 +36,13 @@ export class Track {
 				}
 			}
 			while (tail.length > 0) {
-				this.commands.push(tail.pop());
+				this.commands.push(tail.pop() as CommandFMInstrument);
 			}
 		} else if (command instanceof CommandReturn) {
-			if (this.commands.at(-1) instanceof CommandCall) {
-				command = CommandJump.of((this.commands.pop() as CommandCall).target);
+			const lastCommand = this.commands.at(-1);
+			if (lastCommand instanceof CommandCall) {
+				command = CommandJump.of(lastCommand.target);
+				this.commands.pop();
 			}
 		} else if (!(command instanceof Command)) {
 			throw new Error("Not a command.");
@@ -100,8 +107,9 @@ export class Track {
 	}
 
 	isLoopLabel(command: Command) {
-		return command instanceof CommandLabel && this.commands.at(-1) instanceof CommandJump &&
-			command.name == (this.commands.at(-1) as CommandJump).target;
+		const lastCommand = this.commands.at(-1);
+		return command instanceof CommandLabel && lastCommand instanceof CommandJump &&
+			command.name == lastCommand.target;
 	}
 
 	getIndex() {

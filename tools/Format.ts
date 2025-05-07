@@ -83,7 +83,7 @@ export class FormatReplay extends Format {
 }
 
 export class FormatWrapper extends Format {
-	protected readonly baseFormat?: Format;
+	private readonly baseFormat?: Format;
 
 	constructor(baseFormat?: Format, combine?: boolean) {
 		super(combine);
