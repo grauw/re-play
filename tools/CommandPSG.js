@@ -14,8 +14,8 @@ export class CommandPSGConfig extends CommandPSG {
 		Object.freeze(this);
 	}
 
-	static of(clockFrequency, type) {
-		return commandPSGConfigMemo.get(clockFrequency, type);
+	static of(clockFrequency) {
+		return commandPSGConfigMemo.get(clockFrequency);
 	}
 
 	toString() {

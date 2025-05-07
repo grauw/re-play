@@ -14,8 +14,8 @@ export class CommandOPLLConfig extends CommandOPLL {
 		Object.freeze(this);
 	}
 
-	static of(clockFrequency, type) {
-		return commandOPLLConfigMemo.get(clockFrequency, type);
+	static of(clockFrequency) {
+		return commandOPLLConfigMemo.get(clockFrequency);
 	}
 
 	toString() {
