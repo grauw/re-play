@@ -23,19 +23,19 @@ export class FormatVGM extends FormatWrapper {
 	}
 
 	async loadTrack(path, name) {
-		let vgm = await fs.promises.readFile(path);
-		if (vgm[0] == 0x1f && vgm[1] == 0x8b)  // gzip magic number
-			vgm = await util.promisify(zlib.gunzip)(vgm);
-		return this.readTrack(new VGMData(vgm), name);
+		let vgmData = await fs.promises.readFile(path);
+		if (vgmData[0] == 0x1f && vgmData[1] == 0x8b)  // gzip magic number
+			vgmData = await util.promisify(zlib.gunzip)(vgmData);
+		return this.readTrack(vgmData, name);
 	}
 
-	readTrack(vgm, name) {
-		if (vgm.getDoubleWord(0x00) != VGM_MAGIC_NUMBER)
+	readTrack(vgmData, name) {
+		if (vgmData.readUint32LE(0x00) != VGM_MAGIC_NUMBER)
 			throw new Error("Not a VGM file.");
-		const version = vgm.getDoubleWord(0x08);
-		const loop = vgm.getDoubleWord(0x1C) ? vgm.getDoubleWord(0x1C) + 0x1C : 0;
-		const headerSize = version >= 0x150 ? vgm.getDoubleWord(0x34) + 0x34 : 0x40;
-		const getHeaderWord = address => version >= 0x150 && headerSize >= address + 4 ? vgm.getDoubleWord(address) : 0;
+		const version = vgmData.readUint32LE(0x08);
+		const loop = vgmData.readUint32LE(0x1C) ? vgmData.readUint32LE(0x1C) + 0x1C : 0;
+		const headerSize = version >= 0x150 ? vgmData.readUint32LE(0x34) + 0x34 : 0x40;
+		const getHeaderWord = address => version >= 0x150 && headerSize >= address + 4 ? vgmData.readUint32LE(address) : 0;
 		const getChipFrequency = address => getHeaderWord(address) & 0x3FFFFFFF;
 
 		const track = new Track(name, 44100);
@@ -78,26 +78,26 @@ export class FormatVGM extends FormatWrapper {
 
 		if (getHeaderWord(0x14)) {
 			const gd3Address = getHeaderWord(0x14) + 0x14;
-			if (vgm.getDoubleWord(gd3Address) == GD3_MAGIC_NUMBER && vgm.getDoubleWord(gd3Address + 4) == 0x0100) {
-				const length = vgm.getDoubleWord(gd3Address + 8);
-				const tag = vgm.data.subarray(gd3Address + 12, gd3Address + 12 + length).toString("utf16le");
+			if (vgmData.readUint32LE(gd3Address) == GD3_MAGIC_NUMBER && vgmData.readUint32LE(gd3Address + 4) == 0x0100) {
+				const length = vgmData.readUint32LE(gd3Address + 8);
+				const tag = vgmData.subarray(gd3Address + 12, gd3Address + 12 + length).toString("utf16le");
 				track.addCommand(CommandGD3.of(tag));
 			}
 		}
 
 		let address = headerSize;
-		while (address < vgm.length) {
+		while (address < vgmData.length) {
 			if (address == loop) {
 				track.addCommand(CommandLabel.of("loop"));
 			}
-			const type = vgm.getByte(address++);
+			const type = vgmData.readUint8(address++);
 			if (type == 0x55) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPNRegister.of(register, value));
 			} else if (type == 0xA5) {
-				const register = vgm.getByte(address++);
-				let value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				let value = vgmData.readUint8(address++);
 				if (register == 0x28) {
 					track.addCommand(CommandOPNRegister.of(register, value | 0x04));
 				} else if (register >= 0x2D && register < 0x30) {
@@ -106,52 +106,52 @@ export class FormatVGM extends FormatWrapper {
 					track.addCommand(CommandOPNRegister.of(0x100 | register, value));
 				}
 			} else if (type == 0x51) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPLLRegister.of(register, value));
 			} else if (type == 0x52) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPNRegister.of(register, value));
 			} else if (type == 0x53) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPNRegister.of(0x100 | register, value));
 			} else if (type == 0x56) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPNRegister.of(register, value));
 			} else if (type == 0x57) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPNRegister.of(0x100 | register, value));
 			} else if (type == 0x5A) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5B) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5C) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5E) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(register, value));
 			} else if (type == 0x5F) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(0x100 | register, value));
 			} else if (type == 0xA0) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandPSGRegister.of(register, value));
 			} else if (type == 0xB5) {
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				if (register == 0) {
 					track.addCommand(CommandMultiPCMRegister.of(multiPCMAddress, value));
 				} else if (register == 1) {
@@ -164,8 +164,8 @@ export class FormatVGM extends FormatWrapper {
 					multiPCMAddress = multiPCMAddress & 0x1F | value << 5 & 0xE0;
 				}
 			} else if (type == 0xC3) {
-				const mask = vgm.getByte(address++) & 0x3;
-				const bank = vgm.getWord(address);
+				const mask = vgmData.readUint8(address++) & 0x3;
+				const bank = vgmData.readUint16LE(address);
 				address += 2;
 				if (mask == 0x3 && !(bank & 0x8)) {
 					track.addCommand(CommandMultiPCMBankRegister.of(0x10, bank / 0x10));
@@ -175,12 +175,12 @@ export class FormatVGM extends FormatWrapper {
 					track.addCommand(CommandMultiPCMBankRegister.of(0x12, bank / 0x8));
 				}
 			} else if (type == 0xD0) {
-				const port = vgm.getByte(address++);
-				const register = vgm.getByte(address++);
-				const value = vgm.getByte(address++);
+				const port = vgmData.readUint8(address++);
+				const register = vgmData.readUint8(address++);
+				const value = vgmData.readUint8(address++);
 				track.addCommand(CommandOPL4Register.of(port << 8 | register, value));
 			} else if (type == 0x61) {
-				track.addCommand(CommandWait.of(vgm.getWord(address)));
+				track.addCommand(CommandWait.of(vgmData.readUint16LE(address)));
 				address += 2;
 			} else if (type == 0x62) {
 				track.addCommand(CommandWait.of(735));
@@ -194,15 +194,15 @@ export class FormatVGM extends FormatWrapper {
 				}
 				break;
 			} else if (type == 0x67) {
-				if (vgm.getByte(address++) != 0x66)
+				if (vgmData.readUint8(address++) != 0x66)
 					throw new Error(`Invalid data block sequence at address 0x${(address - 1).toString(16).toUpperCase()}`);
-				const dataType = vgm.getByte(address++);
-				const dataSize = vgm.getDoubleWord(address) & 0x7fffffff;
+				const dataType = vgmData.readUint8(address++);
+				const dataSize = vgmData.readUint32LE(address) & 0x7fffffff;
 				address += 4;
 				if (dataType >= 0x80 && dataType < 0xC0) {
-					const memorySize = vgm.getDoubleWord(address);
-					const dataStart = vgm.getDoubleWord(address + 4);
-					const data = vgm.data.subarray(address + 8, address + dataSize);
+					const memorySize = vgmData.readUint32LE(address);
+					const dataStart = vgmData.readUint32LE(address + 4);
+					const data = vgmData.subarray(address + 8, address + dataSize);
 					if (dataType == 0x84) {
 						opl4ROMSize = memorySize;
 						track.addCommand(CommandOPL4WaveMemory.of(dataStart, data));
