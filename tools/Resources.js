@@ -1,4 +1,3 @@
-import fs from "fs";
 import { default as fspath } from "path";
 import { Track } from "./Track.js";
 import { FormatOPN } from "./FormatOPN.js";
@@ -24,24 +23,12 @@ export class Resources {
 	getStats() {
 		return this.tracks.map(track => this.format.getStats(track)).join("\n");
 	}
-}
 
-export class ResourcesLoader {
-	constructor(path, overrides = []) {
-		this.path = path;
-		this.overrides = overrides;
-	}
-
-	async parse() {
-		const json = JSON.parse(await fs.promises.readFile(this.path, { encoding: "utf8" }));
-		for (const override of this.overrides) {
-			override.apply(json);
-		}
-
-		const format = this.parseFormat(json);
+	static async create(json, path = ".") {
+		const format = this.createFormat(json);
 
 		let tracks = await Promise.all(json.tracks.map(async (jsonTrack, index) => {
-			const trackPath = fspath.resolve(fspath.dirname(this.path), jsonTrack.path);
+			const trackPath = fspath.resolve(path, jsonTrack.path);
 			const track = await new FormatVGM().loadTrack(trackPath, jsonTrack.name ?? `${index + 1}`);
 			return format.getTransform({ ...json, ...jsonTrack }).apply(track);
 		}));
@@ -59,7 +46,7 @@ export class ResourcesLoader {
 		return resources;
 	}
 
-	parseFormat(json) {
+	static createFormat(json) {
 		switch (json.format) {
 			case "opn":
 				return new FormatOPN(json.bankSize, json.opnbFrequency, json.opmFrequency);
@@ -70,19 +57,19 @@ export class ResourcesLoader {
 			case "text":
 				return new FormatText();
 			case "text-opn":
-				return new FormatText(this.parseFormat({ ...json, format: "opn" }));
+				return new FormatText(this.createFormat({ ...json, format: "opn" }));
 			case "text-opl4":
-				return new FormatText(this.parseFormat({ ...json, format: "opl4" }));
+				return new FormatText(this.createFormat({ ...json, format: "opl4" }));
 			case "text-opll-psg":
-				return new FormatText(this.parseFormat({ ...json, format: "opll-psg" }));
+				return new FormatText(this.createFormat({ ...json, format: "opll-psg" }));
 			case "vgm-opm":
-				return new FormatVGMOPM(this.parseFormat({ ...json, format: "opn" }));
+				return new FormatVGMOPM(this.createFormat({ ...json, format: "opn" }));
 			case "vgm-opnb":
-				return new FormatVGMOPNB(this.parseFormat({ ...json, format: "opn" }));
+				return new FormatVGMOPNB(this.createFormat({ ...json, format: "opn" }));
 			case "vgm-opl4":
-				return new FormatVGMOPL4(this.parseFormat({ ...json, format: "opl4" }));
+				return new FormatVGMOPL4(this.createFormat({ ...json, format: "opl4" }));
 			case "vgm-opll-psg":
-				return new FormatVGMOPLLPSG(this.parseFormat({ ...json, format: "opll-psg" }));
+				return new FormatVGMOPLLPSG(this.createFormat({ ...json, format: "opll-psg" }));
 			default:
 				throw new Error("Unrecognised format.");
 		}

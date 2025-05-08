@@ -1,4 +1,6 @@
-import { ResourcesLoader, ResourceOverride } from "./Resources.js";
+import fs from "fs";
+import { default as fspath } from "path";
+import { ResourceOverride, Resources } from "./Resources.js";
 
 async function main() {
 	let resourcesPath = null;
@@ -36,7 +38,12 @@ async function main() {
 		return 0;
 	}
 
-	const resources = await new ResourcesLoader(resourcesPath, overrides).parse();
+	const resourcesJSON = JSON.parse(await fs.promises.readFile(resourcesPath, { encoding: "utf8" }));
+	for (const override of overrides) {
+		override.apply(resourcesJSON);
+	}
+
+	const resources = await Resources.create(resourcesJSON, fspath.dirname(resourcesPath));
 	if (outputPath) {
 		await resources.write(outputPath);
 	}
