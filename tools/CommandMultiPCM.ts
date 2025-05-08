@@ -59,7 +59,7 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 		const address = this.address;
 		const value = this.value;
 		let description = "";
-		const channel = this.realChannel.toString(10).padStart(2, "0");
+		const channel = this.realChannel?.toString(10).padStart(2, "0") ?? "??";
 		if (address >= 0x00 && address < 0x20) {
 			const panpot = value << 24 >> 28;
 			const panpotLeftDB = panpot == -8 ? "-∞" : [0, -3, -6, -9, -12, -15, -18, "-∞"][panpot] ?? 0;

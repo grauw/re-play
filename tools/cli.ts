@@ -3,9 +3,9 @@ import { default as fspath } from "path";
 import { ResourceOverride, Resources } from "./Resources.ts";
 
 async function main() {
-	let resourcesPath: string | null = null;
-	let outputPath: string | null = null;
-	let help = false;
+	let resourcesPath: string | undefined;
+	let outputPath: string | undefined;
+	let help = process.argv.length == 2;
 	let stats = false;
 	let overrides: ResourceOverride[] = [];
 	for (let i = 2; i < process.argv.length; i++) {
@@ -31,11 +31,13 @@ async function main() {
 		}
 	}
 
-	help = help || !resourcesPath;
-
 	if (help) {
 		console.log(`Usage: node ${process.argv[1]} resources.json output.rep`);
 		return 0;
+	}
+
+	if (!resourcesPath) {
+		throw new Error("Missing resources path.");
 	}
 
 	const resourcesJSON = JSON.parse(await fs.promises.readFile(resourcesPath, { encoding: "utf8" }));

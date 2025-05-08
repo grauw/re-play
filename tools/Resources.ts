@@ -101,9 +101,13 @@ export class ResourceOverride {
 			} else if (typeof path[i + 1] == "string") {
 				json = json[path[i]] = {};
 			} else {
-				throw new Error("Invalid path element type.");
+				throw new Error("Invalid override path element type.");
 			}
 		}
-		json[path.at(-1)] = this.value;
+		const lastElement = path.at(-1);
+		if (lastElement == undefined) {
+			throw new Error("Invalid override path.");
+		}
+		json[lastElement] = this.value;
 	}
 }

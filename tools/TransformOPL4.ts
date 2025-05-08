@@ -180,10 +180,10 @@ export class TransformOPL4FrameSanitizer extends Transform {
 			if (command instanceof CommandOPL4Register) {
 				if (command.address >= 0x0B0 && command.address < 0x0B9 && command.value & 0x20 ||
 					command.address >= 0x1B0 && command.address < 0x1B9 && command.value & 0x20) {
-					fmChannels[command.fmChannel].firstKeyOn = true;
+					fmChannels[command.fmChannel!].firstKeyOn = true;
 				}
 				if (command.address >= 0x268 && command.address < 0x280 && command.value & 0x80) {
-					waveChannels[command.waveChannel].firstKeyOn = true;
+					waveChannels[command.waveChannel!].firstKeyOn = true;
 				}
 			} else if (command instanceof CommandJump && command.target == target) {
 				break;
@@ -399,7 +399,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 		this.instruments = [];
 	}
 
-	static fromPool(name: string) {
+	static fromPool(name: string = "") {
 		const instance = this.pool.get(name) ?? new TransformOPL4EGToWaveTables();
 		if (name) {
 			this.pool.set(name, instance);
@@ -414,7 +414,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 		const chip = new ChipOPL4();
 		const outputCommands: Command[] = [];
 		const queuedCommands: Command[] = [];
-		const channelInstruments = Array<OPL4Instrument | null>(24).fill(null);
+		const channelInstruments = Array<OPL4Instrument | undefined>(24).fill(undefined);
 		for (const command of input.commands) {
 			chip.writeCommand(command);
 			if (command instanceof CommandWait || command instanceof CommandControlFlow) {
@@ -437,7 +437,7 @@ export class TransformOPL4EGToWaveTables extends Transform {
 				for (let command of queuedCommands) {
 					if (command instanceof CommandOPL4Register) {
 						if (command.address >= 0x208 && command.address < 0x220) {
-							const instrument = channelInstruments[command.waveChannel];
+							const instrument = channelInstruments[command.waveChannel!]!;
 							command = CommandOPL4Register.of(command.address, instrument.number & 0xFF);
 						} else if (command.address >= 0x220 && command.address < 0x238) {
 							command = CommandOPL4Register.of(command.address, command.value & 0xFE | (rom ? 0x0 : 0x1));
@@ -522,7 +522,7 @@ export class TransformOPL4Strip extends Transform {
 			for (const command of input.commands) {
 				chip.writeCommand(command);
 				if (command instanceof CommandOPL4Register && command.address >= 0x208 && command.address < 0x220) {
-					instruments.add(chip.getWaveTableNumber(command.waveChannel));
+					instruments.add(chip.getWaveTableNumber(command.waveChannel!));
 				}
 			}
 		} else if (this.mode == "undefined") {
@@ -587,15 +587,15 @@ export class TransformOPL4Strip extends Transform {
 			chip.writeCommand(command);
 			if (command instanceof CommandOPL4Register) {
 				if (command.address >= 0x208 && command.address < 0x220) {
-					const waveTableNumber = chip.getWaveTableNumber(command.waveChannel);
-					const waveTable = chip.getChannel(command.waveChannel).waveTable;
+					const waveTableNumber = chip.getWaveTableNumber(command.waveChannel!);
+					const waveTable = chip.getChannel(command.waveChannel!).waveTable;
 					ranges.add(waveTable.getStart(), waveTable.getEnd(this.padding));
 					if (!instruments.has(waveTableNumber)) {
 						if (instruments.size >= 0x80)
 							throw new Error("Too many instruments.");
 						instruments.set(waveTableNumber, 0x180 + instruments.size);
 					}
-					commands.push(CommandOPL4Register.of(command.address, instruments.get(waveTableNumber) & 0xFF));
+					commands.push(CommandOPL4Register.of(command.address, instruments.get(waveTableNumber)! & 0xFF));
 				} else if (command.address >= 0x220 && command.address < 0x238) {
 					commands.push(CommandOPL4Register.of(command.address, command.value | 0x1));
 				} else if (command.address != 0x202 && command.address != 0x105) {
@@ -716,7 +716,7 @@ export class TransformOPL4AttenuateVolume extends Transform {
 				if (command.address >= 0x250 && command.address < 0x268) {
 					output.addCommand(this.attenuateWave(command.address, command.value));
 				} else if ((command.address >= 0x040 && command.address < 0x056 || command.address >= 0x140 && command.address < 0x156) && (command.address & 0x7) < 6) {
-					if (chip.get(command.address & 0x100 | command.channel % 9, 0x1) || (command.address & 0x7) >= 3) {
+					if (chip.get(command.address & 0x100 | command.fmChannel! % 9, 0x1) || (command.address & 0x7) >= 3) {
 						output.addCommand(this.attenuateFM(command.address, command.value));
 					} else {
 						output.addCommand(command);

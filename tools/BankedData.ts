@@ -15,7 +15,7 @@ export class BankedData {
 	public readonly bankSize: number;
 	public readonly jump: readonly number[];
 
-	constructor(bankSize = -1, jump: readonly number[]) {
+	constructor(bankSize = Infinity, jump: readonly number[]) {
 		if (bankSize & bankSize - 1)
 			throw new Error("Bank size must be a power of two.");
 		this.data = [];
@@ -65,6 +65,9 @@ export class BankedData {
 		for (const rewrite of this.rewrites) {
 			const source = rewrite.position;
 			const target = this.symbols.get(rewrite.target);
+			if (!target) {
+				throw new Error("Target does not exist.");
+			}
 			const addressOffset = (target % this.bankSize) - ((source % this.bankSize) + 3);
 			const bankOffset = Math.floor(target / this.bankSize) - Math.floor(source / this.bankSize);
 			this.data[rewrite.position + 0] = (addressOffset >> 0) & 0xFF;

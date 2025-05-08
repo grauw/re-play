@@ -19,7 +19,7 @@ export class FormatOPN extends FormatReplay {
 	public readonly opnFrequency: number;
 	public readonly opmFrequency: number;
 
-	constructor(bankSize: number, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
+	constructor(bankSize = Infinity, opnFrequency = 8000000, opmFrequency = 315000000 / 88) {
 		super();
 		this.bankSize = bankSize;
 		this.opnFrequency = opnFrequency;

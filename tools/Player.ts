@@ -87,11 +87,11 @@ export class Player {
 	}
 
 	private getSymbol(name: string) {
-		if (this.symbols.has(name)) {
-			return this.symbols.get(name);
-		} else {
+		const symbol = this.symbols.get(name);
+		if (symbol == undefined) {
 			throw new Error(`Symbol not found: ${name}`);
 		}
+		return symbol;
 	}
 
 	private push(index: number) {
@@ -102,11 +102,11 @@ export class Player {
 	}
 
 	private pop() {
-		if (this.stack.length > 0) {
-			return this.stack.pop();
-		} else {
+		const index = this.stack.pop();
+		if (index == undefined) {
 			throw new Error("Stack empty.");
 		}
+		return index;
 	}
 
 	public process(command: Command, index: number) {

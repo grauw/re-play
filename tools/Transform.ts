@@ -228,7 +228,7 @@ export class TransformCompress extends Transform {
 			if (blacklist.has(nonTerminal)) {
 				return false;
 			}
-			const frequency = occurrenceCounts.get(nonTerminal);
+			const frequency = occurrenceCounts.get(nonTerminal) ?? 0;
 			let inlineSize = 0;
 			let outlineSize = frequency * format.getSize(callCommand) + format.getSize(returnCommand);
 			let inlinePreceding: Command | undefined;
@@ -249,7 +249,7 @@ export class TransformCompress extends Transform {
 	inlineNonRepeats(grammar: Grammar<Command, symbol>, startSymbol: symbol, blacklist: Set<symbol>) {
 		const occurrenceCounts = grammar.getOccurrenceCounts();
 		return grammar.inline(startSymbol, (expansion, nonTerminal) => {
-			return !blacklist.has(nonTerminal) && occurrenceCounts.get(nonTerminal) < 2
+			return !blacklist.has(nonTerminal) && (occurrenceCounts.get(nonTerminal) ?? 0) < 2
 		});
 	}
 
@@ -274,15 +274,18 @@ export class TransformCompress extends Transform {
 		const rules = new Map<symbol, (Command | symbol)[]>();
 		while (true) {
 			const expansion = grammar.get(nextNonTerminal);
+			if (expansion == undefined) {
+				throw new Error("Next non terminal not found.");
+			}
 			rules.set(nextNonTerminal, expansion);
 			tailCalls.delete(nextNonTerminal);
 			nonTailCalls.delete(nextNonTerminal);
 			if (tailCalls.has(expansion.at(-1) as symbol)) {
 				nextNonTerminal = expansion.at(-1) as symbol;
 			} else if (nonTailCalls.size > 0) {
-				nextNonTerminal = nonTailCalls.values().next().value;
+				nextNonTerminal = nonTailCalls.values().next().value!;
 			} else if (tailCalls.size > 0) {
-				nextNonTerminal = tailCalls.values().next().value;
+				nextNonTerminal = tailCalls.values().next().value!;
 			} else {
 				break;
 			}
@@ -313,7 +316,7 @@ export class TransformValidate extends Transform {
 			});
 		}
 
-		if (!(player.getCommand(player.stack.at(-1) - 1) instanceof CommandWait)) {
+		if (!(player.getCommand((player.stack.at(-1) ?? 0) - 1) instanceof CommandWait)) {
 			throw new Error("No wait after loop.");
 		}
 

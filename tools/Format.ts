@@ -146,7 +146,7 @@ export class FormatStats {
 			let frameCommands = 0;
 			let frameBytes = 0;
 			let frameCycles = 0;
-			let lastCommand: Command | null = null;
+			let lastCommand: Command | undefined;
 			player.play(i);
 			player.run((command, index) => {
 				if (player.process(command, index)) {

@@ -30,7 +30,7 @@ export class FormatOPL4 extends FormatReplay {
 	private readonly bankSize: number;
 	public readonly opl4Frequency: number;
 
-	constructor(bankSize: number, opl4Frequency = 33868800) {
+	constructor(bankSize = Infinity, opl4Frequency = 33868800) {
 		super();
 		this.bankSize = bankSize;
 		this.opl4Frequency = opl4Frequency;

@@ -14,7 +14,7 @@ export class ChipMultiPCM extends Chip {
 	constructor() {
 		super(registerMasks);
 		this.clockFrequency = 33868800;
-		this.channels = rangeMap(32, i => (i & 0x07) != 0x07 ? new ChipMultiPCMChannel(i) : undefined);
+		this.channels = rangeMap(32, i => (i & 0x07) != 0x07 ? new ChipMultiPCMChannel(i) : undefined!);
 		this.memory = new Memory(new Uint8Array(0x400000));
 		this.bankLow = 0x100000;
 		this.bankHigh = 0x180000;

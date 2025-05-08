@@ -47,8 +47,8 @@ export class TransformMultiPCMReduceChannels extends Transform {
 						}
 					}
 
-					if (free.length) {
-						const newChannel = free.shift();
+					const newChannel = free.shift();
+					if (newChannel != undefined) {
 						channelMap[channel] = newChannel;
 	
 						output.addCommand(CommandMultiPCMRegister.of(0x80 + newChannel, 0x00));

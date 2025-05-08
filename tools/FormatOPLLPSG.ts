@@ -22,7 +22,7 @@ export class FormatOPLLPSG extends FormatReplay {
 	public readonly opllFrequency: number;
 	public readonly psgFrequency: number;
 
-	constructor(bankSize: number, opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
+	constructor(bankSize = Infinity, opllFrequency = 315000000 / 88, psgFrequency = 315000000 / 88 / 2) {
 		super();
 		this.bankSize = bankSize;
 		this.opllFrequency = opllFrequency;

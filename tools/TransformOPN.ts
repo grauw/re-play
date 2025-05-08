@@ -53,7 +53,7 @@ export class TransformOPNFrequencyBeforeKeyOn extends Transform {
 		if (!input.hasSetupCommand(command => command instanceof CommandOPNConfig))
 			return input;
 		const output = Track.new(input);
-		let lastCommand: Command | null = null;
+		let lastCommand: Command | undefined;
 		for (const command of input.commands) {
 			if (command instanceof CommandFMFrequency && lastCommand instanceof CommandFMKey &&
 				lastCommand.slots && command.channel == lastCommand.channel) {

@@ -56,18 +56,18 @@ export class Track {
 	}
 
 	hasSetupCommand(predicate: (command: Command) => boolean) {
-		return this.getSetupCommand(predicate) != null;
+		return this.getSetupCommand(predicate) != undefined;
 	}
 
 	getSetupCommand(predicate: (command: Command) => boolean) {
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
-				return null;
+				return undefined;
 			} else if (predicate(command)) {
 				return command;
 			}
 		}
-		return null;
+		return undefined;
 	}
 
 	static new(track: Track): Track;
@@ -133,7 +133,7 @@ export class Track {
 		const rules = new Map<symbol, (Command | symbol)[]>();
 		let nonTerminal = startSymbol;
 		let expansion: (Command | symbol)[] = [];
-		let lastCommand: Command | undefined = undefined;
+		let lastCommand: Command | undefined;
 		for (const command of this.commands) {
 			if (command instanceof CommandLabel) {
 				if (!(lastCommand instanceof CommandJump || lastCommand instanceof CommandReturn)) {

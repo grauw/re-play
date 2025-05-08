@@ -91,10 +91,6 @@ export class CommandOPL4Register extends CommandOPL4 {
 		return undefined;
 	}
 
-	get channel() {
-		return this.address < 0x200 ? this.fmChannel : 18 + this.waveChannel;
-	}
-
 	toString() {
 		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
@@ -103,8 +99,8 @@ export class CommandOPL4Register extends CommandOPL4 {
 		if (address < 0x200) {
 			const addressLow = address & 0xFF;
 			const bank = (address >> 8) + 1;
-			const operator = (this.fmOperator + 1).toString(10).padStart(2, "0");
-			const channel = (this.fmChannel + 1).toString(10).padStart(2, "0");
+			const operator = this.fmOperator ? (this.fmOperator + 1).toString(10).padStart(2, "0") : "??";
+			const channel = this.fmChannel ? (this.fmChannel + 1).toString(10).padStart(2, "0") : "??";
 			if (addressLow >= 0x00 && addressLow < 0x01) {
 				const register = address & 0x1;
 				const test = value.toString(2).padStart(8, "0");
@@ -191,7 +187,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM New2: ${new2}, New: ${new1}`;
 			}
 		} else {
-			const channel = this.waveChannel?.toString(10)?.padStart(2, "0");
+			const channel = this.waveChannel?.toString(10).padStart(2, "0") ?? "??";
 			if (address == 0x202) {
 				const accessMode = value & 0x1 ? "CPU" : "OPL4";
 				const type = value & 0x2 ? "RAM" : "ROM";
