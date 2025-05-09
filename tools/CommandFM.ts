@@ -17,7 +17,6 @@ export class CommandOPNConfig extends CommandOPN {
 		super();
 		this.clockFrequency = clockFrequency;
 		this.type = type;
-		Object.freeze(this);
 	}
 
 	static of(clockFrequency: number, type: OPNType) {
@@ -39,7 +38,6 @@ export class CommandOPNRegister extends CommandOPN {
 		super();
 		this.address = address;
 		this.value = value;
-		Object.freeze(this);
 	}
 
 	get channel() {
@@ -85,7 +83,6 @@ export class CommandFMKey extends CommandFMChannel {
 	constructor(channel: number, slots: number) {
 		super(channel);
 		this.slots = slots;
-		Object.freeze(this);
 	}
 
 	static of(channel: number, slots: number) {
@@ -105,7 +102,6 @@ export class CommandFMFrequency extends CommandFMChannel {
 	constructor(channel: number, frequency: number) {
 		super(channel);
 		this.frequency = frequency;
-		Object.freeze(this);
 	}
 
 	static of(channel: number, frequency: number) {
@@ -149,8 +145,7 @@ export class CommandFMInstrument extends CommandFMChannel {
 		if (parameters.length != 25)
 			throw new Error("Incorrect number of parameters.");
 		super(channel);
-		this.parameters = Object.freeze(parameters);
-		Object.freeze(this);
+		this.parameters = parameters;
 	}
 
 	static of(channel: number, ...parameters: readonly number[]) {

@@ -13,7 +13,6 @@ export class CommandPSGConfig extends CommandPSG {
 	constructor(clockFrequency: number) {
 		super();
 		this.clockFrequency = clockFrequency;
-		Object.freeze(this);
 	}
 
 	static of(clockFrequency: number) {
@@ -35,7 +34,6 @@ export class CommandPSGRegister extends CommandPSG {
 		super();
 		this.address = address;
 		this.value = value;
-		Object.freeze(this);
 	}
 
 	static of(address: number, value: number) {

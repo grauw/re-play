@@ -13,7 +13,6 @@ export class CommandMultiPCMConfig extends CommandMultiPCM {
 	constructor(clockFrequency: number) {
 		super();
 		this.clockFrequency = clockFrequency;
-		Object.freeze(this);
 	}
 
 	static of(clockFrequency: number) {
@@ -35,7 +34,6 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 		super();
 		this.address = address;
 		this.value = value;
-		Object.freeze(this);
 	}
 
 	static of(address: number, value: number) {
@@ -113,7 +111,6 @@ export class CommandMultiPCMWaveMemory extends CommandMultiPCM {
 		this.address = address;
 		this.memory = memory instanceof HashTypedArray ? memory.array : memory;
 		Object.freeze(this.memory.buffer);
-		Object.freeze(this);
 	}
 
 	static of(address: number, memory: Uint8Array) {
@@ -136,7 +133,6 @@ export class CommandMultiPCMBankRegister extends CommandMultiPCM {
 		super();
 		this.address = address;
 		this.value = value;
-		Object.freeze(this);
 	}
 
 	static of(address: number, value: number) {

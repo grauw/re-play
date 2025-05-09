@@ -17,7 +17,6 @@ export class CommandWait extends Command {
 		if (!Number.isInteger(ticks) || ticks < 1)
 			throw new Error("Ticks count is not a positive integer.");
 		this.ticks = ticks;
-		Object.freeze(this);
 	}
 
 	static of(ticks: number) {
@@ -47,7 +46,6 @@ export class CommandLabel extends CommandControlFlow {
 	constructor(name: string) {
 		super();
 		this.name = name;
-		Object.freeze(this);
 	}
 
 	static of(name: string) {
@@ -67,7 +65,6 @@ export class CommandJump extends CommandControlFlow {
 	constructor(target: string) {
 		super();
 		this.target = target;
-		Object.freeze(this);
 	}
 
 	static of(target: string) {
@@ -87,7 +84,6 @@ export class CommandCall extends CommandControlFlow {
 	constructor(target: string) {
 		super();
 		this.target = target;
-		Object.freeze(this);
 	}
 
 	static of(target: string) {
@@ -111,7 +107,7 @@ export class CommandReturn extends CommandControlFlow {
 	}
 }
 
-const commandReturnMemo = Object.freeze(new CommandReturn());
+const commandReturnMemo = new CommandReturn();
 
 export class CommandNop extends Command {
 	static of() {
@@ -123,7 +119,7 @@ export class CommandNop extends Command {
 	}
 }
 
-const commandNopMemo = Object.freeze(new CommandNop());
+const commandNopMemo = new CommandNop();
 
 export class CommandGD3 extends Command {
 	public readonly tag: string;
@@ -131,7 +127,6 @@ export class CommandGD3 extends Command {
 	constructor(tag: string) {
 		super();
 		this.tag = tag;
-		Object.freeze(this);
 	}
 
 	static of(tag: string) {
