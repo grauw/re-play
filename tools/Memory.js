@@ -42,7 +42,7 @@ export class Ranges {
 		if (start > end)
 			throw new Error("Invalid range.");
 		if (start == end)
-			return;
+			return this;
 		let startIndex = 0;
 		let endIndex = this.ranges.length - 1;
 		for (let index = 0; index < this.ranges.length; index++) {
