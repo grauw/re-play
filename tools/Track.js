@@ -115,7 +115,7 @@ export class Track {
 		return index;
 	}
 
-	getCommandsGrammar(startSymbol = Grammar.start) {
+	getCommandsGrammar(startSymbol) {
 		const rules = new Map();
 		let nonTerminal = startSymbol;
 		let expansion = [];
@@ -142,9 +142,9 @@ export class Track {
 		return new Grammar(rules);
 	}
 
-	addCommandsGrammar(grammar, startSymbol = Grammar.start) {
+	addCommandsGrammar(grammar, startSymbol) {
 		const symbolToLabel = symbol => Symbol.keyFor(symbol) ?? `.${symbol.description}`;
-		const loopingRules = grammar.getRecursiveRules();
+		const loopingRules = grammar.getRecursiveRules(startSymbol);
 		for (const [nonTerminal, expansion] of grammar) {
 			if (nonTerminal != startSymbol) {
 				this.addCommand(CommandLabel.of(symbolToLabel(nonTerminal)));

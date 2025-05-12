@@ -191,22 +191,23 @@ export class TransformCompress extends Transform {
 			return input;
 		}
 
+		const startSymbol = Symbol("Start");
 		const indexSymbols = new Set(input.getIndex().map(name => Symbol.for(name)));
-		let grammar = input.getCommandsGrammar();
+		let grammar = input.getCommandsGrammar(startSymbol);
 
-		grammar = grammar.compress({ minimumLength: this.minimumLength });
+		grammar = grammar.compress({ createNonTerminal: Symbol, minimumLength: this.minimumLength });
 		grammar = grammar.inlineUnitRules();
-		grammar = this.inlineSmallRules(grammar, indexSymbols);
-		grammar = this.inlineNonRepeats(grammar, indexSymbols);
-		grammar = grammar.getReachableRules();
-		grammar = this.sortTailCalls(grammar);
+		grammar = this.inlineSmallRules(grammar, startSymbol, indexSymbols);
+		grammar = this.inlineNonRepeats(grammar, startSymbol, indexSymbols);
+		grammar = grammar.getReachableRules(new Set([startSymbol]));
+		grammar = this.sortTailCalls(grammar, startSymbol);
 
 		const output = Track.new(input);
-		output.addCommandsGrammar(grammar);
+		output.addCommandsGrammar(grammar, startSymbol);
 		return output;
 	}
 
-	inlineSmallRules(grammar, blacklist) {
+	inlineSmallRules(grammar, startSymbol, blacklist) {
 		const format = this.format;
 		const callCommand = new CommandCall("dummy");
 		const returnCommand = new CommandReturn();
@@ -230,15 +231,17 @@ export class TransformCompress extends Transform {
 				outlinePreceding = command;
 			}
 			return outlineSize >= inlineSize * frequency;
+		}, startSymbol);
+	}
+
+	inlineNonRepeats(grammar, startSymbol, blacklist) {
+		const occurrenceCounts = grammar.getOccurrenceCounts();
+		return grammar.inline(startSymbol, (expansion, nonTerminal) => {
+			return !blacklist.has(nonTerminal) && occurrenceCounts.get(nonTerminal) < 2
 		});
 	}
 
-	inlineNonRepeats(grammar, blacklist) {
-		const occurrenceCounts = grammar.getOccurrenceCounts();
-		return grammar.inline((_, nonTerminal) => !blacklist.has(nonTerminal) && occurrenceCounts.get(nonTerminal) < 2);
-	}
-
-	sortTailCalls(grammar, nextNonTerminal = Grammar.start) {
+	sortTailCalls(grammar, nextNonTerminal) {
 		let tailCalls = new Set();
 		for (const [nonTerminal, expansion] of grammar) {
 			const symbol = expansion.at(-1);
