@@ -6,10 +6,11 @@ import { FormatReplay, FormatStats, type TransformOptions } from "./Format.ts";
 import type { Track } from "./Track.ts";
 import { Transform, TransformGroup } from "./Transform.ts";
 import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.ts";
-import { TransformMinimumKeyWait, TransformOPL4AttenuateVolume, TransformOPL4EGToWaveTables, TransformOPL4FrameSanitizer, TransformOPL4MapChannels, TransformOPL4Strip, type StripMode, type StripTarget } from "./TransformOPL4.ts";
+import { TransformMinimumKeyWait, TransformOPL4AttenuateVolume, TransformOPL4EGToWaveTables, TransformOPL4FrameSanitizer, TransformOPL4MapChannels, TransformOPL4Strip, type StripMode, type StripTarget, type WaveTableOptimizeMode } from "./TransformOPL4.ts";
 
 export type TransformOPL4Options = {
 	reduceChannels?: number;
+	waveTableOptimization?: WaveTableOptimizeMode;
 	waveTablePool?: string;
 	channelMapping?: number[];
 	fmChannelMapping?: number[];
@@ -40,7 +41,7 @@ export class FormatOPL4 extends FormatReplay {
 		return super.getTransform(options, new TransformGroup([
 			new TransformMultiPCMReduceChannels(options.reduceChannels),
 			new TransformMultiPCMToOPL4(),
-			options.stripMode != "all" ? TransformOPL4EGToWaveTables.fromPool(options.waveTablePool) : new Transform(),
+			options.stripMode != "all" ? TransformOPL4EGToWaveTables.create(options.waveTableOptimization, options.waveTablePool) : new Transform(),
 			new TransformOPL4MapChannels(options.channelMapping, options.fmChannelMapping),
 			new TransformOPL4AttenuateVolume(options.waveAttenuation ?? options.attenuation, options.fmAttenuation ?? options.attenuation),
 			new TransformOPL4FrameSanitizer(options.initKeyOff),

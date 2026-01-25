@@ -387,28 +387,34 @@ function writeRegisterIfSet(opl4Output: ChipOPL4, register: Register, emit: (com
 	}
 }
 
+export type WaveTableOptimizeMode = "none" | "replace";
+
 export class TransformOPL4EGToWaveTables extends Transform {
+	private readonly mode: WaveTableOptimizeMode;
 	private readonly instrumentMemo: MemoConstructor<typeof OPL4Instrument>;
 	private readonly instruments: OPL4Instrument[];
 
 	public static readonly pool = new Map<string, TransformOPL4EGToWaveTables>();
 
-	constructor() {
+	constructor(mode: WaveTableOptimizeMode = "replace") {
 		super();
+		if (!["none", "replace"].includes(mode))
+			throw new Error("Unsupported wave table optimization mode.");
+		this.mode = mode;
 		this.instrumentMemo = new MemoConstructor(OPL4Instrument);
 		this.instruments = [];
 	}
 
-	static fromPool(name: string = "") {
-		const instance = this.pool.get(name) ?? new TransformOPL4EGToWaveTables();
-		if (name) {
-			this.pool.set(name, instance);
+	static create(mode: WaveTableOptimizeMode = "replace", pool: string = "") {
+		const instance = this.pool.get(pool) ?? new TransformOPL4EGToWaveTables(mode);
+		if (pool) {
+			this.pool.set(pool, instance);
 		}
 		return instance;
 	}
 
 	apply(input: Track) {
-		if (!input.hasSetupCommand(command => command instanceof CommandOPL4Config))
+		if (this.mode == "none" || !input.hasSetupCommand(command => command instanceof CommandOPL4Config))
 			return input;
 		const rom = input.hasSetupCommand(command => command instanceof CommandOPL4WaveMemory && command.address < 0x200000);
 		const chip = new ChipOPL4();

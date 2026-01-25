@@ -258,6 +258,11 @@ The following key / values can be set either globally or on a per-track basis:
   * `stripMargin`:
     Combine OPL4 WAVE memory blocks when they are within this distance margin.
     Default: `8`.
+  * `waveTableOptimization`:
+    Whether to optimise OPL4 wave table headers by embedding EG settings.
+    Default: `replace`.
+    * `none`     - No optimisation, keep original headers.
+    * `replace`  - Optimize, replace original headers.
   * `waveTablePool`:
     Optional named pool to reuse instrument numbers for identical wave tables
     across tracks. Useful to better compress variations on the same track.
