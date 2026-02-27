@@ -281,6 +281,10 @@ The following key / values can be set either globally or on a per-track basis:
   * `initKeyOff`:
     Emits key-off before first key-on.
     Default: `false`.
+  * `keyWaitLookback`:
+    Amount of look back for EG key on/off timing. Recommend to leave at
+    default unless you deeply understand the timing issue it addresses.
+    Default: `4`.
 
 Resource keys can be overridden from the command line with `--set key value`.
 
