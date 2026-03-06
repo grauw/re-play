@@ -91,7 +91,6 @@ export class CommandOPLLRegister extends CommandOPLL {
 			description = `Ch${channel} F-Number Low: 0x${hex(value, 2)}`;
 		} else if (address >= 0x20 && address < 0x29) {
 			const channel = (address & 0x0F) + 1;
-			description = `Ch${channel} F-Number Low: 0x${hex(value, 2)}`;
 			const sustain = value & 0x20 ? "On" : "Off";
 			const key = value & 0x10 ? "On" : "Off";
 			const block = value >> 1 & 0x7;
