@@ -99,8 +99,8 @@ export class CommandOPL4Register extends CommandOPL4 {
 		if (address < 0x200) {
 			const addressLow = address & 0xFF;
 			const bank = (address >> 8) + 1;
-			const operator = this.fmOperator ? (this.fmOperator + 1).toString(10).padStart(2, "0") : "??";
-			const channel = this.fmChannel ? (this.fmChannel + 1).toString(10).padStart(2, "0") : "??";
+			const operator = this.fmOperator != undefined ? (this.fmOperator + 1).toString(10).padStart(2, "0") : "??";
+			const channel = this.fmChannel != undefined ? (this.fmChannel + 1).toString(10).padStart(2, "0") : "??";
 			if (addressLow >= 0x00 && addressLow < 0x01) {
 				const register = address & 0x1;
 				const test = value.toString(2).padStart(8, "0");
