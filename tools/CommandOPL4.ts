@@ -187,7 +187,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM New2: ${new2}, New: ${new1}`;
 			}
 		} else {
-			const channel = this.waveChannel?.toString(10).padStart(2, "0") ?? "??";
+			const channel = this.waveChannel != undefined ? (this.waveChannel + 1).toString(10).padStart(2, "0") : "??";
 			if (address == 0x202) {
 				const accessMode = value & 0x1 ? "CPU" : "OPL4";
 				const type = value & 0x2 ? "RAM" : "ROM";
