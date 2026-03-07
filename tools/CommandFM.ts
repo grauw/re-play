@@ -1,5 +1,5 @@
 import { Command } from "./Command.ts";
-import { MemoConstructor } from "./utils.ts";
+import { bin, hex, MemoConstructor } from "./utils.ts";
 
 export type OPNType = "ym2203" | "ym2612" | "ym2608";
 
@@ -49,7 +49,6 @@ export class CommandOPNRegister extends CommandOPN {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		return `OPNRegister ${hex(this.address, 3)}: ${hex(this.value, 2)}`;
 	}
 }
@@ -90,7 +89,7 @@ export class CommandFMKey extends CommandFMChannel {
 	}
 
 	toString() {
-		return `FMKey ${this.channel}: ${this.slots.toString(2).padStart(4, "0")}`;
+		return `FMKey ${this.channel}: ${bin(this.slots, 4)}`;
 	}
 }
 
@@ -170,7 +169,7 @@ export class CommandFMInstrument extends CommandFMChannel {
 	}
 
 	toString() {
-		return `FMInstrument ${this.channel}: ${this.parameters.map(p => p.toString(16).padStart(2, "0")).join(", ")}`;
+		return `FMInstrument ${this.channel}: ${this.parameters.map(p => hex(p, 2)).join(", ")}`;
 	}
 }
 

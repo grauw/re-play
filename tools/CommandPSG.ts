@@ -1,5 +1,5 @@
 import { Command } from "./Command.ts";
-import { MemoConstructor } from "./utils.ts";
+import { hex, MemoConstructor } from "./utils.ts";
 
 export abstract class CommandPSG extends Command {
 	toString() {
@@ -41,7 +41,6 @@ export class CommandPSGRegister extends CommandPSG {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
@@ -82,7 +81,7 @@ export class CommandPSGRegister extends CommandPSG {
 			description = `Envelope Shape Continue: ${continue_}, Attack: ${attack}, Alternate: ${alternate}, Hold: ${hold}`;
 		}
 
-		return `PSGRegister ${hex(address)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
+		return `PSGRegister ${hex(address, 1)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
 	}
 }
 

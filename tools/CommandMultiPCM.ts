@@ -1,5 +1,5 @@
 import { Command } from "./Command.ts";
-import { HashTypedArray, MemoConstructor } from "./utils.ts";
+import { dec, HashTypedArray, hex, MemoConstructor } from "./utils.ts";
 
 export abstract class CommandMultiPCM extends Command {
 	toString() {
@@ -55,11 +55,10 @@ export class CommandMultiPCMRegister extends CommandMultiPCM {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
-		const channel = this.realChannel != undefined ? (this.realChannel + 1).toString(10).padStart(2, "0") : "??";
+		const channel = this.realChannel != undefined ? dec(this.realChannel + 1, 2) : "??";
 		if (address >= 0x00 && address < 0x20) {
 			const panpot = value << 24 >> 28;
 			const panpotLeftDB = panpot == -8 ? "-∞" : [0, -3, -6, -9, -12, -15, -18, "-∞"][panpot] ?? 0;
@@ -118,7 +117,6 @@ export class CommandMultiPCMWaveMemory extends CommandMultiPCM {
 	}
 
 	toString() {
-		const hex = (value: number) => value.toString(16).toUpperCase();
 		return `MultiPCMWaveMemory Address: 0x${hex(this.address)}, Size: 0x${hex(this.memory.length)}`;
 	}
 }
@@ -140,7 +138,6 @@ export class CommandMultiPCMBankRegister extends CommandMultiPCM {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		return `MultiPCMBankRegister ${hex(this.address, 2)}: ${hex(this.value, 2)}`;
 	}
 }

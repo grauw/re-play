@@ -12,6 +12,7 @@ import type { FormatOPL4 } from "./FormatOPL4.ts";
 import type { FormatOPLLPSG } from "./FormatOPLLPSG.ts";
 import type { FormatOPN } from "./FormatOPN.ts";
 import { Track } from "./Track.ts";
+import { hex } from "./utils.ts";
 
 const VGM_MAGIC_NUMBER = 0x206d6756;
 const GD3_MAGIC_NUMBER = 0x20336447;
@@ -198,7 +199,7 @@ export class FormatVGM extends FormatWrapper {
 				break;
 			} else if (type == 0x67) {
 				if (vgmData.readUint8(address++) != 0x66)
-					throw new Error(`Invalid data block sequence at address 0x${(address - 1).toString(16).toUpperCase()}`);
+					throw new Error(`Invalid data block sequence at address 0x${hex(address - 1)}`);
 				const dataType = vgmData.readUint8(address++);
 				const dataSize = vgmData.readUint32LE(address) & 0x7fffffff;
 				address += 4;
@@ -219,7 +220,7 @@ export class FormatVGM extends FormatWrapper {
 			} else if (type >= 0x70 && type < 0x80) {
 				track.addCommand(CommandWait.of((type & 15) + 1));
 			} else {
-				throw new Error(`Unsupported command ${type.toString(16)} at address 0x${(address - 1).toString(16).toUpperCase()}`);
+				throw new Error(`Unsupported command 0x${hex(type, 2)} at address 0x${hex(address - 1)}`);
 			}
 		}
 		return track;

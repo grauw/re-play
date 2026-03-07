@@ -1,5 +1,5 @@
 import { Command } from "./Command.ts";
-import { MemoConstructor } from "./utils.ts";
+import { hex, MemoConstructor } from "./utils.ts";
 
 export abstract class CommandOPLL extends Command {
 	toString() {
@@ -41,7 +41,6 @@ export class CommandOPLLRegister extends CommandOPLL {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";

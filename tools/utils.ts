@@ -1,5 +1,17 @@
 import { createHash } from "crypto";
 
+export function bin(value: number, padding = 0) {
+	return value.toString(2).toUpperCase().padStart(padding, "0");
+}
+
+export function dec(value: number, padding = 0) {
+	return value.toString(10).toUpperCase().padStart(padding, "0");
+}
+
+export function hex(value: number, padding = 0) {
+	return value.toString(16).toUpperCase().padStart(padding, "0");
+}
+
 export function rangeMap<T>(count: number, callback: (index: number) => T): T[] {
 	const array: T[] = [];
 	for (let i = 0; i < count; i++)

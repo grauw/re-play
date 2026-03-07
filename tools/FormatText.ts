@@ -2,6 +2,7 @@ import fs from "fs";
 import { CommandWait } from "./Command.ts";
 import { type Format, FormatWrapper } from "./Format.ts";
 import type { Track } from "./Track.ts";
+import { dec } from "./utils.ts";
 
 export class FormatText extends FormatWrapper {
 	constructor(baseFormat?: Format) {
@@ -20,7 +21,7 @@ export class FormatText extends FormatWrapper {
 	writeTrack(track: Track) {
 		const lines: string[] = [];
 
-		const zeroPad = (value: number) => value < 10 ? "0" + Math.floor(value) : Math.floor(value);
+		const zeroPad = (value: number) => dec(Math.floor(value), 2);
 		let ticks = 0;
 		let commandsCount = 0;
 		for (const command of track.commands) {

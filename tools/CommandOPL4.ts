@@ -1,5 +1,5 @@
 import { Command } from "./Command.ts";
-import { HashTypedArray, MemoConstructor } from "./utils.ts";
+import { bin, dec, HashTypedArray, hex, MemoConstructor } from "./utils.ts";
 
 export type OPL4Type = "ymf278b" | "ymf262" | "ym3812" | "ym3526" | "y8950";
 
@@ -92,18 +92,17 @@ export class CommandOPL4Register extends CommandOPL4 {
 	}
 
 	toString() {
-		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		const address = this.address;
 		const value = this.value;
 		let description = "";
 		if (address < 0x200) {
 			const addressLow = address & 0xFF;
 			const bank = (address >> 8) + 1;
-			const operator = this.fmOperator != undefined ? (this.fmOperator + 1).toString(10).padStart(2, "0") : "??";
-			const channel = this.fmChannel != undefined ? (this.fmChannel + 1).toString(10).padStart(2, "0") : "??";
+			const operator = this.fmOperator != undefined ? dec(this.fmOperator + 1, 2) : "??";
+			const channel = this.fmChannel != undefined ? dec(this.fmChannel + 1, 2) : "??";
 			if (addressLow >= 0x00 && addressLow < 0x01) {
 				const register = address & 0x1;
-				const test = value.toString(2).padStart(8, "0");
+				const test = bin(value, 8);
 				description = `FM${bank} LSI Test ${register}: ${test}`;
 			} else if (addressLow >= 0x20 && addressLow < 0x36) {
 				const tremolo = value >> 7 & 0x1 ? "3.7 Hz" : "Off";
@@ -150,7 +149,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				const timer = address & 0x1;
 				const timerCount = 256 - value;
 				const timerTime = (timer ? 1 : 4) * timer * 2736000 / 33868800;
-				description = `Timer ${timer + 1} Count: ${hex(timerCount, 2)} (${timerTime.toFixed(2)} ms)`;
+				description = `Timer ${timer + 1} Count: 0x${hex(timerCount, 2)} (${timerTime.toFixed(2)} ms)`;
 			} else if (address == 0x004) {
 				if (value & 0x80) {
 					const mask: string[] = [];
@@ -179,7 +178,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM Tremolo Depth: ${tremoloDepth}, Vibrato Depth: ${vibratoDepth}, Rhythm: ${rhythm}, Base Drum: ${baseDrum}, Snare Drum: ${snareDrum}, Tom-Tom: ${tomTom}, Top Cymbal: ${topCymbal}, High Hat: ${highHat}`;
 			} else if (address == 0x104) {
 				const connection = value & 0x3F;
-				const connectionBits = connection.toString(2).padStart(6, "0");
+				const connectionBits = bin(connection, 6);
 				description = `FM Connection: ${connectionBits}`;
 			} else if (address == 0x105) {
 				const new1 = value & 0x1 ? "On" : "Off";
@@ -187,7 +186,7 @@ export class CommandOPL4Register extends CommandOPL4 {
 				description = `FM New2: ${new2}, New: ${new1}`;
 			}
 		} else {
-			const channel = this.waveChannel != undefined ? (this.waveChannel + 1).toString(10).padStart(2, "0") : "??";
+			const channel = this.waveChannel != undefined ? dec(this.waveChannel + 1, 2) : "??";
 			if (address == 0x202) {
 				const accessMode = value & 0x1 ? "CPU" : "OPL4";
 				const type = value & 0x2 ? "RAM" : "ROM";
@@ -274,7 +273,6 @@ export class CommandOPL4WaveMemory extends CommandOPL4 {
 	}
 
 	toString() {
-		const hex = (value: number) => value.toString(16).toUpperCase();
 		return `OPL4WaveMemory Address: 0x${hex(this.address)}, Size: 0x${hex(this.memory.length)}`;
 	}
 }

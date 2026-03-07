@@ -1,3 +1,5 @@
+import { hex } from "./utils.ts";
+
 export class Memory {
 	private readonly data: Uint8Array;
 	public readonly ranges: Ranges;
@@ -128,7 +130,6 @@ export class Range {
 	}
 
 	toString() {
-		const hex = (value: number) => value.toString(16).toUpperCase();
 		return `[${hex(this.start)}, ${hex(this.end)}]`;
 	}
 }
