@@ -112,30 +112,30 @@ export class TransformQuantize extends Transform {
 	}
 
 	private applyOPL4Timer(input: Track) {
-		let inputTicks = 0;
-		let outputTicks = 0;
-		let timerActive = false;
+		const config = input.getSetupCommandChecked(command => command instanceof CommandOPL4Config);
+		const timer1Division = 72 * { ym3526: 4, y8950: 4, ym3812: 4, ymf262: 16, ymf278b: 38 }[config.type];
+		let timer1Period: number | undefined;
+		let timer1Active = false;
 		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
-				if (timerActive) {
-					inputTicks += command.ticks;
-				}
+				// discard
+			} else if (command instanceof CommandOPL4Register && command.address == 0x002) {
+				timer1Period = command.value;
 			} else if (command instanceof CommandOPL4Register && command.address == 0x004) {
-				if (command.value & 0x80) {
+				if (timer1Active && (command.value & 0x80)) {
 					output.addCommand(CommandWait.of(1));
-					outputTicks++;
 				} else {
-					timerActive = (command.value & 0x03) != 0;
+					timer1Active = (command.value & 0x01) != 0;
 				}
 			} else {
 				output.addCommand(command);
 			}
 		}
-		if (inputTicks == 0) {
+		if (timer1Period == undefined) {
 			throw new Error(`No timer active in track ${input.name}.`);
 		}
-		output.tickFrequency = input.tickFrequency * outputTicks / inputTicks;
+		output.tickFrequency = config.clockFrequency / (timer1Division * (0x100 - timer1Period));
 		return output;
 	}
 }
