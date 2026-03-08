@@ -59,6 +59,8 @@ export class Track {
 		return this.getSetupCommand(predicate) != undefined;
 	}
 
+	getSetupCommand<T extends Command>(predicate: (command: Command) => command is T): T | undefined;
+	getSetupCommand(predicate: (command: Command) => boolean): Command | undefined;
 	getSetupCommand(predicate: (command: Command) => boolean) {
 		for (const command of this.commands) {
 			if (command instanceof CommandWait) {
@@ -68,6 +70,16 @@ export class Track {
 			}
 		}
 		return undefined;
+	}
+
+	getSetupCommandChecked<T extends Command>(predicate: (command: Command) => command is T): T;
+	getSetupCommandChecked(predicate: (command: Command) => boolean): Command;
+	getSetupCommandChecked(predicate: (command: Command) => boolean) {
+		const command = this.getSetupCommand(predicate);
+		if (command == undefined) {
+			throw new Error("Setup command not found.");
+		}
+		return command;
 	}
 
 	static new(track: Track): Track;
