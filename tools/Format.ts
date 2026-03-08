@@ -5,7 +5,7 @@ import type { Track } from "./Track.ts";
 import { Transform, TransformCompress, TransformEndLoop, TransformGroup, TransformMoveWaitAfterLoop, TransformQuantize, TransformStartConfigAndWait, TransformValidate } from "./Transform.ts";
 
 export type TransformOptions = {
-	tickFrequency?: number | "opl4-timer";
+	tickFrequency?: number | "opl4-timer" | "opn-timer";
 	waitThreshold?: number;
 	tolerance?: number;
 	targetTickFrequency?: number;

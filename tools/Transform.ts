@@ -2,7 +2,7 @@ import { Grammar } from "lfs2-compression";
 import { type Command, CommandCall, CommandGD3, CommandJump, CommandLabel, CommandReturn, CommandWait } from "./Command.ts";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.ts";
 import { CommandOPLLConfig } from "./CommandOPLL.ts";
-import { CommandOPNConfig } from "./CommandOPN.ts";
+import { CommandOPNConfig, CommandOPNRegister } from "./CommandOPN.ts";
 import { CommandPSGConfig } from "./CommandPSG.ts";
 import type { Format } from "./Format.ts";
 import { Player } from "./Player.ts";
@@ -46,11 +46,11 @@ export class TransformMoveWaitAfterLoop extends Transform {
 }
 
 export class TransformQuantize extends Transform {
-	private readonly tickFrequency: number | "opl4-timer";
+	private readonly tickFrequency: number | "opl4-timer" | "opn-timer";
 	private readonly waitThreshold: number;
 	private readonly tolerance: number;
 
-	constructor(tickFrequency: number | "opl4-timer" = 44100, waitThreshold = 0, tolerance = 0) {
+	constructor(tickFrequency: number | "opl4-timer" | "opn-timer" = 44100, waitThreshold = 0, tolerance = 0) {
 		super();
 		if (tolerance < 0 || tolerance > 0.5)
 			throw new Error("Tolerance must not exceed 0.5.");
@@ -62,6 +62,8 @@ export class TransformQuantize extends Transform {
 	apply(input: Track) {
 		if (this.tickFrequency == "opl4-timer") {
 			return this.applyOPL4Timer(input);
+		} else if (this.tickFrequency == "opn-timer") {
+			return this.applyOPNTimer(input);
 		} else {
 			return this.applyHertz(input, this.tickFrequency);
 		}
@@ -136,6 +138,36 @@ export class TransformQuantize extends Transform {
 			throw new Error(`No timer active in track ${input.name}.`);
 		}
 		output.tickFrequency = config.clockFrequency / (timer1Division * (0x100 - timer1Period));
+		return output;
+	}
+
+	private applyOPNTimer(input: Track) {
+		const config = input.getSetupCommandChecked(command => command instanceof CommandOPNConfig);
+		const timer1Division = 72 * { ym2203: 1, ym2608: 2, ym2612: 2 }[config.type];
+		let timer1Period: number | undefined;
+		let timer1Active = false;
+		const output = Track.new(input);
+		for (const command of input.commands) {
+			if (command instanceof CommandWait) {
+				// discard
+			} else if (command instanceof CommandOPNRegister && command.address == 0x024) {
+				timer1Period = (timer1Period ?? 0) & 0x003 | command.value << 2;
+			} else if (command instanceof CommandOPNRegister && command.address == 0x025) {
+				timer1Period = (timer1Period ?? 0) & 0x3FC | command.value & 0x03;
+			} else if (command instanceof CommandOPNRegister && command.address == 0x027) {
+				if (timer1Active && (command.value & 0x10)) {
+					output.addCommand(CommandWait.of(1));
+				}
+				timer1Active = (command.value & 0x01) != 0;
+				output.addCommand(CommandOPNRegister.of(command.address, command.value & 0xC0));
+			} else {
+				output.addCommand(command);
+			}
+		}
+		if (timer1Period == undefined) {
+			throw new Error(`No timer active in track ${input.name}.`);
+		}
+		output.tickFrequency = config.clockFrequency / (timer1Division * (0x400 - timer1Period));
 		return output;
 	}
 }

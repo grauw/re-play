@@ -230,7 +230,7 @@ The following key / values can be set either globally or on a per-track basis:
 
   * `tickFrequency`:
     Native tick frequency of the original music in Hz, e.g. `50` or `60` Hz.
-    If the VGM data contains OPL4 timer I/O, can be set to `opl4-timer`.
+    If the track uses OPL4 or OPN timers, use `opl4-timer` / `opn-timer`.
     Default: `60`.
   * `targetTickFrequency`:
     Override target tick frequency in case it is different from the native
