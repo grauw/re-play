@@ -100,7 +100,10 @@ export class FormatOPN extends FormatReplay {
 }
 
 class FormatOPNStats extends FormatStats {
-	private unusedChannels: number[];
+	private unusedChannels: number[] = [];
+	private keyCounts = 0;
+	private frequencyCounts = 0;
+	private instrumentCounts = 0;
 
 	constructor(track: Track, format: FormatOPN) {
 		super(track, format);
@@ -113,9 +116,16 @@ class FormatOPNStats extends FormatStats {
 				if (command instanceof CommandFMKey && command.slots) {
 					keyOnChannels[command.channel] = true;
 				}
+
+				if (command instanceof CommandFMKey) {
+					this.keyCounts++;
+				} else if (command instanceof CommandFMFrequency) {
+					this.frequencyCounts++;
+				} else if (command instanceof CommandFMInstrument) {
+					this.instrumentCounts++;
+				}
 			}
 		}
-		this.unusedChannels = [];
 		for (let i = 0; i < 8; ++i) {
 			if (usedChannels[i] && !keyOnChannels[i]) {
 				this.unusedChannels.push(i);
@@ -125,6 +135,7 @@ class FormatOPNStats extends FormatStats {
 
 	toString() {
 		const lines = [super.toString()];
+		lines.push(`  FM command counts: ${this.keyCounts} key, ${this.frequencyCounts} frequency, ${this.instrumentCounts} instrument`);
 		if (this.unusedChannels.length > 0) {
 			lines.push(`  Unused channels: ${this.unusedChannels.join(", ")}`);
 		}
