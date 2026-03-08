@@ -41,17 +41,20 @@ export class CommandPSGRegister extends CommandPSG {
 	}
 
 	toString() {
-		const address = this.address;
-		const value = this.value;
-		let description = "";
+		const description = CommandPSGRegister.toDescription(this.address, this.value);
+		return `PSGRegister ${hex(this.address, 1)}: ${hex(this.value, 2)}${description ? " - " + description : ""}`;
+	}
+
+	static toDescription(address: number, value: number) {
+		const hex = (value: number, padding = 0) => value.toString(16).toUpperCase().padStart(padding, "0");
 		if (address < 0x06 && (address & 1) == 0) {
 			const channel = ["A", "B", "C"][address >> 1];
-			description = `Ch${channel} Tone Frequency Low: 0x${hex(value, 2)}`;
+			return `Ch${channel} Tone Frequency Low: 0x${hex(value, 2)}`;
 		} else if (address < 0x06 && (address & 1) == 1) {
 			const channel = ["A", "B", "C"][address >> 1];
-			description = `Ch${channel} Tone Frequency High: 0x${hex(value, 2)}`;
+			return `Ch${channel} Tone Frequency High: 0x${hex(value, 2)}`;
 		} else if (address == 0x06) {
-			description = `Noise Frequency: ${value}`;
+			return `Noise Frequency: ${hex(value, 2)}`;
 		} else if (address == 0x07) {
 			const toneA = value & 0x01 ? "Off" : "On";
 			const toneB = value & 0x02 ? "Off" : "On";
@@ -59,29 +62,28 @@ export class CommandPSGRegister extends CommandPSG {
 			const noiseA = value & 0x08 ? "Off" : "On";
 			const noiseB = value & 0x10 ? "Off" : "On";
 			const noiseC = value & 0x20 ? "Off" : "On";
-			description = `Channel Mixer Tone: ${toneA}, ${toneB}, ${toneC}, Noise: ${noiseA}, ${noiseB}, ${noiseC}`;
+			return `Channel Mixer Tone: ${toneA}, ${toneB}, ${toneC}, Noise: ${noiseA}, ${noiseB}, ${noiseC}`;
 		} else if (address >= 0x08 && address < 0x0B) {
 			const channel = ["A", "B", "C"][address - 0x08];
 			if ((value & 0x10) == 0) {
 				const level = value & 0x0F;
 				const levelDB = value == 0 ? "∞" : (0x0F - level) * 3;
-				description = `Ch${channel} Level: ${level} (-${levelDB} dB)`;
+				return `Ch${channel} Level: ${level} (-${levelDB} dB)`;
 			} else {
-				description = `Ch${channel} Level: Envelope Controlled`;
+				return `Ch${channel} Level: Envelope Controlled`;
 			}
 		} else if (address == 0x0B) {
-			description = `Envelope Frequency Low: 0x${hex(value, 2)}`;
+			return `Envelope Frequency Low: 0x${hex(value, 2)}`;
 		} else if (address == 0x0C) {
-			description = `Envelope Frequency High: 0x${hex(value, 2)}`;
+			return `Envelope Frequency High: 0x${hex(value, 2)}`;
 		} else if (address == 0x0D) {
 			const continue_ = value & 0x08 ? "On" : "Off";
 			const attack = value & 0x04 ? "On" : "Off";
 			const alternate = value & 0x02 ? "On" : "Off";
 			const hold = value & 0x01 ? "On" : "Off";
-			description = `Envelope Shape Continue: ${continue_}, Attack: ${attack}, Alternate: ${alternate}, Hold: ${hold}`;
+			return `Envelope Shape Continue: ${continue_}, Attack: ${attack}, Alternate: ${alternate}, Hold: ${hold}`;
 		}
-
-		return `PSGRegister ${hex(address, 1)}: ${hex(value, 2)}${description ? " - " + description : ""}`;
+		return "";
 	}
 }
 
