@@ -43,8 +43,6 @@ export class FormatVGM extends FormatWrapper {
 		const getChipFrequency = (address: number) => getHeaderWord(address) & 0x3FFFFFFF;
 
 		const track = new Track(name, 44100);
-		let opl4ROMSize = 0x200000;
-		let multiPCMAddress = 0;
 
 		if (getChipFrequency(0x44)) {
 			track.addCommand(CommandOPNConfig.of(getChipFrequency(0x44), "ym2203"));
@@ -89,6 +87,8 @@ export class FormatVGM extends FormatWrapper {
 			}
 		}
 
+		let opl4ROMSize = 0x200000;
+		let multiPCMAddress = 0;
 		let address = headerSize;
 		while (address < vgmData.length) {
 			if (address == loop) {
