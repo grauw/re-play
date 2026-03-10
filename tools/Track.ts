@@ -82,8 +82,6 @@ export class Track {
 		return command;
 	}
 
-	static new(track: Track): Track;
-	static new(track: { name: string, tickFrequency: number }): Track;
 	static new(track: Track) {
 		return new Track(track.name, track.tickFrequency);
 	}
@@ -102,7 +100,7 @@ export class Track {
 	}
 
 	addScope(name: string) {
-		const track = Track.new({...this, name});
+		const track = new Track(name, this.tickFrequency);
 		track.addCommand(CommandLabel.of(name));
 		for (const command of this.commands) {
 			if (command instanceof CommandLabel) {

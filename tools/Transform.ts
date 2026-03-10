@@ -68,7 +68,7 @@ export class TransformQuantize extends Transform {
 	}
 
 	private applyHertz(input: Track, tickFrequency: number) {
-		const output = Track.new({...input, tickFrequency});
+		const output = Track.new(input);
 		let inputTicks = 0;
 		let outputTicks = 0;
 		let accumulator = 0;
@@ -105,6 +105,8 @@ export class TransformQuantize extends Transform {
 		outputTicks += accumulator / input.tickFrequency;
 		if (this.tolerance) {
 			output.tickFrequency = input.tickFrequency * outputTicks / inputTicks;
+		} else {
+			output.tickFrequency = tickFrequency;
 		}
 		return output;
 	}
@@ -113,7 +115,7 @@ export class TransformQuantize extends Transform {
 		let inputTicks = 0;
 		let outputTicks = 0;
 		let timerActive = false;
-		const output = Track.new({...input, tickFrequency: 0});
+		const output = Track.new(input);
 		for (const command of input.commands) {
 			if (command instanceof CommandWait) {
 				if (timerActive) {
