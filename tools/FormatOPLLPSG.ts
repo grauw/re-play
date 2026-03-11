@@ -31,12 +31,12 @@ export class FormatOPLLPSG extends FormatReplay {
 
 	getTransform(options: TransformOPLLPSGOptions & TransformOptions) {
 		return super.getTransform(options, new TransformGroup([
-			new TransformOPLLFrameSanitizer(),
-			new TransformPSGFrameSanitizer(),
 			new TransformOPLLMapChannels(options.channelMapping),
 			new TransformPSGMapChannels(options.psgChannelMapping),
 			new TransformOPLLAttenuateVolume(options.attenuation),
-			new TransformPSGAttenuateVolume(options.attenuation)
+			new TransformPSGAttenuateVolume(options.attenuation),
+			new TransformOPLLFrameSanitizer(),
+			new TransformPSGFrameSanitizer(),
 		]));
 	}
 
