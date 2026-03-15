@@ -1,6 +1,6 @@
 import { Chip } from "./Chip.ts";
 import type { Command } from "./Command.ts";
-import { CommandOPNConfig, CommandOPNRegister, type OPNType } from "./CommandFM.ts";
+import { CommandOPNConfig, CommandOPNRegister, type OPNType } from "./CommandOPN.ts";
 
 export class ChipOPN extends Chip {
 	private clockFrequency: number;

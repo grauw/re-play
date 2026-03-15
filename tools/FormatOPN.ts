@@ -5,7 +5,8 @@ import { CommandFMChannel, CommandFMFrequency, CommandFMInstrument, CommandFMKey
 import { FormatReplay, FormatStats, type TransformOptions } from "./Format.ts";
 import type { Track } from "./Track.ts";
 import { TransformGroup } from "./Transform.ts";
-import { TransformOPNAttenuateVolume, TransformOPNFrequencyBeforeKeyOn, TransformOPNMapChannels, TransformOPNToGenericFM } from "./TransformOPN.ts";
+import { TransformFMAttenuateVolume, TransformFMFrequencyBeforeKeyOn, TransformFMMapChannels } from "./TransformFM.ts";
+import { TransformOPNToGenericFM } from "./TransformOPN.ts";
 
 export type TransformOPNOptions = {
 	channelMapping?: number[];
@@ -29,9 +30,9 @@ export class FormatOPN extends FormatReplay {
 	getTransform(options: TransformOPNOptions & TransformOptions) {
 		return super.getTransform(options, new TransformGroup([
 			new TransformOPNToGenericFM(),
-			new TransformOPNFrequencyBeforeKeyOn(),
-			new TransformOPNMapChannels(options.channelMapping),
-			new TransformOPNAttenuateVolume(options.attenuation)
+			new TransformFMFrequencyBeforeKeyOn(),
+			new TransformFMMapChannels(options.channelMapping),
+			new TransformFMAttenuateVolume(options.attenuation)
 		]));
 	}
 

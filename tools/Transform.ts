@@ -1,8 +1,8 @@
 import { Grammar } from "lfs2-compression";
 import { type Command, CommandCall, CommandGD3, CommandJump, CommandLabel, CommandReturn, CommandWait } from "./Command.ts";
-import { CommandOPNConfig } from "./CommandFM.ts";
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.ts";
 import { CommandOPLLConfig } from "./CommandOPLL.ts";
+import { CommandOPNConfig } from "./CommandOPN.ts";
 import { CommandPSGConfig } from "./CommandPSG.ts";
 import type { Format } from "./Format.ts";
 import { Player } from "./Player.ts";
