@@ -4,9 +4,19 @@ import { CommandMultiPCM, CommandMultiPCMConfig, CommandMultiPCMRegister } from 
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from "./CommandOPL4.ts";
 import { Memory, Ranges } from "./Memory.ts";
 import { Track } from "./Track.ts";
-import { Transform } from "./Transform.ts";
+import { Transform, TransformSetup } from "./Transform.ts";
 
 const realChannels = [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30];
+
+export class TransformMultiPCMSetup extends TransformSetup {
+	protected isConfig(command: Command) {
+		return command instanceof CommandMultiPCMConfig;
+	}
+
+	protected createCommand(address: number, value: number) {
+		return CommandMultiPCMRegister.of(address, value);
+	}
+}
 
 export class TransformMultiPCMReduceChannels extends Transform {
 	private readonly maxChannels: number;

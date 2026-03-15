@@ -303,6 +303,21 @@ The following key / values can be set either globally or on a per-track basis:
     Amount of look back for EG key on/off timing. Recommend to leave at
     default unless you deeply understand the timing issue it addresses.
     Default: `4`.
+  * `opnSetup`:
+    List of manual OPN register setup commands to insert.
+    Specified as `{ address: number, value: number }[]`. Default: `[]`.
+  * `opl4Setup`:
+    List of manual OPL4 register setup commands to insert.
+    Specified as `{ address: number, value: number }[]`. Default: `[]`.
+  * `multiPCMSetup`:
+    List of manual MultiPCM register setup commands to insert.
+    Specified as `{ address: number, value: number }[]`. Default: `[]`.
+  * `opllSetup`:
+    List of manual OPLL register setup commands to insert.
+    Specified as `{ address: number, value: number }[]`. Default: `[]`.
+  * `psgSetup`:
+    List of manual PSG register setup commands to insert.
+    Specified as `{ address: number, value: number }[]`. Default: `[]`.
 
 Resource keys can be overridden from the command line with `--set key value`.
 

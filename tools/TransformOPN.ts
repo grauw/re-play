@@ -1,9 +1,19 @@
 import { ChipOPN } from "./ChipOPN.ts";
-import { CommandLabel } from "./Command.ts";
+import { Command, CommandLabel } from "./Command.ts";
 import { CommandFMFrequency, CommandFMInstrument, CommandFMKey } from "./CommandFM.ts";
 import { CommandOPNConfig, CommandOPNRegister } from "./CommandOPN.ts";
 import { Track } from "./Track.ts";
-import { Transform } from "./Transform.ts";
+import { Transform, TransformSetup } from "./Transform.ts";
+
+export class TransformOPNSetup extends TransformSetup {
+	protected isConfig(command: Command) {
+		return command instanceof CommandOPNConfig;
+	}
+
+	protected createCommand(address: number, value: number) {
+		return CommandOPNRegister.of(address, value);
+	}
+}
 
 export class TransformOPNToGenericFM extends Transform {
 	apply(input: Track) {

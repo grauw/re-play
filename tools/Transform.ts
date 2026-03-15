@@ -4,7 +4,7 @@ import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaveMemory } from ".
 import { CommandOPLLConfig } from "./CommandOPLL.ts";
 import { CommandOPNConfig, CommandOPNRegister } from "./CommandOPN.ts";
 import { CommandPSGConfig } from "./CommandPSG.ts";
-import type { Format } from "./Format.ts";
+import type { Format, TransformSetupOptions } from "./Format.ts";
 import { Player } from "./Player.ts";
 import { Track } from "./Track.ts";
 
@@ -23,6 +23,33 @@ export class TransformGroup {
 
 	apply(input: Track) {
 		return this.transforms.reduce((input, transform) => transform.apply(input), input);
+	}
+}
+
+export abstract class TransformSetup extends Transform {
+	private readonly setup: TransformSetupOptions;
+
+	constructor(setup: TransformSetupOptions = []) {
+		super();
+		this.setup = setup;
+	}
+
+	protected abstract isConfig(command: Command): boolean;
+	protected abstract createCommand(address: number, value: number): Command;
+
+	apply(input: Track) {
+		if (!this.setup.length || !input.hasSetupCommand(command => this.isConfig(command)))
+			return input;
+		const output = Track.new(input);
+		for (const command of input.commands) {
+			output.addCommand(command);
+			if (this.isConfig(command)) {
+				for (const { address, value } of this.setup) {
+					output.addCommand(this.createCommand(address, value));
+				}
+			}
+		}
+		return output;
 	}
 }
 

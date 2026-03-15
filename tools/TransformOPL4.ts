@@ -4,13 +4,23 @@ import { Command, CommandControlFlow, CommandJump, CommandLabel, CommandNop, Com
 import { CommandOPL4Config, CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.ts";
 import { Memory, Range, Ranges } from "./Memory.ts";
 import { Track } from "./Track.ts";
-import { Transform } from "./Transform.ts";
+import { Transform, TransformSetup } from "./Transform.ts";
 import { MemoConstructor, rangeMap } from "./utils.ts";
 
 const ignoreAddresses: readonly number[] = [
 	0x000, 0x001, 0x002, 0x003, 0x004, 0x100, 0x101, 0x105,
 	0x200, 0x201, 0x203, 0x204, 0x205, 0x206, 0x2F8, 0x2F9
 ];
+
+export class TransformOPL4Setup extends TransformSetup {
+	protected isConfig(command: Command) {
+		return command instanceof CommandOPL4Config;
+	}
+
+	protected createCommand(address: number, value: number) {
+		return CommandOPL4Register.of(address, value);
+	}
+}
 
 export class TransformOPL4FrameSanitizer extends Transform {
 	private readonly initKeyOff: boolean;

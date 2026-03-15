@@ -3,7 +3,17 @@ import { ChipPSG } from "./ChipPSG.ts";
 import { Command, CommandControlFlow, CommandJump, CommandLabel, CommandWait } from "./Command.ts";
 import { CommandPSGConfig, CommandPSGRegister } from "./CommandPSG.ts";
 import { Track } from "./Track.ts";
-import { Transform } from "./Transform.ts";
+import { Transform, TransformSetup } from "./Transform.ts";
+
+export class TransformPSGSetup extends TransformSetup {
+	protected isConfig(command: Command) {
+		return command instanceof CommandPSGConfig;
+	}
+
+	protected createCommand(address: number, value: number) {
+		return CommandPSGRegister.of(address, value);
+	}
+}
 
 export class TransformPSGFrameSanitizer extends Transform {
 	apply(input: Track) {

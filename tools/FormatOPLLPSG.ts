@@ -3,16 +3,18 @@ import { BankedData } from "./BankedData.ts";
 import { Command, CommandCall, CommandJump, CommandLabel, CommandReturn, CommandWait } from "./Command.ts";
 import { CommandOPLLRegister } from "./CommandOPLL.ts";
 import { CommandPSGRegister } from "./CommandPSG.ts";
-import { FormatReplay, FormatStats, type TransformOptions } from "./Format.ts";
+import { FormatReplay, FormatStats, type TransformOptions, type TransformSetupOptions } from "./Format.ts";
 import type { Track } from "./Track.ts";
 import { TransformGroup } from "./Transform.ts";
-import { TransformOPLLAttenuateVolume, TransformOPLLFrameSanitizer, TransformOPLLMapChannels } from "./TransformOPLL.ts";
-import { TransformPSGAttenuateVolume, TransformPSGFrameSanitizer, TransformPSGMapChannels } from "./TransformPSG.ts";
+import { TransformOPLLAttenuateVolume, TransformOPLLFrameSanitizer, TransformOPLLMapChannels, TransformOPLLSetup } from "./TransformOPLL.ts";
+import { TransformPSGAttenuateVolume, TransformPSGFrameSanitizer, TransformPSGMapChannels, TransformPSGSetup } from "./TransformPSG.ts";
 
 export type TransformOPLLPSGOptions = {
 	channelMapping?: number[];
 	psgChannelMapping?: number[];
 	attenuation?: number;
+	opllSetup?: TransformSetupOptions;
+	psgSetup?: TransformSetupOptions;
 };
 
 export const FORMAT_OPLLPSG_ID = 0x02;
@@ -31,6 +33,9 @@ export class FormatOPLLPSG extends FormatReplay {
 
 	getTransform(options: TransformOPLLPSGOptions & TransformOptions) {
 		return super.getTransform(options, new TransformGroup([
+			new TransformOPLLSetup(options.opllSetup),
+			new TransformPSGSetup(options.psgSetup),
+		]), new TransformGroup([
 			new TransformOPLLMapChannels(options.channelMapping),
 			new TransformPSGMapChannels(options.psgChannelMapping),
 			new TransformOPLLAttenuateVolume(options.attenuation),

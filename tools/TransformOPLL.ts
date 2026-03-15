@@ -3,8 +3,18 @@ import { ChipOPLL } from "./ChipOPLL.ts";
 import { Command, CommandControlFlow, CommandJump, CommandLabel, CommandWait } from "./Command.ts";
 import { CommandOPLLConfig, CommandOPLLRegister } from "./CommandOPLL.ts";
 import { Track } from "./Track.ts";
-import { Transform } from "./Transform.ts";
+import { Transform, TransformSetup } from "./Transform.ts";
 import { rangeMap } from "./utils.ts";
+
+export class TransformOPLLSetup extends TransformSetup {
+	protected isConfig(command: Command) {
+		return command instanceof CommandOPLLConfig;
+	}
+
+	protected createCommand(address: number, value: number) {
+		return CommandOPLLRegister.of(address, value);
+	}
+}
 
 export class TransformOPLLFrameSanitizer extends Transform {
 	apply(input: Track) {

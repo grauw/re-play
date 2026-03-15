@@ -2,11 +2,11 @@ import fs from "fs";
 import { BankedData } from "./BankedData.ts";
 import { Command, CommandCall, CommandJump, CommandLabel, CommandReturn, CommandWait } from "./Command.ts";
 import { CommandOPL4Register, CommandOPL4WaitLoad, CommandOPL4WaveMemory } from "./CommandOPL4.ts";
-import { FormatReplay, FormatStats, type TransformOptions } from "./Format.ts";
+import { FormatReplay, FormatStats, type TransformOptions, type TransformSetupOptions } from "./Format.ts";
 import type { Track } from "./Track.ts";
 import { Transform, TransformGroup } from "./Transform.ts";
-import { TransformMultiPCMReduceChannels, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.ts";
-import { TransformMinimumKeyWait, TransformOPL4AttenuateVolume, TransformOPL4EGToWaveTables, TransformOPL4FrameSanitizer, TransformOPL4MapChannels, TransformOPL4Strip, type StripMode, type StripTarget, type WaveTableOptimizeMode } from "./TransformOPL4.ts";
+import { TransformMultiPCMReduceChannels, TransformMultiPCMSetup, TransformMultiPCMToOPL4 } from "./TransformMultiPCM.ts";
+import { TransformMinimumKeyWait, TransformOPL4AttenuateVolume, TransformOPL4EGToWaveTables, TransformOPL4FrameSanitizer, TransformOPL4MapChannels, TransformOPL4Setup, TransformOPL4Strip, type StripMode, type StripTarget, type WaveTableOptimizeMode } from "./TransformOPL4.ts";
 
 export type TransformOPL4Options = {
 	reduceChannels?: number;
@@ -23,6 +23,8 @@ export type TransformOPL4Options = {
 	stripPadding?: number;
 	stripMargin?: number;
 	keyWaitLookback?: number;
+	multiPCMSetup?: TransformSetupOptions;
+	opl4Setup?: TransformSetupOptions;
 };
 
 export const FORMAT_OPL4_ID = 0x01;
@@ -39,6 +41,9 @@ export class FormatOPL4 extends FormatReplay {
 
 	getTransform(options: TransformOPL4Options & TransformOptions) {
 		return super.getTransform(options, new TransformGroup([
+			new TransformOPL4Setup(options.opl4Setup),
+			new TransformMultiPCMSetup(options.multiPCMSetup),
+		]), new TransformGroup([
 			new TransformMultiPCMReduceChannels(options.reduceChannels),
 			new TransformMultiPCMToOPL4(),
 			options.stripMode != "all" ? TransformOPL4EGToWaveTables.create(options.waveTableOptimization, options.waveTablePool) : new Transform(),

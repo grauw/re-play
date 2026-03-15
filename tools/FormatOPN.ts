@@ -2,15 +2,16 @@ import fs from "fs";
 import { BankedData } from "./BankedData.ts";
 import { Command, CommandCall, CommandJump, CommandLabel, CommandReturn, CommandWait } from "./Command.ts";
 import { CommandFMChannel, CommandFMFrequency, CommandFMInstrument, CommandFMKey } from "./CommandFM.ts";
-import { FormatReplay, FormatStats, type TransformOptions } from "./Format.ts";
+import { FormatReplay, FormatStats, type TransformOptions, type TransformSetupOptions } from "./Format.ts";
 import type { Track } from "./Track.ts";
 import { TransformGroup } from "./Transform.ts";
 import { TransformFMAttenuateVolume, TransformFMFrequencyBeforeKeyOn, TransformFMMapChannels } from "./TransformFM.ts";
-import { TransformOPNToGenericFM } from "./TransformOPN.ts";
+import { TransformOPNSetup, TransformOPNToGenericFM } from "./TransformOPN.ts";
 
 export type TransformOPNOptions = {
 	channelMapping?: number[];
 	attenuation?: number;
+	opnSetup?: TransformSetupOptions;
 };
 
 const FORMAT_OPN_ID = 0x00;
@@ -29,6 +30,8 @@ export class FormatOPN extends FormatReplay {
 
 	getTransform(options: TransformOPNOptions & TransformOptions) {
 		return super.getTransform(options, new TransformGroup([
+			new TransformOPNSetup(options.opnSetup),
+		]), new TransformGroup([
 			new TransformOPNToGenericFM(),
 			new TransformFMFrequencyBeforeKeyOn(),
 			new TransformFMMapChannels(options.channelMapping),

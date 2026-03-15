@@ -4,6 +4,11 @@ import { Player } from "./Player.ts";
 import type { Track } from "./Track.ts";
 import { Transform, TransformCompress, TransformEndLoop, TransformGroup, TransformMoveWaitAfterLoop, TransformQuantize, TransformStartConfigAndWait, TransformValidate } from "./Transform.ts";
 
+export type TransformSetupOptions = {
+	address: number;
+	value: number;
+}[];
+
 export type TransformOptions = {
 	tickFrequency?: number | "opl4-timer" | "opn-timer";
 	waitThreshold?: number;
@@ -26,8 +31,9 @@ export class Format {
 		this.combine = combine;
 	}
 
-	getTransform(options: TransformOptions, innerTransform: Transform = new Transform()) {
+	getTransform(options: TransformOptions, setupTransform: Transform = new Transform(), innerTransform: Transform = new Transform()) {
 		return new TransformGroup([
+			setupTransform,
 			new TransformMoveWaitAfterLoop(),
 			new TransformQuantize(options.tickFrequency, options.waitThreshold, options.tolerance),
 			options.targetTickFrequency ? new TransformQuantize(options.targetTickFrequency) : new Transform(),
@@ -90,8 +96,9 @@ export class FormatWrapper extends Format {
 		this.baseFormat = baseFormat;
 	}
 
-	getTransform(options: TransformOptions, innerTransform: Transform) {
-		return this.baseFormat ? this.baseFormat.getTransform(options, innerTransform) : super.getTransform(options, innerTransform);
+	getTransform(options: TransformOptions, setupTransform: Transform = new Transform(), innerTransform: Transform = new Transform()) {
+		return this.baseFormat ? this.baseFormat.getTransform(options, setupTransform, innerTransform) :
+			super.getTransform(options, setupTransform, innerTransform);
 	}
 
 	getPostTransform(options: PostTransformOptions, innerTransform: Transform) {
