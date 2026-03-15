@@ -11,10 +11,9 @@ PSG_Detect:
 	scf
 	ret
 
-; a = 80H + count * 2 - 2
+; a = count * 2
 ; hl = sound data
 PSG_WriteBlock:
-	add a,-80H + 2
 	ld b,a
 	ld c,PSG_DATA
 	di

@@ -108,7 +108,7 @@ export class FormatOPLLPSG extends FormatReplay {
 
 	getCycles(command: Command, preceding?: Command) {
 		if (command instanceof CommandOPLLRegister) {
-			return preceding instanceof CommandOPLLRegister ? 126 : 202;
+			return preceding instanceof CommandOPLLRegister ? 126 : 231;
 		} else if (command instanceof CommandPSGRegister) {
 			return preceding instanceof CommandPSGRegister ? 57 : 172;
 		} else if (command instanceof CommandCall) {

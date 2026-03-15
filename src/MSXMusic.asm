@@ -61,10 +61,9 @@ MSXMusic_Disable:
 	ld hl,MSXMusic_ENABLE_ADDRESS
 	jp Memory_WriteSlot
 
-; a = count * 2 - 2
+; a = count * 2
 ; hl = sound data
 MSXMusic_WriteBlockR800:
-	add a,02H
 	ld b,a
 	ld c,MSXMusic_DATA
 MSXMusic_WriteBlockR800_Loop:
@@ -96,12 +95,11 @@ MSXMusic_WriteBlockR800_Loop:
 	in a,(MSXMusic_BASE)
 	in a,(MSXMusic_BASE)
 	jp nz,MSXMusic_WriteBlockR800_Loop
-	jp FormatOPLLPSG_ProcessR800
+	ret
 
-; a = count * 2 - 2
+; a = count * 2
 ; hl = sound data
 MSXMusic_WriteBlockZ80:
-	add a,02H
 	ld b,a
 	ld c,MSXMusic_DATA
 MSXMusic_WriteBlockZ80_Loop:
@@ -118,7 +116,7 @@ MSXMusic_WriteBlockZ80_Loop:
 	ld (hl),a
 	pop hl
 	jp nz,MSXMusic_WriteBlockZ80_Loop
-	jp FormatOPLLPSG_ProcessZ80
+	ret
 
 MSXMusic_Mute:
 	ld a,0FH

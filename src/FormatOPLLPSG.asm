@@ -37,6 +37,7 @@ FormatOPLLPSG_JumpTablePSG:
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessR800:
+FormatOPLLPSG_ProcessR800_Loop:
 	ld a,(hl)
 	inc hl
 	add a,a
@@ -48,23 +49,30 @@ FormatOPLLPSG_ProcessR800:
 	rrca
 	ret
 FormatOPLLPSG_ProcessR800_WriteBlock:
-	jp p,MSXMusic_WriteBlockR800
+	jp m,FormatOPLLPSG_ProcessR800_WriteBlockPSG
+FormatOPLLPSG_ProcessR800_WriteBlockOPLL:
+	add a,02H
+	call MSXMusic_WriteBlockR800
+	jp FormatOPLLPSG_ProcessR800_Loop
+FormatOPLLPSG_ProcessR800_WriteBlockPSG:
+	add a,-80H + 2
 	call PSG_WriteBlock
-	jp FormatOPLLPSG_ProcessR800
+	jp FormatOPLLPSG_ProcessR800_Loop
 FormatOPLLPSG_ProcessR800_Call:
 	RePlayer_Call_M
-	jp FormatOPLLPSG_ProcessR800
+	jp FormatOPLLPSG_ProcessR800_Loop
 FormatOPLLPSG_ProcessR800_Return:
 	RePlayer_Return_M
-	jp FormatOPLLPSG_ProcessR800
+	jp FormatOPLLPSG_ProcessR800_Loop
 FormatOPLLPSG_ProcessR800_Jump:
 	RePlayer_Jump_M
-	jp FormatOPLLPSG_ProcessR800
+	jp FormatOPLLPSG_ProcessR800_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessZ80:
+FormatOPLLPSG_ProcessZ80_Loop:
 	ld a,(hl)
 	inc hl
 	add a,a
@@ -76,23 +84,30 @@ FormatOPLLPSG_ProcessZ80:
 	rrca
 	ret
 FormatOPLLPSG_ProcessZ80_WriteBlock:
-	jp p,MSXMusic_WriteBlockZ80
+	jp m,FormatOPLLPSG_ProcessZ80_WriteBlockPSG
+FormatOPLLPSG_ProcessZ80_WriteBlockOPLL:
+	add a,02H
+	call MSXMusic_WriteBlockZ80
+	jp FormatOPLLPSG_ProcessZ80_Loop
+FormatOPLLPSG_ProcessZ80_WriteBlockPSG:
+	add a,-80H + 2
 	call PSG_WriteBlock
-	jp FormatOPLLPSG_ProcessZ80
+	jp FormatOPLLPSG_ProcessZ80_Loop
 FormatOPLLPSG_ProcessZ80_Call:
 	RePlayer_Call_M
-	jp FormatOPLLPSG_ProcessZ80
+	jp FormatOPLLPSG_ProcessZ80_Loop
 FormatOPLLPSG_ProcessZ80_Return:
 	RePlayer_Return_M
-	jp FormatOPLLPSG_ProcessZ80
+	jp FormatOPLLPSG_ProcessZ80_Loop
 FormatOPLLPSG_ProcessZ80_Jump:
 	RePlayer_Jump_M
-	jp FormatOPLLPSG_ProcessZ80
+	jp FormatOPLLPSG_ProcessZ80_Loop
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
 FormatOPLLPSG_ProcessPSG:
+FormatOPLLPSG_ProcessPSG_Loop:
 	ld a,(hl)
 	inc hl
 	add a,a
@@ -104,27 +119,26 @@ FormatOPLLPSG_ProcessPSG:
 	rrca
 	ret
 FormatOPLLPSG_ProcessPSG_WriteBlock:
-	jp p,FormatOPLLPSG_SkipBlock
-	call PSG_WriteBlock
-	jp FormatOPLLPSG_ProcessPSG
-FormatOPLLPSG_ProcessPSG_Call:
-	RePlayer_Call_M
-	jp FormatOPLLPSG_ProcessPSG
-FormatOPLLPSG_ProcessPSG_Return:
-	RePlayer_Return_M
-	jp FormatOPLLPSG_ProcessPSG
-FormatOPLLPSG_ProcessPSG_Jump:
-	RePlayer_Jump_M
-	jp FormatOPLLPSG_ProcessPSG
-
-; a = count * 2 - 2
-; hl = sound data
-FormatOPLLPSG_SkipBlock:
+	jp m,FormatOPLLPSG_ProcessPSG_WriteBlockPSG
+FormatOPLLPSG_ProcessPSG_WriteBlockOPLL:
 	add a,02H
 	ld c,a
 	ld b,0
 	add hl,bc
-	jp FormatOPLLPSG_ProcessPSG
+	jp FormatOPLLPSG_ProcessPSG_Loop
+FormatOPLLPSG_ProcessPSG_WriteBlockPSG:
+	add a,-80H + 2
+	call PSG_WriteBlock
+	jp FormatOPLLPSG_ProcessPSG_Loop
+FormatOPLLPSG_ProcessPSG_Call:
+	RePlayer_Call_M
+	jp FormatOPLLPSG_ProcessPSG_Loop
+FormatOPLLPSG_ProcessPSG_Return:
+	RePlayer_Return_M
+	jp FormatOPLLPSG_ProcessPSG_Loop
+FormatOPLLPSG_ProcessPSG_Jump:
+	RePlayer_Jump_M
+	jp FormatOPLLPSG_ProcessPSG_Loop
 
 FormatOPLLPSG_Mute:
 	call MSXMusic_Mute
