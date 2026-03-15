@@ -200,6 +200,21 @@ The top level object supports the following key / values:
   * `bankSize`:
     Player bank size.
     Typically `16384` (16K) or `8192` (8K).
+  * `opmFrequency`:
+    Target OPM clock frequency in Hz.
+    Default: `3579545`.
+  * `opnbFrequency`:
+    Target OPNB clock frequency in Hz.
+    Default: `8000000`.
+  * `opl4Frequency`:
+    Target OPL4 clock frequency in Hz.
+    Default: `33868800`.
+  * `opllFrequency`:
+    Target OPLL clock frequency in Hz.
+    Default: `3579545`.
+  * `psgFrequency`:
+    Target PSG clock frequency in Hz.
+    Default: `1789773`.
   * `tracks`:
     List of tracks to include.
 
