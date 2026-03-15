@@ -203,10 +203,13 @@ The top level object supports the following key / values:
   * `tracks`:
     List of tracks to include.
 
-The following key / values must be set on a per-track basis:
+The following key / values are set on a per-track basis:
 
   * `path`:
     VGM source file path.
+  * `name`:
+    Track name override.
+    Default: Track index (starting at 1).
 
 The following key / values can be set either globally or on a per-track basis:
 
