@@ -2,6 +2,9 @@
 	"format": "opl4",
 	"tickFrequency": 50,
 	"tolerance": 0.1,
+	"compress": {
+		"minimumLength": 16
+	},
 	"tracks": [
 		{
 			"path": "01_Title.vgm"

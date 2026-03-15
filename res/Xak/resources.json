@@ -3,6 +3,9 @@
 	"tickFrequency": 60,
 	"waitThreshold": 50,
 	"tolerance": 0.5,
+	"compress": {
+		"minimumLength": 16
+	},
 	"tracks": [
 		{
 			"path": "01 Opening 1 (sound effects).vgz"

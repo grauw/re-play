@@ -3,6 +3,9 @@
 	"tickFrequency": 100,
 	"tolerance": 0.1,
 	"targetTickFrequency": 50,
+	"compress": {
+		"minimumLength": 16
+	},
 	"tracks": [
 		{
 			"path": "01 Painful Sigh.vgz"

@@ -3,6 +3,9 @@
 	"tickFrequency": 59.922743404312307,
 	"waitThreshold": 50,
 	"attenuation": -6,
+	"compress": {
+		"minimumLength": 16
+	},
 	"tracks": [
 		{
 			"path": "01 Credit.vgz",

@@ -2,6 +2,9 @@
 	"format": "opn",
 	"tickFrequency": 59.922743404312307,
 	"waitThreshold": 50,
+	"compress": {
+		"minimumLength": 16
+	},
 	"tracks": [
 		{
 			"path": "01 - Title Demo.vgz"
