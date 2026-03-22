@@ -40,10 +40,8 @@ Neotron_Detect_MatchID:
 	ld bc,18
 	jp Memory_MatchSlotString
 
-; hl = sound data
-; a <- wait amount
-Neotron_Process:
-	exx
+; a' <- original slot ID
+Neotron_EnableSlot:
 	ld h,Neotron_BASE >> 8
 	call Memory_GetSlot
 	ex af,af'
@@ -51,20 +49,24 @@ Neotron_Process:
 	ld h,Neotron_BASE >> 8
 	call ENASLT
 	ei
-	exx
-	call Neotron_Process_Loop
-	exx
+	ret
+
+; a' = original slot ID
+Neotron_DisableSlot:
 	ex af,af'
 	ld h,Neotron_BASE >> 8
 	call ENASLT
 	ei
 	ex af,af'
-	exx
 	ret
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
+Neotron_Process:
+	exx
+	call Neotron_EnableSlot
+	exx
 Neotron_Process_Loop:
 	ld a,(hl)
 	inc hl
@@ -78,6 +80,9 @@ Neotron_Process_Loop:
 	sub 92H
 	jp c,Neotron_Return
 	jp z,Neotron_Jump
+	exx
+	call Neotron_DisableSlot
+	exx
 	ret
 
 ; hl = sound data
@@ -199,13 +204,7 @@ Neotron_Return:
 	jp Neotron_Process_Loop
 
 Neotron_Mute:
-	ld h,Neotron_BASE >> 8
-	call Memory_GetSlot
-	ex af,af'
-	ld a,(Neotron_slot)
-	ld h,Neotron_BASE >> 8
-	call ENASLT
-	ei
+	call Neotron_EnableSlot
 	ld b,10H
 	ld de,800FH
 Neotron_Mute_ReleaseRateLoop:
@@ -219,20 +218,11 @@ Neotron_Mute_KeyOffLoop:
 	call Neotron_WriteRegister1
 	inc e
 	djnz Neotron_Mute_KeyOffLoop
-	ex af,af'
-	ld h,Neotron_BASE >> 8
-	call ENASLT
-	ei
+	call Neotron_DisableSlot
 	ret
 
 Neotron_Restore:
-	ld h,Neotron_BASE >> 8
-	call Memory_GetSlot
-	ex af,af'
-	ld a,(Neotron_slot)
-	ld h,Neotron_BASE >> 8
-	call ENASLT
-	ei
+	call Neotron_EnableSlot
 	ld a,0
 	ld hl,FormatOPN_instruments
 Neotron_Restore_Loop:
@@ -249,10 +239,7 @@ Neotron_Restore_Loop:
 	inc a
 	cp 8
 	jr c,Neotron_Restore_Loop
-	ex af,af'
-	ld h,Neotron_BASE >> 8
-	call ENASLT
-	ei
+	call Neotron_DisableSlot
 	ret
 
 ; d = register

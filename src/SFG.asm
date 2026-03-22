@@ -29,10 +29,8 @@ SFG_JumpTable:
 	jp SFG_Mute
 	jp SFG_Restore
 
-; hl = sound data
-; a <- wait amount
-SFG_Process:
-	exx
+; a' <- original slot ID
+SFG_EnableSlot:
 	ld h,SFG_BASE >> 8
 	call Memory_GetSlot
 	ex af,af'
@@ -40,20 +38,24 @@ SFG_Process:
 	ld h,SFG_BASE >> 8
 	call ENASLT
 	ei
-	exx
-	call SFG_Process_Loop
-	exx
+	ret
+
+; a' = original slot ID
+SFG_DisableSlot:
 	ex af,af'
 	ld h,SFG_BASE >> 8
 	call ENASLT
 	ei
 	ex af,af'
-	exx
 	ret
 
 ; hl = sound data
 ; ix = stack pointer
 ; a <- wait amount
+SFG_Process:
+	exx
+	call SFG_EnableSlot
+	exx
 SFG_Process_Loop:
 	ld a,(hl)
 	inc hl
@@ -67,6 +69,9 @@ SFG_Process_Loop:
 	sub 92H
 	jp c,SFG_Return
 	jp z,SFG_Jump
+	exx
+	call SFG_DisableSlot
+	exx
 	ret
 
 ; hl = sound data
@@ -147,13 +152,7 @@ SFG_Return:
 	jp SFG_Process_Loop
 
 SFG_Mute:
-	ld h,SFG_BASE >> 8
-	call Memory_GetSlot
-	ex af,af'
-	ld a,(SFG_slot)
-	ld h,SFG_BASE >> 8
-	call ENASLT
-	ei
+	call SFG_EnableSlot
 	ld b,20H
 	ld de,0E00FH
 SFG_Mute_ReleaseRateLoop:
@@ -166,20 +165,11 @@ SFG_Mute_KeyOffLoop:
 	call SFG_WriteRegister
 	inc e
 	djnz SFG_Mute_KeyOffLoop
-	ex af,af'
-	ld h,SFG_BASE >> 8
-	call ENASLT
-	ei
+	call SFG_DisableSlot
 	ret
 
 SFG_Restore:
-	ld h,SFG_BASE >> 8
-	call Memory_GetSlot
-	ex af,af'
-	ld a,(SFG_slot)
-	ld h,SFG_BASE >> 8
-	call ENASLT
-	ei
+	call SFG_EnableSlot
 	ld a,0
 	ld hl,FormatOPN_instruments
 SFG_Restore_Loop:
@@ -196,10 +186,7 @@ SFG_Restore_Loop:
 	inc a
 	cp 8
 	jr c,SFG_Restore_Loop
-	ex af,af'
-	ld h,SFG_BASE >> 8
-	call ENASLT
-	ei
+	call SFG_DisableSlot
 	ret
 
 ; d = register
