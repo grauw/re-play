@@ -15,6 +15,14 @@ export class ChipPSG extends Chip {
 		this.clockFrequency = clockFrequency;
 	}
 
+	set(address: number, value: number, mask = 0xFF) {
+		if (address == 0x0D) {
+			super.set(address, value, mask);
+			return true;  // envelope shape register has retrigger side effect
+		}
+		return super.set(address, value, mask);
+	}
+
 	writeCommand(command: Command) {
 		if (command instanceof CommandPSGRegister) {
 			this.set(command.address, command.value);

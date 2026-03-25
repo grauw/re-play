@@ -43,9 +43,6 @@ export class TransformPSGFrameSanitizer extends Transform {
 	}
 
 	emitEnvelope(psgInput: ChipPSG, psgOutput: ChipPSG, emit: (command: Command) => void) {
-		if (psgInput.isSet(0x0D)) {
-			psgOutput.unset(0x0D);  // envelope shape register has retrigger side effect
-		}
 		for (let i = 0x0B; i < 0x0E; i++) {
 			writeRegisterIfSet(psgOutput, psgInput.getRegister(i), emit);
 		}
