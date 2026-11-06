@@ -5,7 +5,7 @@ Copyright 2020 Laurens Holst
 ## Project information
 
   * Author: Laurens Holst <laurens@grauw.nl>
-  * Source: <https://hg.sr.ht/~grauw/re-play>
+  * Source: <https://github.com/grauw/re-play>
   * Support: <https://msx.org/forum/msx-talk/graphics-and-music/re-play-music-converter-player>
   * License: MIT
 

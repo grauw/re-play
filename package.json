@@ -5,8 +5,8 @@
   "author": "Laurens Holst",
   "license": "MIT",
   "repository": {
-    "type": "hg",
-    "url": "https://hg.sr.ht/~grauw/re-play"
+    "type": "git",
+    "url": "git+https://github.com/grauw/re-play.git"
   },
   "type": "module",
   "private": true,
